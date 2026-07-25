@@ -71,6 +71,11 @@ ul.why li.warn::before{content:"⚠️"}
 .fade{animation:fade .35s ease}
 @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
 .testbtn{font-size:2rem; background:#fff; border:2px solid var(--line); border-radius:20px; padding:14px 22px; cursor:pointer}
+.artbox{display:inline-block}
+.artbox svg{width:100%; height:100%; display:block}
+.backbtn{background:none; border:none; color:var(--sub); font-family:'Jua'; font-size:.95rem; cursor:pointer; padding:4px 8px; margin-bottom:6px}
+.backbtn:active{transform:translateX(-3px)}
+a.btn{text-decoration:none}
 .pillrow{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
 .pill{flex:1; min-width:110px; font-family:'Jua'; font-size:1.05rem; padding:14px; border-radius:18px; border:2px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
 .pill:active{transform:scale(.96)}
@@ -137,12 +142,32 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <script src="data/inst_woodwind_folk.js"></script>
 <script src="data/inst_brass_mallet.js"></script>
 <script src="data/inst_perc_healing_electronic.js"></script>
+<script src="art/art_keyboard_freereed.js"></script>
+<script src="art/art_bowed.js"></script>
+<script src="art/art_folk_strings.js"></script>
+<script src="art/art_guitar_mandolin.js"></script>
+<script src="art/art_harp_lute.js"></script>
+<script src="art/art_woodwind_western.js"></script>
+<script src="art/art_woodwind_folk.js"></script>
+<script src="art/art_brass_mallet.js"></script>
+<script src="art/art_perc_healing_electronic.js"></script>
 <script>
 (function(){
 "use strict";
 /* ============ 데이터 취합 ============ */
 const ALL = [].concat(INST_KEYBOARD_FREEREED, INST_BOWED, INST_FOLK_STRINGS, INST_GUITAR_MANDOLIN,
   INST_HARP_LUTE, INST_WOODWIND_WESTERN, INST_WOODWIND_FOLK, INST_BRASS_MALLET, INST_PERC_HEALING_ELECTRONIC);
+const ART = Object.assign({},
+  typeof ART_KEYBOARD_FREEREED!=="undefined"?ART_KEYBOARD_FREEREED:{},
+  typeof ART_BOWED!=="undefined"?ART_BOWED:{},
+  typeof ART_FOLK_STRINGS!=="undefined"?ART_FOLK_STRINGS:{},
+  typeof ART_GUITAR_MANDOLIN!=="undefined"?ART_GUITAR_MANDOLIN:{},
+  typeof ART_HARP_LUTE!=="undefined"?ART_HARP_LUTE:{},
+  typeof ART_WOODWIND_WESTERN!=="undefined"?ART_WOODWIND_WESTERN:{},
+  typeof ART_WOODWIND_FOLK!=="undefined"?ART_WOODWIND_FOLK:{},
+  typeof ART_BRASS_MALLET!=="undefined"?ART_BRASS_MALLET:{},
+  typeof ART_PERC_HEALING_ELECTRONIC!=="undefined"?ART_PERC_HEALING_ELECTRONIC:{});
+function artHtml(id, size){ const a=ART[id]; if(!a) return null; return `<span class="artbox" style="width:${size}px;height:${size}px">${a}</span>`; }
 const GDESC = {}; GENRES.forEach(g=>GDESC[g.name]=g.desc);
 const ETHNIC_GENRES = ["켈틱·아이리시","북유럽 민속","발칸·클레즈머·집시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","라틴","탱고","플라멩코·스페인"];
 
@@ -500,13 +525,28 @@ function click(t0){ const c=ac(), o=c.createOscillator(), g=c.createGain();
 const midi2f = m => 440*Math.pow(2,(m-69)/12);
 
 /* ============ 상태 & 렌더 ============ */
-let stepIdx = -1, testState = null;
+let stepIdx = -1, testState = null, hist = [];
+function snap(){ hist.push({idx:stepIdx, p:JSON.parse(JSON.stringify(P))}); }
+function goBack(){
+  if(!hist.length){ showIntro(); return; }
+  const h=hist.pop(); P=h.p; stepIdx=h.idx; showQ();
+}
 const $app = document.getElementById("app");
 function activeQs(){ if(!P) resetP(); return Q.filter(q=>{ try{ return !q.when || q.when(); }catch(e){ return false; } }); }
 function render(html){ $app.innerHTML = `<div class="fade">${html}</div>`; window.scrollTo({top:0}); }
+function setBar(pct){
+  document.getElementById("bar").style.display = "block";
+  document.getElementById("barfill").style.width = pct+"%";
+  document.getElementById("barnote").style.left = pct+"%";
+}
 function progress(){
   const qs = activeQs(); const i = Math.max(0, qs.findIndex(q=>q===curQ()));
-  const pct = Math.min(99, Math.round((i/(qs.length))*100));
+  const t = qs.findIndex(q=>q.type==="tests");
+  let pct;
+  if(t<0) pct = Math.round(i/qs.length*100);
+  else if(i<=t) pct = Math.round(i/(t+1)*50);        // 테스트 끝 = 50%
+  else pct = Math.round(50 + (i-t-1)/(qs.length-t-1)*50);
+  pct = Math.min(99, pct);
   document.getElementById("bar").style.display = stepIdx>=0 ? "block":"none";
   document.getElementById("barfill").style.width = pct+"%";
   document.getElementById("barnote").style.left = pct+"%";
@@ -540,6 +580,7 @@ function showQ(){
   const sel = new Set();
   const optHtml = opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="APP.pick(${i})">${o.t}${o.sub?`<small>${o.sub}</small>`:""}</button>`).join("");
   render(`
+    <button class="backbtn" onclick="APP.back()">← 이전으로</button>
     <div class="qicon">${q.icon||"🎵"}</div>
     <h2 class="qtitle">${q.title}</h2>
     ${q.flavor?`<p class="flavor">${q.flavor}</p>`:""}
@@ -563,11 +604,13 @@ function pick(i){
       else { APP._sel.add(i); el.classList.add("sel"); }
     }
   } else {
+    snap();
     P.answers[q.id]=opts[i].t; opts[i].fx&&opts[i].fx(); stepIdx++; showQ();
   }
 }
 function next(){
   const q = APP._q;
+  snap();
   if(q && q.multi){
     P.answers[q.id]=[...APP._sel].map(i=>APP._opts[i].t);
     [...APP._sel].forEach(i=>APP._opts[i].fx&&APP._opts[i].fx());
@@ -579,20 +622,23 @@ function next(){
 function showTestIntro(){
   progress();
   render(`
+    <button class="backbtn" onclick="APP.back()">← 이전으로</button>
     <div class="center">
       <div class="big-emoji">👂</div>
       <h2 class="qtitle">이제 귀 테스트 시간!</h2>
-      <p class="flavor">높낮이 비교 → 미세 음정 → 멜로디 기억 → <b>절대음감</b> → 리듬 탭.<br>
+      <p class="flavor">높낮이 비교 → 미세 음정 → 멜로디 기억 → <b>절대음감</b> → 리듬 따라치기.<br>
       약 2분. 조용한 곳에서 이어폰을 끼면 정확해요.<br>
+      모든 문제에서 <b>▶️ 듣기는 몇 번이든 다시 누를 수 있고</b>,<br>
+      여기까지 끝나면 전체의 <b>절반</b>이 끝난 겁니다!<br>
       <b>못해도 전혀 불이익 없습니다.</b> 못하는 방향에도 좋은 악기가 잔뜩 있거든요.</p>
       <button class="btn" onclick="APP.startTests()">테스트 시작 🎧</button>
       <button class="btn ghost" onclick="APP.skipTests()">건너뛰기 (자백으로 대체)</button>
     </div>`);
 }
-function skipTests(){ P.pitch=null; P.rhythm=50; stepIdx++; showQ(); }
+function skipTests(){ snap(); P.pitch=null; P.rhythm=50; stepIdx++; showQ(); }
 
 const T1_INTERVALS=[7,4,2,1,.5,.25], T2_CENTS=[100,50,25,15];
-function startTests(){ ac(); testState={phase:"t1", trial:0, score:0, t2:0, t3:0, abs:0, taps:[], t1correct:0}; runT1(); }
+function startTests(){ ac(); snap(); testState={phase:"t1", trial:0, score:0, t2:0, t3:0, abs:0, taps:[], t1correct:0}; runT1(); }
 
 function runT1(){
   const ts=testState;
@@ -606,7 +652,7 @@ function runT1(){
     <div class="center">
       <span class="tag">귀 테스트 1/5 · 높낮이</span>
       <h2 class="qtitle">둘 중 어느 소리가 더 높나요?</h2>
-      <p class="flavor">${ts.trial+1} / ${T1_INTERVALS.length} ${semi<1?"— 이제 좀 어렵습니다 😈":""}</p>
+      <p class="flavor">${ts.trial+1} / ${T1_INTERVALS.length} ${semi<1?"— 이제 좀 어렵습니다 😈":""}<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
       <button class="testbtn" onclick="APP._playPair(${f1},${f2})">▶️ 듣기</button>
       <div class="pillrow" style="margin-top:16px">
         <button class="pill" onclick="APP._t1(0)">첫 번째</button>
@@ -630,7 +676,7 @@ function runT2(){
     <div class="center">
       <span class="tag mint">귀 테스트 2/5 · 미세 음정</span>
       <h2 class="qtitle">두 소리, 같나요 다르나요?</h2>
-      <p class="flavor">${ts.trial+1} / ${T2_CENTS.length} — 차이가 점점 미세해집니다</p>
+      <p class="flavor">${ts.trial+1} / ${T2_CENTS.length} — 차이가 점점 미세해집니다<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
       <button class="testbtn" onclick="APP._playPair(${f1},${f2})">▶️ 듣기</button>
       <div class="pillrow" style="margin-top:16px">
         <button class="pill" onclick="APP._t2(0)">같다</button>
@@ -653,7 +699,7 @@ function runT3(){
     <div class="center">
       <span class="tag lav">귀 테스트 3/5 · 멜로디 기억</span>
       <h2 class="qtitle">두 멜로디, 같나요?</h2>
-      <p class="flavor">${ts.trial+1} / 3 — 한 음만 슬쩍 바뀔 수도 있어요</p>
+      <p class="flavor">${ts.trial+1} / 3 — 한 음만 슬쩍 바뀔 수도 있어요<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
       <button class="testbtn" onclick="APP._playMel()">▶️ 듣기</button>
       <div class="pillrow" style="margin-top:16px">
         <button class="pill" onclick="APP._t3(0)">같다</button>
@@ -675,7 +721,7 @@ function runAbs(){
     <div class="center">
       <span class="tag sun">귀 테스트 4/5 · 절대음감</span>
       <h2 class="qtitle">기준음 없이, 이 음은 무슨 음일까요?</h2>
-      <p class="flavor">${ts.trial+1} / 4 — 못 맞혀도 완전 정상입니다. 절대음감은 보너스 스탯일 뿐!</p>
+      <p class="flavor">${ts.trial+1} / 4 — 못 맞혀도 완전 정상입니다. 절대음감은 보너스 스탯일 뿐!<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
       <button class="testbtn" onclick="APP._playAbs()">▶️ 듣기</button>
       <div class="kbd">${kb}</div>
       <button class="btn ghost" onclick="APP._abs(-1)">모르겠어요 (당당하게)</button>
@@ -688,10 +734,11 @@ function _abs(i){ const ts=testState;
   ts.trial++; runAbs(); }
 
 const RPATTERNS=[
-  {name:"기본 박자",        beats:[0,1,2,3],           max:15, hint:"쿵. 쿵. 쿵. 쿵. 이건 몸풀기예요."},
-  {name:"8분음표",          beats:[0,1,1.5,2,3,3.5],   max:20, hint:"중간에 잰걸음이 섞입니다."},
-  {name:"엇박(싱코페이션)", beats:[0,.75,1.5,2,3,3.5], max:30, hint:"살짝 밀리는 맛이 포인트."},
-  {name:"타악 리듬(클라베)",beats:[0,.75,1.5,2.5,3],   max:35, hint:"쿠바 타악의 심장 박동. 최종 보스!"},
+  {name:"기본 박자",        beats:[0,1,2,3],           max:10, hint:"쿵. 쿵. 쿵. 쿵. 이건 몸풀기예요."},
+  {name:"8분음표",          beats:[0,1,1.5,2,3,3.5],   max:15, hint:"중간에 잰걸음이 섞입니다."},
+  {name:"엇박(싱코페이션)", beats:[0,.75,1.5,2,3,3.5], max:20, hint:"살짝 밀리는 맛이 포인트."},
+  {name:"타악 리듬(클라베)",beats:[0,.75,1.5,2.5,3],   max:25, hint:"쿠바 타악의 심장 박동."},
+  {name:"폴리리듬 최종보스",beats:[0,.75,1,1.75,2.25,2.5,3.25,3.5], max:30, hint:"프로 타악 주자도 집중해야 하는 16비트 엇박. 틀려도 도전 자체가 자랑입니다."},
 ];
 const RBEAT=667; // 90bpm
 function runRhythm(){ const ts=testState; ts.rTrial=0; ts.rScore=0; ts.lastPct=null; runRhythmTrial(); }
@@ -704,7 +751,7 @@ function runRhythmTrial(){
       <span class="tag">귀 테스트 5/5 · 리듬 따라치기</span>
       ${ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:""}
       <h2 class="qtitle">${ts.rTrial+1}단계 — ${pat.name}</h2>
-      <p class="flavor">${pat.hint}<br>리듬을 듣고, <b>조용해지면 그대로 따라 치세요.</b></p>
+      <p class="flavor">${pat.hint}<br>리듬을 듣고, <b>조용해지면 그대로 따라 치세요.</b><br><span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span></p>
       <button class="testbtn" onclick="APP._playRhythm()">▶️ 리듬 듣기</button>
       <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">먼저 들어보세요</div>
       <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">다 쳤어요 ✓</button>
@@ -763,8 +810,10 @@ function finishTests(){
         <p>🥁 <b>리듬 점수: ${P.rhythm}점</b> / 100 ${P.rhythm>=70?"— 몸에 메트로놈 내장하셨네요":""}</p>
         <p>🏅 절대음감 테스트: ${ts.abs}점 / 8 — ${absMsg}</p>
       </div>
+      <p class="small">🎉 여기까지가 전체의 절반! 이제 취향 문답만 남았어요.</p>
       <button class="btn" onclick="APP.next()">계속 →</button>
     </div>`);
+  setBar(50);
 }
 
 /* ============ 스코어링 엔진 ============ */
@@ -919,6 +968,15 @@ function scoreSlot(slot){
 }
 
 /* ============ 결과 ============ */
+const TRACK_YT=[["재즈","jazz"],["블루그래스","bluegrass"],["아이리시","irish"],["클래식","classical"],["록","rock"],["메탈","metal"],["블루스","blues"],["컨트리","country"],["탱고","tango"],["플라멩코","flamenco"],["클레즈머","klezmer"],["집시","gypsy"],["펑크","funk"],["보사노바","bossa nova"],["로커빌리","rockabilly slap"],["츠가루","tsugaru"],["트로트",""],["발칸","balkan"]];
+function ytQuery(slot){
+  const inst=slot.inst;
+  const eng=(inst.aka||[]).find(a=>/^[\x20-\x7E]+$/.test(a));
+  const base=eng||inst.name;
+  let tk="";
+  if(slot.track){ const l=slot.track.label||""; for(const [k,v] of TRACK_YT){ if(l.includes(k)){ tk=v; break; } } }
+  return ((tk?tk+" ":"")+base+" performance").replace(/\s+/g," ").trim();
+}
 function fmtCost(c){
   if(!c||!c.entryKRW) return "";
   const [a,b]=c.entryKRW;
@@ -965,7 +1023,7 @@ function resCardHtml(r, cls, rankTxt, crown){
     ${crown?`<div class="crown">👑</div>`:""}
     <div class="center">
       <span class="rank">${rankTxt}</span>
-      <div class="big-emoji" style="margin-top:8px">${nameEmoji(inst.name, inst.family)}</div>
+      <div style="margin-top:8px">${artHtml(inst.id, cls===""?110:88) || `<span class="big-emoji">${nameEmoji(inst.name, inst.family)}</span>`}</div>
       <h2 style="margin:6px 0 0; font-size:1.6rem">${r.slot.dispName}</h2>
       <p class="small">${inst.family} · ${fmtCost(inst.cost)}</p>
       <p style="margin:8px 0" class="flavor">"${g(inst,"sound.toneDesc","")}"</p>
@@ -977,6 +1035,8 @@ function resCardHtml(r, cls, rankTxt, crown){
     </ul>
     ${cavs.length?`<p class="small">😈 각오할 것: ${cavs.join(" / ")}</p>`:""}
     ${r.slot.track&&r.slot.track.note?`<p class="small">🎯 추천 트랙: ${r.slot.track.note}</p>`:""}
+    <a class="btn mint" style="font-size:1rem; margin-top:8px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">▶️ 유튜브에서 연주 보기</a>
+    <p class="small center" style="margin:6px 0 0">유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요</p>
   </div>`;
 }
 
@@ -1032,24 +1092,33 @@ function share(){
   navigator.clipboard.writeText(lines.join("\n")).then(()=>alert("복사 완료! 어디든 붙여넣어 자랑하세요 🎉"));
 }
 
-/* ============ 배경 낙서 배치 ============ */
+/* ============ 배경 낙서 배치 (실물 일러스트 우선, 없으면 기본 낙서) ============ */
 (function doodles(){
-  const ids=["d-guitar","d-violin","d-trumpet","d-note","d-drum","d-piano","d-accordion","d-sax"];
   const box=document.getElementById("doodles");
+  const wishNames=[/^어쿠스틱 기타/,/^바이올린$/,/^트럼펫$/,/^드럼 세트/,/^피아노$/,/색소폰/,/^피아노 아코디언/,/^우쿨렐레$/,/^플루트$/,/^첼로$/,/^밴조$/,/^하모니카|다이어토닉 하모니카/];
+  const artIds=[];
+  wishNames.forEach(rx=>{ const hit=ALL.find(inst=>rx.test(inst.name)&&ART[inst.id]); if(hit) artIds.push(hit.id); });
+  const fallback=["d-guitar","d-violin","d-trumpet","d-note","d-drum","d-piano","d-accordion","d-sax"];
   const N=16; let html="";
   for(let i=0;i<N;i++){
-    const id=ids[i%ids.length];
     const x=(i%4)*25+Math.random()*14, y=Math.floor(i/4)*25+Math.random()*12;
     const rot=Math.round(Math.random()*50-25), sz=54+Math.random()*40;
-    html+=`<svg class="doodle" style="left:${x}%;top:${y}%;transform:rotate(${rot}deg)" width="${sz}" height="${sz}" viewBox="0 0 100 100"><use href="#${id}"/></svg>`;
+    if(artIds.length){
+      const id=artIds[i%artIds.length];
+      html+=`<span class="doodle artbox" style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;transform:rotate(${rot}deg)">${ART[id]}</span>`;
+    } else {
+      const id=fallback[i%fallback.length];
+      html+=`<svg class="doodle" style="left:${x}%;top:${y}%;transform:rotate(${rot}deg)" width="${sz}" height="${sz}" viewBox="0 0 100 100"><use href="#${id}"/></svg>`;
+    }
   }
   box.innerHTML=html;
 })();
 
 /* ============ 공개 API ============ */
 window.APP={
-  start(){ resetP(); stepIdx=0; showQ(); },
+  start(){ resetP(); hist=[]; stepIdx=0; showQ(); },
   restart(){ showIntro(); },
+  back:goBack,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
   share,
