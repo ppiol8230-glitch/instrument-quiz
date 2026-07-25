@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>인생에 악기 하나쯤은 다룰 줄 알아야지</title>
-<meta name="description" content="3분 설문 + 귀 테스트로 찾는 당신의 운명의 악기. 189종의 악기가 기다리고 있습니다.">
-<meta property="og:title" content="인생에 악기 하나쯤은 다룰 줄 알아야지">
-<meta property="og:description" content="설문 + 청음 테스트로 찾는 나의 운명의 악기 (악기 189종 · 진지하게 만든 장난)">
+<title>살면서 악기 하나쯤은 다룰 줄 알아야지</title>
+<meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.">
+<meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
+<meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 189종)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -125,7 +125,6 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <div id="wrap">
   <div id="bar" style="display:none"><div id="barfill"></div><div id="barnote">🎵</div></div>
   <div id="app"></div>
-  <footer>진지하게 만든 장난 · 악기 189종 데이터 기반 · 결과에 책임은 지지 않지만 진심은 담았습니다</footer>
 </div>
 
 <script src="data/genres.js"></script>
@@ -519,13 +518,13 @@ function showIntro(){
   render(`
   <div class="center" style="padding-top:26px">
     <div class="big-emoji">🎻🎺🥁</div>
-    <h1 style="font-size:1.9rem; margin:14px 0 6px">인생에 악기 하나쯤은<br>다룰 줄 알아야지</h1>
-    <p class="flavor">…라고 말만 한 지 몇 년째인가요?<br>
-    설문 + 귀 테스트로 <b>악기 189종</b> 중에서<br>당신의 운명의 악기를 찾아드립니다.</p>
+    <h1 style="font-size:1.9rem; margin:14px 0 6px">살면서 악기 하나쯤은<br>다룰 줄 알아야지</h1>
+    <p class="flavor">어릴 때 스쳐 간 리코더부터<br>바이올린, 기타, 드럼, 피아노까지.<br>
+    간단한 테스트로, 무의식 속에 잠들어 있던<br><b>나도 몰랐던 악기 재능</b>을 깨워드립니다.</p>
     <div class="card" style="text-align:left">
-      <span class="tag">⏱ 약 5분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔬 진지하게 만든 장난</span>
-      <p class="small" style="margin:10px 0 0">바이올린부터 니켈하르파, 테오르보, 싱잉볼, 뮤지컬 쏘(톱)까지 전부 후보입니다.
-      침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 반영합니다.</p>
+      <span class="tag">⏱ 약 5분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔍 숨은 재능 찾기</span>
+      <p class="small" style="margin:10px 0 0">친숙한 악기부터 세상 구석의 낯선 악기까지 <b>189종</b>이 후보예요.
+      침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 헤아려서 골라드립니다.</p>
     </div>
     <button class="btn" onclick="APP.start()">내 악기 찾으러 가기 🚀</button>
   </div>`);
@@ -990,7 +989,7 @@ function showResult(){
 function share(){
   const R=APP._R; if(!R)return;
   const lines=[
-    "🎵 인생에 악기 하나쯤은 다룰 줄 알아야지 — 내 결과",
+    "🎵 살면서 악기 하나쯤은 다룰 줄 알아야지 — 내 결과",
     `👑 운명의 악기: ${R.top1.slot.dispName}`,
     ...(R.cands.map((c,i)=>`${i+2}위: ${c.slot.dispName}`)),
     P.pitch!=null?`👂 청음 ${P.pitch}점 / 🥁 리듬 ${P.rhythm}점${P.abs>=6?" / 🏅 절대음감 가능성":""}`:"",
