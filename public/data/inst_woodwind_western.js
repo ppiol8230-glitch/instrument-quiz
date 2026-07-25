@@ -903,7 +903,7 @@ const INST_WOODWIND_WESTERN = [
 
     sound: {
       tone: ["낮고 깊음", "나무 울림", "거칢", "소박함"],
-      toneDesc: "바순보다 원시적이고 buzz가 살아 있는 저음. 감베·색벗과 섞이면 르네상스 특유의 오르간 같은 혼성 저역이 만들어진다.",
+      toneDesc: "바순보다 원시적이고 버즈(갈대 떨림의 잡맛)가 살아 있는 저음. 감바·사크부트와 섞이면 르네상스 특유의 오르간 같은 혼성 저역이 만들어진다.",
       volume: 3,
       sustain: 4,
     },
@@ -962,7 +962,7 @@ const INST_WOODWIND_WESTERN = [
       sameTuning: [],
       leadsTo: ["바로크 바순", "라켓(르네상스 저음 관악)"],
     },
-    ensemble: ["르네상스 콘소트", "고음악 앙상블(색벗·감베와)", "성당 음악 프로젝트"],
+    ensemble: ["르네상스 콘소트", "고음악 앙상블(사크부트·감바와)", "성당 음악 프로젝트"],
 
     caveats: [
       "악기 입수 자체가 프로젝트 — 국내 유통 없음, 유럽 공방 주문·대기 각오",
@@ -1118,7 +1118,7 @@ const INST_WOODWIND_WESTERN = [
       sameTuning: [],
       leadsTo: ["바로크 오보에", "태평소", "주르나"],
     },
-    ensemble: ["르네상스 라우드 밴드(숌+색벗)", "중세·르네상스 축제 앙상블", "역사 재현 행사"],
+    ensemble: ["르네상스 라우드 밴드(숌+사크부트)", "중세·르네상스 축제 앙상블", "역사 재현 행사"],
 
     caveats: [
       "실내 취미로는 성립 불가 — 연습 장소가 곧 진입 장벽",
@@ -1137,7 +1137,7 @@ const INST_WOODWIND_WESTERN = [
 
     sound: {
       tone: ["콧소리", "거칢", "소박함", "그루브"],
-      toneDesc: "카주와 백파이프 사이 어딘가의 붕붕대는 buzz 톤. 혼자 들으면 웃기고, 4대가 화음을 쌓으면 뜻밖에 근사한 르네상스 오르간이 된다.",
+      toneDesc: "카주와 백파이프 사이 어딘가의 붕붕대는 버즈 톤. 혼자 들으면 웃기고, 4대가 화음을 쌓으면 뜻밖에 근사한 르네상스 오르간이 된다.",
       volume: 3,
       sustain: 4,
     },
@@ -1174,7 +1174,7 @@ const INST_WOODWIND_WESTERN = [
     practical: {
       portability: 4,
       noise: 3,
-      apartmentOk: "백파이프급은 아니지만 buzz가 계속 울리는 소리라 낮 연습 권장.",
+      apartmentOk: "백파이프급은 아니지만 버즈가 계속 울리는 소리라 낮 연습 권장.",
       selfLearn: 3,
       lessonKR: 1,
       entryBarrier: 3,
@@ -1275,7 +1275,7 @@ const INST_WOODWIND_WESTERN = [
       sameTuning: [],
       leadsTo: ["세르팡", "바로크 트럼펫"],
     },
-    ensemble: ["고음악 앙상블(색벗과 짝)", "몬테베르디급 대편성 프로젝트", "르네상스 성당 음악"],
+    ensemble: ["고음악 앙상블(사크부트와 짝)", "몬테베르디급 대편성 프로젝트", "르네상스 성당 음악"],
 
     caveats: [
       "관악기 최상급 난이도 — 금관 암부슈어와 목관 운지를 동시에, 게다가 음정은 전적으로 귀 책임",
