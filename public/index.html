@@ -503,7 +503,7 @@ const midi2f = m => 440*Math.pow(2,(m-69)/12);
 /* ============ 상태 & 렌더 ============ */
 let stepIdx = -1, testState = null;
 const $app = document.getElementById("app");
-function activeQs(){ return Q.filter(q=>!q.when || q.when()); }
+function activeQs(){ if(!P) resetP(); return Q.filter(q=>{ try{ return !q.when || q.when(); }catch(e){ return false; } }); }
 function render(html){ $app.innerHTML = `<div class="fade">${html}</div>`; window.scrollTo({top:0}); }
 function progress(){
   const qs = activeQs(); const i = Math.max(0, qs.findIndex(q=>q===curQ()));
@@ -1028,6 +1028,7 @@ window.APP={
     showResult(); return APP._R; },
   _slots: SLOTS, _profile:()=>P, _score:scoreSlot, _build:buildResult
 };
+resetP();
 showIntro();
 })();
 </script>
