@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>악기 DB 검증</title>
+<script>
+window.__errors = [];
+window.onerror = function(msg, src, line) { window.__errors.push(src + ":" + line + " " + msg); };
+</script>
+<script src="public/data/genres.js"></script>
+<script src="public/data/inst_keyboard_freereed.js"></script>
+<script src="public/data/inst_bowed.js"></script>
+<script src="public/data/inst_folk_strings.js"></script>
+<script src="public/data/inst_guitar_mandolin.js"></script>
+<script src="public/data/inst_harp_lute.js"></script>
+<script src="public/data/inst_woodwind_western.js"></script>
+<script src="public/data/inst_woodwind_folk.js"></script>
+<script src="public/data/inst_brass_mallet.js"></script>
+<script src="public/data/inst_perc_healing_electronic.js"></script>
+</head>
+<body>
+<h1>악기 DB 통합 검증</h1>
+<pre id="out"></pre>
+<script>
+(function(){
+  const FILES = {
+    INST_KEYBOARD_FREEREED: typeof INST_KEYBOARD_FREEREED !== "undefined" ? INST_KEYBOARD_FREEREED : null,
+    INST_BOWED: typeof INST_BOWED !== "undefined" ? INST_BOWED : null,
+    INST_FOLK_STRINGS: typeof INST_FOLK_STRINGS !== "undefined" ? INST_FOLK_STRINGS : null,
+    INST_GUITAR_MANDOLIN: typeof INST_GUITAR_MANDOLIN !== "undefined" ? INST_GUITAR_MANDOLIN : null,
+    INST_HARP_LUTE: typeof INST_HARP_LUTE !== "undefined" ? INST_HARP_LUTE : null,
+    INST_WOODWIND_WESTERN: typeof INST_WOODWIND_WESTERN !== "undefined" ? INST_WOODWIND_WESTERN : null,
+    INST_WOODWIND_FOLK: typeof INST_WOODWIND_FOLK !== "undefined" ? INST_WOODWIND_FOLK : null,
+    INST_BRASS_MALLET: typeof INST_BRASS_MALLET !== "undefined" ? INST_BRASS_MALLET : null,
+    INST_PERC_HEALING_ELECTRONIC: typeof INST_PERC_HEALING_ELECTRONIC !== "undefined" ? INST_PERC_HEALING_ELECTRONIC : null,
+  };
+  const canonical = new Set((typeof GENRES !== "undefined" ? GENRES : []).map(g => g.name));
+  const report = { loadErrors: window.__errors, perFile: {}, total: 0, totalTracks: 0, totalVariants: 0,
+                   dupIds: [], badGenres: [], missingFields: [], pitchFixedVals: {}, families: {} };
+  const REQUIRED = ["id","name","family","desc","sound","play","body","cost","practical","vibe","genres","kinship"];
+  const seen = new Map();
+  for (const [fname, arr] of Object.entries(FILES)) {
+    if (!arr) { report.perFile[fname] = "LOAD FAIL"; continue; }
+    report.perFile[fname] = arr.length;
+    report.total += arr.length;
+    for (const e of arr) {
+      if (seen.has(e.id)) report.dupIds.push(e.id + " (" + fname + " & " + seen.get(e.id) + ")");
+      seen.set(e.id, fname);
+      for (const f of REQUIRED) if (e[f] === undefined) report.missingFields.push(e.id + "." + f);
+      const gs = [ ...(e.genres && e.genres.main || []), ...(e.genres && e.genres.sub || []) ];
+      if (e.tracks) { report.totalTracks += e.tracks.length; e.tracks.forEach(t => gs.push(...(t.genres || []))); }
+      if (e.variants) report.totalVariants += e.variants.length;
+      for (const g of gs) if (!canonical.has(g)) report.badGenres.push(e.id + ": \"" + g + "\"");
+      const pf = e.play && e.play.pitchFixed;
+      report.pitchFixedVals[pf] = (report.pitchFixedVals[pf] || 0) + 1;
+      report.families[e.family] = (report.families[e.family] || 0) + 1;
+    }
+  }
+  report.badGenres = [...new Set(report.badGenres)];
+  window.DB_REPORT = report;
+  document.getElementById("out").textContent = JSON.stringify(report, null, 2);
+})();
+</script>
+</body>
+</html>
+
