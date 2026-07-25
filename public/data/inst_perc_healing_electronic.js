@@ -118,7 +118,7 @@ const INST_PERC_HEALING_ELECTRONIC = [
     },
     cost: {
       entryKRW: [200000, 450000],
-      entryDesc: "야마하 FGDP-10 20만원대, FGDP-30 30만원대 중반. 배터리 내장·스피커 내장이라 추가 지출 없음.",
+      entryDesc: "야마하 FGDP-30 20만원대 후반~30만원대, 상위 FGDP-50 40만원대. 배터리·스피커 내장이라 추가 지출 없음.",
       midKRW: [500000, 1000000],
       running: "없음",
     },

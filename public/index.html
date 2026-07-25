@@ -7,6 +7,13 @@
 <meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.">
 <meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
 <meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 189종)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://instrument-quiz.hspatrick.workers.dev/">
+<meta property="og:image" content="https://instrument-quiz.hspatrick.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://instrument-quiz.hspatrick.workers.dev/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -76,6 +83,17 @@ ul.why li.warn::before{content:"⚠️"}
 .backbtn{background:none; border:none; color:var(--sub); font-family:'Jua'; font-size:.95rem; cursor:pointer; padding:4px 8px; margin-bottom:6px}
 .backbtn:active{transform:translateX(-3px)}
 a.btn{text-decoration:none}
+.cb{display:flex; align-items:center; gap:8px; margin:5px 0; font-size:.85rem}
+.cb>span{flex:0 0 45%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cbar{flex:1; height:12px; background:#F3E7D7; border-radius:99px; overflow:hidden}
+.cbar i{display:block; height:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px}
+.cb b{flex:0 0 34px; text-align:right; color:var(--coral-d); font-family:'Jua'}
+.rar{background:#FFF4D6; border-radius:14px; padding:8px 12px; font-size:.92rem; text-align:center}
+details.guide{margin-top:10px; border:2px dashed var(--line); border-radius:16px; padding:10px 14px}
+details.guide summary{cursor:pointer; font-family:'Jua'; color:var(--mint-d); list-style:none}
+details.guide summary::before{content:"🎒 "}
+details.guide p{font-size:.92rem; margin:8px 0}
+.radarwrap{display:flex; justify-content:center}
 .pillrow{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
 .pill{flex:1; min-width:110px; font-family:'Jua'; font-size:1.05rem; padding:14px; border-radius:18px; border:2px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
 .pill:active{transform:scale(.96)}
@@ -151,6 +169,16 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <script src="art/art_woodwind_folk.js"></script>
 <script src="art/art_brass_mallet.js"></script>
 <script src="art/art_perc_healing_electronic.js"></script>
+<script src="data/rarity.js"></script>
+<script src="guide/guide_keyboard_freereed.js"></script>
+<script src="guide/guide_bowed.js"></script>
+<script src="guide/guide_folk_strings.js"></script>
+<script src="guide/guide_guitar_mandolin.js"></script>
+<script src="guide/guide_harp_lute.js"></script>
+<script src="guide/guide_woodwind_western.js"></script>
+<script src="guide/guide_woodwind_folk.js"></script>
+<script src="guide/guide_brass_mallet.js"></script>
+<script src="guide/guide_perc_healing_electronic.js"></script>
 <script>
 (function(){
 "use strict";
@@ -168,6 +196,17 @@ const ART = Object.assign({},
   typeof ART_BRASS_MALLET!=="undefined"?ART_BRASS_MALLET:{},
   typeof ART_PERC_HEALING_ELECTRONIC!=="undefined"?ART_PERC_HEALING_ELECTRONIC:{});
 function artHtml(id, size){ const a=ART[id]; if(!a) return null; return `<span class="artbox" style="width:${size}px;height:${size}px">${a}</span>`; }
+const GUIDE = Object.assign({},
+  typeof GUIDE_KEYBOARD_FREEREED!=="undefined"?GUIDE_KEYBOARD_FREEREED:{},
+  typeof GUIDE_BOWED!=="undefined"?GUIDE_BOWED:{},
+  typeof GUIDE_FOLK_STRINGS!=="undefined"?GUIDE_FOLK_STRINGS:{},
+  typeof GUIDE_GUITAR_MANDOLIN!=="undefined"?GUIDE_GUITAR_MANDOLIN:{},
+  typeof GUIDE_HARP_LUTE!=="undefined"?GUIDE_HARP_LUTE:{},
+  typeof GUIDE_WOODWIND_WESTERN!=="undefined"?GUIDE_WOODWIND_WESTERN:{},
+  typeof GUIDE_WOODWIND_FOLK!=="undefined"?GUIDE_WOODWIND_FOLK:{},
+  typeof GUIDE_BRASS_MALLET!=="undefined"?GUIDE_BRASS_MALLET:{},
+  typeof GUIDE_PERC_HEALING_ELECTRONIC!=="undefined"?GUIDE_PERC_HEALING_ELECTRONIC:{});
+const RAR_TABLE = typeof RARITY!=="undefined" ? RARITY : {};
 const GDESC = {}; GENRES.forEach(g=>GDESC[g.name]=g.desc);
 const ETHNIC_GENRES = ["켈틱·아이리시","북유럽 민속","발칸·클레즈머·집시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","라틴","탱고","플라멩코·스페인"];
 
@@ -248,6 +287,7 @@ const Q = [
  ]},
 {id:"A2", icon:"🗂️", title:"해본 것을 모두 골라주세요", flavor:"찔러본 것도 다 포함입니다. 솔직하게!", multi:true,
  when:()=>P.exp>0,
+ after:()=>{ if(P.expFams.length===1) P.mainFam=P.expFams[0]; },
  opts: FAM_OPTS.map(f=>({t:f.t, fx:()=>{P.expFams.push(f.k)}})) },
 {id:"A3", icon:"⭐", title:"그중 제일 오래 한 것은?", when:()=>P.expFams.length>1,
  dynOpts:()=>P.expFams.map(k=>({t:FAM_OPTS.find(f=>f.k===k).t, fx:()=>{P.mainFam=k}})) },
@@ -605,7 +645,7 @@ function pick(i){
     }
   } else {
     snap();
-    P.answers[q.id]=opts[i].t; opts[i].fx&&opts[i].fx(); stepIdx++; showQ();
+    P.answers[q.id]=opts[i].t; opts[i].fx&&opts[i].fx(); q.after&&q.after(); stepIdx++; showQ();
   }
 }
 function next(){
@@ -614,6 +654,7 @@ function next(){
   if(q && q.multi){
     P.answers[q.id]=[...APP._sel].map(i=>APP._opts[i].t);
     [...APP._sel].forEach(i=>APP._opts[i].fx&&APP._opts[i].fx());
+    q.after&&q.after();
   }
   stepIdx++; showQ();
 }
@@ -825,9 +866,12 @@ function famKeys(inst){
   return Object.keys(FAM_MATCH).filter(k=>FAM_MATCH[k].test(inst.family||"")||FAM_MATCH[k].test(inst.name||""));
 }
 
+// 장난·이색 악기 감쇠: 1위 자리는 진지한 악기에게, 이 친구들은 와일드카드로
+const NOVELTY={kazoo:32, jaw_harp:28, otamatone:18, glass_harp:26, musical_saw:12, toy_piano:16};
 function scoreSlot(slot){
   const inst=slot.inst, why=[], warn=[];
   let s=50, gate=null, variantNote=null;
+  const nov=NOVELTY[inst.id]; if(nov) s-=Math.round(nov*(P.rarityPref>=3?0.4:1));
   const B=inst.body||{}, PR=inst.practical||{}, V=inst.vibe||{}, PL=inst.play||{}, C=inst.cost||{};
   const noiseV = PR.noise||3;
   const hasQuietVariant = (inst.variants||[]).some(v=>g(v,"mods.noise",9)<=2) ;
@@ -939,6 +983,7 @@ function scoreSlot(slot){
       if(f==="bow"&&/바이올린|첼로|비올라/.test(easy)) kin=Math.max(kin,16);
       if(f==="wind"&&/리코더|플루트|색소폰|클라리넷/.test(easy)) kin=Math.max(kin,16);
     });
+    if(P.expDir==="same" && P.mainFam && fk.includes(P.mainFam)) kin=Math.max(kin, 20);
     if(P.expDir==="new" && fk.some(f=>P.expFams.includes(f))){ s-=10; kin=0; }
     if(kin){ s+=kin; why.push({t:`이미 해본 악기 경험이 그대로 이어집니다 (운지·감각 호환)`, p:kin}); }
   }
@@ -968,6 +1013,68 @@ function scoreSlot(slot){
 }
 
 /* ============ 결과 ============ */
+function personaOf(){
+  if(P.abs>=6) return ["절대귀 초능력자형","기준음도 없이 음을 맞히는 그 귀, 아무나 못 가집니다"];
+  if((P.pitch||0)>=70 && P.vintage>=1.5) return ["시간여행 낭만파형","옛 소리에 반응하는 예민한 귀"];
+  if((P.rhythm||0)>=70 && (P.pitch||0)>=70) return ["올라운드 재능러형","귀도 몸도 준비된 사기 캐릭터"];
+  if((P.rhythm||0)>=70) return ["그루브 본능형","몸에 메트로놈이 내장된 타입"];
+  if((P.pitch||0)>=70) return ["예민한 귀 예술가형","미세한 음정 차이를 잡아내는 귀"];
+  if(P.rarityPref>=3) return ["희귀종 헌터형","남들 다 하는 건 재미없는 타입"];
+  if(P.calm>=2) return ["고요 수집가형","소리로 쉬는 법을 아는 사람"];
+  if(P.gear>=1) return ["장비덕후 개척자형","스펙표 읽는 게 취미인 타입"];
+  if(P.sing===2) return ["타고난 프론트맨형","마이크를 놓지 않는 타입"];
+  if(P.patience>=3) return ["대기만성 장인형","몇 년짜리 프로젝트에 설레는 타입"];
+  if(P.ethnic>=2) return ["세계음악 탐험가형","낯선 소리를 끝까지 듣는 귀"];
+  return ["숨은 재능 잠복기형","아직 만나지 못했을 뿐, 재능은 있습니다"];
+}
+function radarSVG(){
+  const vals=[
+    {l:"청음", v:P.pitch==null?50:P.pitch},
+    {l:"리듬", v:P.rhythm==null?50:P.rhythm},
+    {l:"절대음감", v:Math.round(P.abs/8*100)},
+    {l:"개성", v:Math.round(Math.min(3,P.rarityPref)/3*100)},
+    {l:"끈기", v:Math.round(P.patience/3*100)},
+  ];
+  const cx=130, cy=118, R0=78, n=vals.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n; return (cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1);};
+  let s=`<svg viewBox="0 0 260 236" width="250" height="228">`;
+  [.25,.5,.75,1].forEach(f=>{ s+=`<polygon points="${vals.map((_,i)=>pt(i,R0*f)).join(" ")}" fill="none" stroke="rgba(74,59,50,.12)" stroke-width="1.5"/>`; });
+  vals.forEach((_,i)=>{ s+=`<line x1="${cx}" y1="${cy}" x2="${pt(i,R0).split(",")[0]}" y2="${pt(i,R0).split(",")[1]}" stroke="rgba(74,59,50,.12)" stroke-width="1.5"/>`; });
+  s+=`<polygon points="${vals.map((v,i)=>pt(i,R0*Math.max(.06,v.v/100))).join(" ")}" fill="rgba(255,126,103,.35)" stroke="#FF7E67" stroke-width="3" stroke-linejoin="round"/>`;
+  vals.forEach((v,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/n, lx=cx+(R0+24)*Math.cos(a), ly=cy+(R0+20)*Math.sin(a);
+    s+=`<text x="${lx.toFixed(0)}" y="${ly.toFixed(0)}" text-anchor="middle" font-size="13" font-family="Jua" fill="#4A3B32">${v.l}</text>`;
+    s+=`<text x="${lx.toFixed(0)}" y="${(ly+15).toFixed(0)}" text-anchor="middle" font-size="12" font-family="Jua" fill="#E85F47">${v.v}</text>`;
+  });
+  return s+"</svg>";
+}
+function contribHtml(r){
+  const ws=[...r.why].sort((a,b)=>b.p-a.p).slice(0,5).filter(w=>w.p>0);
+  if(!ws.length) return "";
+  const mx=ws[0].p;
+  return `<hr class="divider"><p class="small" style="margin:4px 0 8px"><b>📊 점수는 이렇게 쌓였어요</b></p>`+
+    ws.map(w=>{const lbl=w.t.split("—")[0].split("(")[0].slice(0,20); return `<div class="cb"><span>${lbl}</span><div class="cbar"><i style="width:${Math.max(8,Math.round(w.p/mx*100))}%"></i></div><b>+${Math.round(w.p)}</b></div>`;}).join("");
+}
+function rarityHtml(id){
+  let p=RAR_TABLE[id];
+  let txt;
+  if(p==null){ txt=`🦄 <b>측정 불가급 유니콘</b> — 시뮬레이션 수천 번에도 거의 안 나온 결과예요`; }
+  else if(p<=0.5) txt=`🦄 <b>유니콘급</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
+  else if(p<=1.5) txt=`💎 <b>초희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
+  else if(p<=4) txt=`🌟 <b>희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
+  else if(p<=10) txt=`✨ <b>흔치 않음</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
+  else txt=`🍀 국민 악기 당첨 — 약 <b>${p}%</b>가 같은 결과. 그만큼 검증된 길이에요`;
+  return `<p class="rar">${txt}</p>`;
+}
+function guideHtml(id){
+  const g=GUIDE[id];
+  if(!g) return `<details class="guide"><summary>입문 가이드 보기</summary><p class="small">가이드를 준비하고 있어요! 조금만 기다려주세요.</p></details>`;
+  return `<details class="guide"><summary>입문 가이드 보기</summary>
+    <p>🚪 <b>이렇게 시작하세요</b><br>${g.how}</p>
+    <p>🧑‍🏫 <b>레슨은?</b><br>${g.lesson}</p>
+    <p>💸 <b>뭘 사면 되나요?</b><br>${g.buy}</p>
+    <p>🎯 <b>첫 한 달 목표</b><br>${g.firstGoal}</p></details>`;
+}
 const TRACK_YT=[["재즈","jazz"],["블루그래스","bluegrass"],["아이리시","irish"],["클래식","classical"],["록","rock"],["메탈","metal"],["블루스","blues"],["컨트리","country"],["탱고","tango"],["플라멩코","flamenco"],["클레즈머","klezmer"],["집시","gypsy"],["펑크","funk"],["보사노바","bossa nova"],["로커빌리","rockabilly slap"],["츠가루","tsugaru"],["트로트",""],["발칸","balkan"]];
 function ytQuery(slot){
   const inst=slot.inst;
@@ -991,13 +1098,14 @@ function buildResult(){
   const seen=new Set(), uniq=[];
   alive.forEach(r=>{ if(!seen.has(r.slot.inst.id)){ seen.add(r.slot.inst.id); uniq.push(r); } });
   const top1=uniq[0];
-  const cands=[]; const usedFam=new Set([g(top1,"slot.inst.family","")]);
-  for(const r of uniq.slice(1)){
-    if(cands.length>=2) break;
-    if(usedFam.has(r.slot.inst.family) && cands.length===0) continue; // 2위는 다른 계열 우선
-    cands.push(r); usedFam.add(r.slot.inst.family);
+  const cands=[];
+  if(top1){
+    const c2 = uniq.slice(1).find(r=>r.slot.inst.family!==top1.slot.inst.family) || uniq[1];
+    if(c2) cands.push(c2);
+    const c3 = uniq.slice(1).find(r=>r!==c2 && r.slot.inst.family!==top1.slot.inst.family && r.slot.inst.family!==c2.slot.inst.family)
+            || uniq.slice(1).find(r=>r!==c2);
+    if(c3) cands.push(c3);
   }
-  while(cands.length<2 && uniq.length>cands.length+1) cands.push(uniq[cands.length+1]);
   const wild=uniq.find(r=>g(r,"slot.inst.vibe.rarityKR",1)>=4 && r!==top1 && !cands.includes(r));
   const pity=dead[0];
   // 궁합
@@ -1011,33 +1119,84 @@ function buildResult(){
     rival = uniq.find(r=>r!==top1 && r!==mate && /멜로디/.test((g(r,"slot.inst.play.roles",[])).join(" ")) && g(r,"slot.inst.vibe.showOff",2)>=4)
         || uniq[uniq.length>4?4:uniq.length-1];
   }
-  return {top1, cands, wild, pity, mate, rival};
+  return {top1, cands, wild, pity, mate, rival, aliveN:uniq.length, gatedN:dead.length};
 }
 
 function resCardHtml(r, cls, rankTxt, crown){
   const inst=r.slot.inst;
-  const whys=r.why.sort((a,b)=>b.p-a.p).slice(0, cls===""?5:3);
-  const cavs=(inst.caveats||[]).slice(0, cls===""?2:1);
+  const isTop = cls==="";
+  const whys=r.why.sort((a,b)=>b.p-a.p).slice(0, isTop?5:3);
+  const cavs=(inst.caveats||[]).slice(0, isTop?2:1);
   return `
   <div class="card resCard ${cls}">
     ${crown?`<div class="crown">👑</div>`:""}
     <div class="center">
       <span class="rank">${rankTxt}</span>
-      <div style="margin-top:8px">${artHtml(inst.id, cls===""?110:88) || `<span class="big-emoji">${nameEmoji(inst.name, inst.family)}</span>`}</div>
+      <div style="margin-top:8px">${artHtml(inst.id, isTop?110:88) || `<span class="big-emoji">${nameEmoji(inst.name, inst.family)}</span>`}</div>
       <h2 style="margin:6px 0 0; font-size:1.6rem">${r.slot.dispName}</h2>
       <p class="small">${inst.family} · ${fmtCost(inst.cost)}</p>
       <p style="margin:8px 0" class="flavor">"${g(inst,"sound.toneDesc","")}"</p>
     </div>
+    ${isTop?rarityHtml(inst.id):""}
     ${r.variantNote?`<p class="small" style="background:#E5F7F1;border-radius:14px;padding:8px 12px">${r.variantNote}</p>`:""}
     <ul class="why">
       ${whys.map(w=>`<li>${w.t}</li>`).join("")}
       ${r.warn.slice(0,2).map(w=>`<li class="warn">${w}</li>`).join("")}
     </ul>
+    ${isTop?contribHtml(r):""}
     ${cavs.length?`<p class="small">😈 각오할 것: ${cavs.join(" / ")}</p>`:""}
     ${r.slot.track&&r.slot.track.note?`<p class="small">🎯 추천 트랙: ${r.slot.track.note}</p>`:""}
-    <a class="btn mint" style="font-size:1rem; margin-top:8px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">▶️ 유튜브에서 연주 보기</a>
+    ${guideHtml(inst.id)}
+    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">▶️ 유튜브에서 연주 보기</a>
     <p class="small center" style="margin:6px 0 0">유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요</p>
   </div>`;
+}
+async function shareCard(){
+  const R=APP._R; if(!R||!R.top1) return;
+  try{ await document.fonts.load("60px Jua"); await document.fonts.load("30px 'Gowun Dodum'"); }catch(e){}
+  const c=document.createElement("canvas"); c.width=1080; c.height=1350;
+  const x=c.getContext("2d");
+  const rr=(x0,y0,w,h,r)=>{x.beginPath();x.moveTo(x0+r,y0);x.arcTo(x0+w,y0,x0+w,y0+h,r);x.arcTo(x0+w,y0+h,x0,y0+h,r);x.arcTo(x0,y0+h,x0,y0,r);x.arcTo(x0,y0,x0+w,y0,r);x.closePath();};
+  x.fillStyle="#FFF6EA"; x.fillRect(0,0,1080,1350);
+  x.fillStyle="#4A3B32"; x.textAlign="center";
+  x.font="44px Jua"; x.fillText("살면서 악기 하나쯤은 다룰 줄 알아야지", 540, 96);
+  const per=personaOf();
+  // 카드 프레임
+  x.fillStyle="#fff"; rr(70,150,940,940,48); x.fill();
+  x.lineWidth=6; x.strokeStyle="#FF7E67"; rr(70,150,940,940,48); x.stroke();
+  // 페르소나 태그
+  x.fillStyle="#F0EAFE"; rr(320,200,440,64,32); x.fill();
+  x.fillStyle="#7C5CE0"; x.font="34px Jua"; x.fillText("🧬 "+per[0], 540, 244);
+  // 악기 그림
+  const svg=ART[R.top1.slot.inst.id];
+  if(svg){
+    const s2=svg.replace("<svg ", '<svg width="430" height="430" ');
+    const url=URL.createObjectURL(new Blob([s2],{type:"image/svg+xml"}));
+    const img=new Image();
+    await new Promise((res)=>{ img.onload=res; img.onerror=res; img.src=url; });
+    x.drawImage(img, 325, 290, 430, 430);
+    URL.revokeObjectURL(url);
+  }
+  x.fillStyle="#8A7A6E"; x.font="30px Jua"; x.fillText("나의 운명의 악기", 540, 790);
+  x.fillStyle="#4A3B32"; x.font="64px Jua";
+  const nm=R.top1.slot.dispName; x.fillText(nm.length>14?nm.slice(0,14)+"…":nm, 540, 866);
+  // 점수 줄
+  x.font="32px Jua"; x.fillStyle="#E85F47";
+  const scoreLine = (P.pitch!=null?`👂 청음 ${P.pitch}  ·  🥁 리듬 ${P.rhythm}`:"")+(P.abs>=6?"  ·  🏅 절대음감":"");
+  if(scoreLine) x.fillText(scoreLine, 540, 940);
+  // 희귀도
+  const rp=RAR_TABLE[R.top1.slot.inst.id];
+  x.fillStyle="#B8860B"; x.font="30px Jua";
+  x.fillText(rp==null?"🦄 시뮬레이션에도 거의 안 나오는 유니콘급":`🌟 이 결과를 받는 사람은 약 ${rp}%`, 540, 1010);
+  x.fillStyle="#8A7A6E"; x.font="26px 'Gowun Dodum'"; x.fillText("당신의 악기는 뭘까요?", 540, 1180);
+  x.fillStyle="#4A3B32"; x.font="30px Jua"; x.fillText("instrument-quiz.hspatrick.workers.dev", 540, 1225);
+  const dataUrl=c.toDataURL("image/png");
+  const blob=await (await fetch(dataUrl)).blob();
+  const file=new File([blob], "나의운명의악기.png", {type:"image/png"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:"나의 운명의 악기"}); return; }catch(e){}
+  }
+  const a=document.createElement("a"); a.download="나의운명의악기.png"; a.href=dataUrl; a.click();
 }
 
 function showResult(){
@@ -1063,10 +1222,19 @@ function showResult(){
       <h3 class="jua" style="margin:0 0 6px">🥲 아차상</h3>
       <p><b>${R.pity.slot.dispName}</b> — 사실 점수는 최상위권이었는데, <b>"${R.pity.gate}"</b> 때문에 눈물을 머금고 탈락했습니다. 마음이 바뀌면 다시 오세요.</p>
     </div>`:"";
+  const per=personaOf();
   render(`
     <div class="center" style="margin-bottom:10px">
       <h1 style="font-size:1.5rem; margin:10px 0 4px">🔮 운명의 악기가 정해졌습니다</h1>
       <div>${pitchTag}${rhyTag}${absBadge}</div>
+    </div>
+    <div class="card">
+      <div class="center">
+        <span class="tag lav" style="font-size:1rem">🧬 당신은 「${per[0]}」</span>
+        <p class="small" style="margin:6px 0 0">${per[1]}</p>
+      </div>
+      <div class="radarwrap">${radarSVG()}</div>
+      <p class="small center" style="margin:2px 0 0">악기 <b>189종</b> 중 당신의 조건(몸·환경·예산)을 통과한 건 <b>${R.aliveN}종</b>.<br>그 안에서 적성·취향 점수를 합산해 아래 순위가 나왔어요.</p>
     </div>
     ${resCardHtml(R.top1, "", "가장 어울리는 악기", true)}
     ${R.cands[0]?resCardHtml(R.cands[0], "second", "후보 2"):""}
@@ -1074,7 +1242,8 @@ function showResult(){
     ${mateHtml}
     ${wildHtml}
     ${pityHtml}
-    <button class="btn" onclick="APP.share()">결과 복사해서 자랑하기 📋</button>
+    <button class="btn" onclick="APP.shareCard()">📸 결과 카드 저장·공유하기</button>
+    <button class="btn mint" onclick="APP.share()">결과 텍스트 복사 📋</button>
     <button class="btn ghost" onclick="APP.restart()">처음부터 다시 하기</button>
   `);
   APP._R=R;
@@ -1121,7 +1290,21 @@ window.APP={
   back:goBack,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
-  share,
+  share, shareCard,
+  // 시뮬레이션: 랜덤 프로필 n명을 엔진에 통과시켜 1위 악기 분포 집계 (희귀도 테이블용)
+  _mc(n){
+    const cnt={};
+    for(let k=0;k<n;k++){
+      resetP(); P.pitch=Math.floor(Math.random()*100); P.rhythm=Math.floor(Math.random()*100); P.abs=Math.floor(Math.random()*9);
+      activeQs().forEach(q=>{ if(q.type)return; const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts||!opts.length)return;
+        if(q.multi){ const m=1+Math.floor(Math.random()*Math.min(3,opts.length)); const st=new Set(); while(st.size<m) st.add(Math.floor(Math.random()*opts.length)); [...st].forEach(i=>{ if(!opts[i].exclusive) opts[i].fx&&opts[i].fx(); }); }
+        else { const i=Math.floor(Math.random()*opts.length); opts[i].fx&&opts[i].fx(); }
+        q.after&&q.after(); });
+      const r=buildResult();
+      if(r.top1){ const id=r.top1.slot.inst.id; cnt[id]=(cnt[id]||0)+1; }
+    }
+    return cnt;
+  },
   // 디버그: 랜덤 답변으로 결과까지 자동 진행 (테스트는 스킵)
   _auto(){ resetP(); P.pitch=Math.floor(Math.random()*100); P.rhythm=Math.floor(Math.random()*100); P.abs=Math.floor(Math.random()*9);
     activeQs().forEach(q=>{ if(q.type)return; const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts||!opts.length)return;
