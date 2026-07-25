@@ -519,7 +519,8 @@ function showIntro(){
   <div class="center" style="padding-top:26px">
     <div class="big-emoji">🎻🎺🥁</div>
     <h1 style="font-size:1.9rem; margin:14px 0 6px">살면서 악기 하나쯤은<br>다룰 줄 알아야지</h1>
-    <p class="flavor">어릴 때 스쳐 간 리코더부터<br>바이올린, 기타, 드럼, 피아노까지.<br>
+    <p class="flavor">…라고 생각한 지 몇 년째죠?<br>
+    어릴 때 스쳐 간 리코더부터<br>바이올린, 기타, 드럼, 피아노까지.<br>
     간단한 테스트로, 무의식 속에 잠들어 있던<br><b>나도 몰랐던 악기 재능</b>을 깨워드립니다.</p>
     <div class="card" style="text-align:left">
       <span class="tag">⏱ 약 5분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔍 숨은 재능 찾기</span>
@@ -686,37 +687,70 @@ function _abs(i){ const ts=testState;
   if(i>=0){ const d=Math.min(Math.abs(i-ts.absNote), 12-Math.abs(i-ts.absNote)); if(d===0) ts.abs+=2; else if(d===1) ts.abs+=1; }
   ts.trial++; runAbs(); }
 
-function runRhythm(){
-  const ts=testState; ts.taps=[]; ts.rhythmPhase=1;
+const RPATTERNS=[
+  {name:"기본 박자",        beats:[0,1,2,3],           max:15, hint:"쿵. 쿵. 쿵. 쿵. 이건 몸풀기예요."},
+  {name:"8분음표",          beats:[0,1,1.5,2,3,3.5],   max:20, hint:"중간에 잰걸음이 섞입니다."},
+  {name:"엇박(싱코페이션)", beats:[0,.75,1.5,2,3,3.5], max:30, hint:"살짝 밀리는 맛이 포인트."},
+  {name:"타악 리듬(클라베)",beats:[0,.75,1.5,2.5,3],   max:35, hint:"쿠바 타악의 심장 박동. 최종 보스!"},
+];
+const RBEAT=667; // 90bpm
+function runRhythm(){ const ts=testState; ts.rTrial=0; ts.rScore=0; ts.lastPct=null; runRhythmTrial(); }
+function runRhythmTrial(){
+  const ts=testState;
+  if(ts.rTrial>=RPATTERNS.length){ return finishTests(); }
+  const pat=RPATTERNS[ts.rTrial];
   render(`
     <div class="center">
-      <span class="tag">귀 테스트 5/5 · 리듬</span>
-      <h2 class="qtitle">틱- 틱- 소리에 맞춰<br>노란 버튼을 8번 탭!</h2>
-      <p class="flavor">메트로놈이 4번 세어주고 시작합니다. 박자에 정확히 맞춰보세요.</p>
-      <div id="tapzone" onpointerdown="APP._tap()">준비...</div>
-      <button class="btn mint" onclick="APP._startMetro()">메트로놈 시작 ▶️</button>
+      <span class="tag">귀 테스트 5/5 · 리듬 따라치기</span>
+      ${ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:""}
+      <h2 class="qtitle">${ts.rTrial+1}단계 — ${pat.name}</h2>
+      <p class="flavor">${pat.hint}<br>리듬을 듣고, <b>조용해지면 그대로 따라 치세요.</b></p>
+      <button class="testbtn" onclick="APP._playRhythm()">▶️ 리듬 듣기</button>
+      <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">먼저 들어보세요</div>
+      <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">다 쳤어요 ✓</button>
     </div>`);
 }
-function _startMetro(){
-  const ts=testState; ts.taps=[]; ts.metroStart=null;
-  const BEAT=.75; // 80bpm
-  for(let i=0;i<14;i++) click(i*BEAT);
-  const t0=performance.now();
-  ts.metroStart=t0; ts.beatMs=BEAT*1000;
-  document.getElementById("tapzone").textContent="탭! 탭!";
-  setTimeout(()=>APP._endRhythm(), 14*BEAT*1000+400);
+function _playRhythm(){
+  const ts=testState, pat=RPATTERNS[ts.rTrial];
+  ts.rTaps=[]; ts.rReady=false; clearTimeout(ts.rTimer);
+  pat.beats.forEach(b=>click(b*RBEAT/1000));
+  const dur=(pat.beats[pat.beats.length-1])*RBEAT+500;
+  setTimeout(()=>{ ts.rReady=true; const z=document.getElementById("tapzone"); if(z){ z.style.opacity=1; z.textContent="따라 치세요!"; } const d=document.getElementById("rdoneBtn"); if(d) d.style.display="block"; }, dur);
 }
-function _tap(){ const ts=testState; if(ts.metroStart){ ts.taps.push(performance.now()); const z=document.getElementById("tapzone"); z.textContent=["🥁","👏","🎶","✨"][ts.taps.length%4]; } }
-function _endRhythm(){
+function _rtap(ev){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const ts=testState; if(!ts.rReady) return;
+  ts.rTaps.push(performance.now());
+  const z=document.getElementById("tapzone"); z.textContent=["🥁","👏","🎶","✨"][ts.rTaps.length%4];
+  clearTimeout(ts.rTimer);
+  const pat=RPATTERNS[ts.rTrial];
+  if(ts.rTaps.length>=pat.beats.length) ts.rTimer=setTimeout(()=>_rdone(), 900);
+  else ts.rTimer=setTimeout(()=>_rdone(), pat.beats[pat.beats.length-1]*RBEAT+1800);
+}
+function evalRhythmTaps(taps, trialIdx){
+  const pat=RPATTERNS[trialIdx];
+  if(!taps||taps.length<2) return 0;
+  const e=pat.beats.map(b=>b*RBEAT);
+  const t0=taps[0], t=taps.map(x=>x-t0);
+  const n=Math.min(t.length, e.length);
+  let s=1;
+  if(t[n-1]>200){ s=e[n-1]/t[n-1]; s=Math.max(.7,Math.min(1.4,s)); }
+  let sum=0; for(let i=0;i<n;i++) sum+=Math.abs(t[i]*s-e[i]);
+  const acc=Math.max(0,1-(sum/n)/300);
+  const cnt=Math.max(0,1-Math.abs(t.length-e.length)*.25);
+  return acc*cnt;
+}
+function _rdone(){
+  const ts=testState; clearTimeout(ts.rTimer);
+  if(!ts.rReady) return;
+  const ratio=evalRhythmTaps(ts.rTaps, ts.rTrial);
+  ts.lastPct=Math.round(ratio*100);
+  ts.rScore+=RPATTERNS[ts.rTrial].max*ratio;
+  ts.rTrial++; runRhythmTrial();
+}
+function finishTests(){
   const ts=testState;
-  let r=40;
-  const taps=ts.taps.filter(t=>t-ts.metroStart > 4*ts.beatMs-200);
-  if(taps.length>=4){
-    const devs=taps.map(t=>{ const ph=((t-ts.metroStart)%ts.beatMs); return Math.min(ph, ts.beatMs-ph); });
-    const avg=devs.reduce((a,b)=>a+b,0)/devs.length;
-    r=Math.max(5, Math.min(100, Math.round(100-avg/2.2)));
-  }
-  P.rhythm=r;
+  P.rhythm=Math.max(5, Math.min(100, Math.round(ts.rScore)));
   P.pitch=Math.min(100, Math.round(ts.score/145*100));
   P.abs=ts.abs; P.melody=ts.t3;
   const absMsg = ts.abs>=6 ? "🏅 <b>절대음감 보유 가능성!</b> 상위 1% 귀입니다." : (ts.abs>=3 ? "귀가 꽤 예민하시네요!" : "절대음감은 없지만 <b>연주엔 상대음감이 훨씬 중요</b>합니다. 진짜예요.");
@@ -1017,7 +1051,7 @@ window.APP={
   start(){ resetP(); stepIdx=0; showQ(); },
   restart(){ showIntro(); },
   pick, next, startTests, skipTests,
-  _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _startMetro, _tap, _endRhythm,
+  _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
   share,
   // 디버그: 랜덤 답변으로 결과까지 자동 진행 (테스트는 스킵)
   _auto(){ resetP(); P.pitch=Math.floor(Math.random()*100); P.rhythm=Math.floor(Math.random()*100); P.abs=Math.floor(Math.random()*9);
