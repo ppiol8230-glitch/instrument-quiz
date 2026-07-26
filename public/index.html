@@ -24,6 +24,8 @@
   --lav:#A78BFA; --sun:#FFC94D; --pink:#FF9EB5; --line:rgba(74,59,50,.14);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+/* 연타 시 더블탭 확대 방지 (iOS Safari) */
+button,.opt,.pill,.testbtn,#tapzone,a.btn{touch-action:manipulation}
 html,body{margin:0;padding:0}
 body{background:var(--bg); color:var(--ink); font-family:'Gowun Dodum',system-ui,sans-serif; line-height:1.6; min-height:100vh}
 h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; letter-spacing:-.01em}
@@ -61,7 +63,8 @@ h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; lette
 .kbd button.black{background:#4A3B32; color:#fff}
 .kbd button:active{transform:scale(.94)}
 #tapzone{width:190px; height:190px; margin:16px auto; border-radius:50%; background:var(--sun); box-shadow:0 8px 0 #E0A92F;
-  display:flex; align-items:center; justify-content:center; font-family:'Jua'; font-size:1.4rem; cursor:pointer; user-select:none}
+  display:flex; align-items:center; justify-content:center; font-family:'Jua'; font-size:1.4rem; cursor:pointer;
+  touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none}
 #tapzone:active{transform:translateY(5px); box-shadow:0 3px 0 #E0A92F}
 .resCard{border:3px solid var(--coral); position:relative}
 .resCard.second{border-color:var(--mint)}
@@ -546,10 +549,37 @@ const Q = [
 ];
 
 /* ============ 오디오 (Web Audio) ============ */
-let AC=null;
-function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); return AC; }
+let AC=null, audioUnlocked=false;
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+function ac(){
+  if(!AC){ const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return null; AC=new Ctx(); }
+  if(AC.state==="suspended" && AC.resume) AC.resume();
+  return AC;
+}
+// iOS는 사용자 제스처 안에서 컨텍스트를 깨워야 소리가 난다 — 첫 터치에 무음 버퍼로 언락
+function unlockAudio(){
+  const c=ac(); if(!c) return;
+  if(!audioUnlocked){
+    try{ const b=c.createBuffer(1,1,22050), src=c.createBufferSource(); src.buffer=b; src.connect(c.destination); src.start(0); audioUnlocked=true; }catch(e){}
+  }
+  if(c.state==="suspended" && c.resume) c.resume();
+}
+document.addEventListener("pointerdown", unlockAudio, {passive:true});
+document.addEventListener("touchend", unlockAudio, {passive:true});
+// 컨텍스트가 깨어난 뒤에 재생 — suspended 상태에서 예약하면 iOS에서 소리가 씹힌다
+function withAudio(fn){
+  const c=ac(); if(!c) return;
+  if(c.state!=="running" && c.resume){ c.resume().then(()=>fn()).catch(()=>fn()); }
+  else fn();
+}
+function flashPlaying(){
+  const b=document.querySelector(".testbtn"); if(!b) return;
+  const old=b.textContent; b.textContent="🔊 재생 중…"; b.disabled=true;
+  setTimeout(()=>{ b.textContent=old; b.disabled=false; }, 900);
+}
 function tone(freq, t0, dur, vol){
-  const c=ac(), o=c.createOscillator(), g=c.createGain();
+  const c=ac(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
   o.type="triangle"; o.frequency.value=freq;
   g.gain.setValueAtTime(0, c.currentTime+t0);
   g.gain.linearRampToValueAtTime(vol||.25, c.currentTime+t0+.02);
@@ -558,7 +588,7 @@ function tone(freq, t0, dur, vol){
   o.connect(g); g.connect(c.destination);
   o.start(c.currentTime+t0); o.stop(c.currentTime+t0+dur+.02);
 }
-function click(t0){ const c=ac(), o=c.createOscillator(), g=c.createGain();
+function click(t0){ const c=ac(); if(!c) return; const o=c.createOscillator(), g=c.createGain();
   o.type="square"; o.frequency.value=1200; g.gain.setValueAtTime(.15,c.currentTime+t0);
   g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t0+.06);
   o.connect(g); g.connect(c.destination); o.start(c.currentTime+t0); o.stop(c.currentTime+t0+.08); }
@@ -660,33 +690,61 @@ function next(){
   }
   stepIdx++; showQ();
 }
-/* ============ 결과 링크 공유 (URL에 답변 인코딩) ============ */
+/* ============ 결과 링크 공유 (초압축 인코딩) ============
+   질문 순서(Q 배열)가 고정이라 질문 id를 실을 필요가 없다.
+   질문마다 1글자(단일선택=옵션 인덱스 / 미응답=".") 또는 2글자(복수선택=비트마스크 12bit).
+   맨 뒤 3글자 = 청음·리듬(2로 나눈 값)·절대음감. 전체 약 50자.                        */
+const B64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const enc1=n=>B64[Math.max(0,Math.min(63,n|0))], dec1=ch=>B64.indexOf(ch);
 function resultLink(){
-  const payload={t:P.trail, p:P.pitch, r:P.rhythm, a:P.abs};
-  const b=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-  return location.origin+location.pathname+"#s="+b;
+  const picks={}; (P.trail||[]).forEach(([id,v])=>{ picks[id]=v; });
+  let s="";
+  Q.forEach(q=>{
+    if(q.type) return;
+    const v=picks[q.id];
+    if(v===undefined){ s+="."; return; }
+    if(q.multi){ const m=(Array.isArray(v)?v:[v]).reduce((a,i)=>a|(1<<i),0); s+=enc1(m>>6)+enc1(m&63); }
+    else s+=enc1(v);
+  });
+  s+= (P.pitch==null?".":enc1(Math.round(P.pitch/2))) + (P.rhythm==null?".":enc1(Math.round(P.rhythm/2))) + enc1(P.abs||0);
+  return location.origin+location.pathname+"#r="+s;
+}
+function applyPick(q, v){
+  const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts) return;
+  if(Array.isArray(v)) v.forEach(i=>{ const o=opts[i]; if(o&&!o.exclusive&&o.fx) o.fx(); });
+  else { const o=opts[v]; if(o&&o.fx) o.fx(); }
+  q.after&&q.after();
 }
 function loadShared(){
-  if(!location.hash.startsWith("#s=")) return false;
+  const h=location.hash;
   try{
-    const b=location.hash.slice(3).replace(/-/g,"+").replace(/_/g,"/");
-    const payload=JSON.parse(decodeURIComponent(escape(atob(b))));
-    resetP();
-    (payload.t||[]).forEach(pair=>{
-      const q=Q.find(x=>x.id===pair[0]); if(!q) return;
-      const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts) return;
-      const sel=pair[1];
-      if(Array.isArray(sel)) sel.forEach(i=>{ const o=opts[i]; if(o&&!o.exclusive&&o.fx) o.fx(); });
-      else { const o=opts[sel]; if(o&&o.fx) o.fx(); }
-      q.after&&q.after();
-    });
-    if(payload.p!=null) P.pitch=payload.p;
-    if(payload.r!=null) P.rhythm=payload.r;
-    P.abs=payload.a||0;
+    if(h.startsWith("#r=")){                       // 신형 압축 링크
+      const s=h.slice(3); let i=0;
+      resetP();
+      Q.forEach(q=>{
+        if(q.type) return;
+        const ch=s[i++]; if(ch===undefined||ch===".") return;
+        if(q.multi){ const lo=s[i++]; applyPick(q, maskToArr((dec1(ch)<<6)|dec1(lo))); }
+        else applyPick(q, dec1(ch));
+      });
+      const p=s[i++], r=s[i++], a=s[i++];
+      P.pitch = (p===undefined||p===".") ? null : dec1(p)*2;
+      P.rhythm= (r===undefined||r===".") ? null : dec1(r)*2;
+      P.abs   = (a===undefined||a===".") ? 0 : dec1(a);
+    } else if(h.startsWith("#s=")){                // 구형 링크 호환
+      const b=h.slice(3).replace(/-/g,"+").replace(/_/g,"/");
+      const payload=JSON.parse(decodeURIComponent(escape(atob(b))));
+      resetP();
+      (payload.t||[]).forEach(pair=>{ const q=Q.find(x=>x.id===pair[0]); if(q) applyPick(q, pair[1]); });
+      if(payload.p!=null) P.pitch=payload.p;
+      if(payload.r!=null) P.rhythm=payload.r;
+      P.abs=payload.a||0;
+    } else return false;
     showResult(true);
     return true;
   }catch(e){ return false; }
 }
+function maskToArr(m){ const a=[]; for(let i=0;i<12;i++) if(m&(1<<i)) a.push(i); return a; }
 function copyLink(){
   const url=resultLink();
   navigator.clipboard.writeText(url).then(()=>alert("결과 링크 복사 완료! 친구가 누르면 이 결과가 그대로 열려요 🔗"))
@@ -716,6 +774,7 @@ function showTestIntro(){
       모든 문제에서 <b>▶️ 듣기는 몇 번이든 다시 누를 수 있고</b>,<br>
       여기까지 끝나면 전체의 <b>절반</b>이 끝난 겁니다!<br>
       <b>못해도 전혀 불이익 없습니다.</b> 못하는 방향에도 좋은 악기가 잔뜩 있거든요.</p>
+      ${isIOS?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:10px 14px">🔇 <b>아이폰이라면</b> 옆면 <b>무음 스위치</b>를 꼭 풀어주세요! 무음 모드면 소리가 안 납니다.<br>볼륨도 한 번 올려주시고요 🎧</p>`:""}
       <button class="btn" onclick="APP.startTests()">테스트 시작 🎧</button>
       <button class="btn ghost" onclick="APP.skipTests()">건너뛰기 (자백으로 대체)</button>
     </div>`);
@@ -746,7 +805,7 @@ function runT1(){
     </div>`);
   setTimeout(()=>APP._playPair(f1,f2),300);
 }
-function _playPair(f1,f2){ tone(f1,0,.7); tone(f2,1.0,.7); }
+function _playPair(f1,f2){ flashPlaying(); withAudio(()=>{ tone(f1,0,.7); tone(f2,1.0,.7); }); }
 function _t1(a){ const ts=testState; if(a===ts.answer){ts.score+=[5,8,12,15,20,25][ts.trial]; ts.t1correct++;} ts.trial++; runT1(); }
 
 function runT2(){
@@ -793,7 +852,7 @@ function runT3(){
     </div>`);
   setTimeout(()=>APP._playMel(),300);
 }
-function _playMel(){ const ts=testState; ts.mel.forEach((m,i)=>tone(midi2f(m), i*.42, .36)); const off=ts.mel.length*.42+.5; ts.mel2.forEach((m,i)=>tone(midi2f(m), off+i*.42, .36)); }
+function _playMel(){ flashPlaying(); withAudio(()=>{ const ts=testState; ts.mel.forEach((m,i)=>tone(midi2f(m), i*.42, .36)); const off=ts.mel.length*.42+.5; ts.mel2.forEach((m,i)=>tone(midi2f(m), off+i*.42, .36)); }); }
 function _t3(a){ const ts=testState; if(a===ts.answer){ts.score+=10; ts.t3++;} ts.trial++; runT3(); }
 
 const NOTE_NAMES=["도","도#","레","레#","미","파","파#","솔","솔#","라","라#","시"];
@@ -813,7 +872,7 @@ function runAbs(){
     </div>`);
   setTimeout(()=>APP._playAbs(),300);
 }
-function _playAbs(){ tone(midi2f(60+testState.absNote),0,.9); }
+function _playAbs(){ flashPlaying(); withAudio(()=>tone(midi2f(60+testState.absNote),0,.9)); }
 function _abs(i){ const ts=testState;
   if(i>=0){ const d=Math.min(Math.abs(i-ts.absNote), 12-Math.abs(i-ts.absNote)); if(d===0) ts.abs+=2; else if(d===1) ts.abs+=1; }
   ts.trial++; runAbs(); }
@@ -845,7 +904,7 @@ function runRhythmTrial(){
 function _playRhythm(){
   const ts=testState, pat=RPATTERNS[ts.rTrial];
   ts.rTaps=[]; ts.rReady=false; clearTimeout(ts.rTimer);
-  pat.beats.forEach(b=>click(b*RBEAT/1000));
+  withAudio(()=>pat.beats.forEach(b=>click(b*RBEAT/1000)));
   const dur=(pat.beats[pat.beats.length-1])*RBEAT+500;
   setTimeout(()=>{ ts.rReady=true; const z=document.getElementById("tapzone"); if(z){ z.style.opacity=1; z.textContent="따라 치세요!"; } const d=document.getElementById("rdoneBtn"); if(d) d.style.display="block"; }, dur);
 }
@@ -1344,7 +1403,7 @@ function share(){
 window.APP={
   start(){ if(location.hash) history.replaceState(null,"",location.pathname); resetP(); hist=[]; stepIdx=0; showQ(); },
   restart(){ if(location.hash) history.replaceState(null,"",location.pathname); showIntro(); },
-  back:goBack, copyLink, _link:resultLink,
+  back:goBack, copyLink, _link:resultLink, _loadShared:loadShared,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
   share, shareCard,
@@ -1372,7 +1431,7 @@ window.APP={
 };
 resetP();
 if(!loadShared()) showIntro();
-window.addEventListener("hashchange", ()=>{ if(location.hash.startsWith("#s=")) loadShared(); });
+window.addEventListener("hashchange", ()=>{ if(/^#[rs]=/.test(location.hash)) loadShared(); });
 })();
 </script>
 </body>
