@@ -107,6 +107,12 @@ details.guide p{font-size:.92rem; margin:8px 0}
 .pill{flex:1; min-width:110px; font-family:'Jua'; font-size:1.05rem; padding:14px; border-radius:18px; border:2px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
 .pill:active{transform:scale(.96)}
 footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
+/* 언어 토글 — 어느 화면에서도 항상 손 닿는 곳에 */
+#langbar{display:flex; justify-content:flex-end; gap:6px; margin:0 0 10px}
+.langbtn{font-family:'Jua'; font-size:.82rem; padding:5px 12px; border-radius:999px; cursor:pointer;
+  border:2px solid var(--line); background:#fff; color:var(--sub); transition:color .1s, background .1s, border-color .1s}
+.langbtn.on{background:var(--coral); border-color:var(--coral); color:#fff}
+.langbtn:active{transform:scale(.96)}
 @media(min-width:700px){ #wrap{max-width:640px; padding-top:36px} .qtitle{font-size:1.45rem} }
 </style>
 </head>
@@ -155,6 +161,7 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <div id="doodles"></div>
 
 <div id="wrap">
+  <div id="langbar"><button id="lang-ko" class="langbtn" onclick="APP.setLang('ko')">한국어</button><button id="lang-en" class="langbtn" onclick="APP.setLang('en')">English</button></div>
   <div id="bar" style="display:none"><div id="barfill"></div><div id="barnote">🎵</div></div>
   <div id="app"></div>
 </div>
@@ -188,6 +195,17 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <script src="/guide/guide_woodwind_folk.js"></script>
 <script src="/guide/guide_brass_mallet.js"></script>
 <script src="/guide/guide_perc_healing_electronic.js"></script>
+<!-- 영어 오버레이: 표시 문자열만 담는다. 숫자·게이트값은 한국어 원본 하나뿐이라 두 언어의 추천 결과가 항상 같다. -->
+<script src="/i18n/en_keyboard_freereed.js"></script>
+<script src="/i18n/en_bowed.js"></script>
+<script src="/i18n/en_folk_strings.js"></script>
+<script src="/i18n/en_guitar_mandolin.js"></script>
+<script src="/i18n/en_harp_lute.js"></script>
+<script src="/i18n/en_woodwind_western.js"></script>
+<script src="/i18n/en_woodwind_folk.js"></script>
+<script src="/i18n/en_brass_mallet.js"></script>
+<script src="/i18n/en_perc_healing_electronic.js"></script>
+<script src="/i18n/en_misc.js"></script>
 <script>
 (function(){
 "use strict";
@@ -218,6 +236,55 @@ const GUIDE = Object.assign({},
 const RAR_TABLE = typeof RARITY!=="undefined" ? RARITY : {};
 const GDESC = {}; GENRES.forEach(g=>GDESC[g.name]=g.desc);
 const ETHNIC_GENRES = ["켈틱·아이리시","북유럽 민속","발칸·클레즈머·집시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","라틴","탱고","플라멩코·스페인"];
+
+/* ============ 언어 (ko / en) ============
+   원칙: 스코어링 엔진은 언제나 한국어 원본 필드만 읽는다(family·name·roles·tone·genres 정규식이 전부 한국어).
+   영어는 '표시 직전'에만 덧씌우므로, 같은 답변이면 두 언어의 추천 결과가 바이트 단위로 같다. */
+let LANG = "ko";
+const G_ = o => (typeof o!=="undefined" ? o : {});
+const EN_INST = Object.assign({},
+  G_(typeof EN_INST_KEYBOARD_FREEREED!=="undefined"?EN_INST_KEYBOARD_FREEREED:undefined),
+  G_(typeof EN_INST_BOWED!=="undefined"?EN_INST_BOWED:undefined),
+  G_(typeof EN_INST_FOLK_STRINGS!=="undefined"?EN_INST_FOLK_STRINGS:undefined),
+  G_(typeof EN_INST_GUITAR_MANDOLIN!=="undefined"?EN_INST_GUITAR_MANDOLIN:undefined),
+  G_(typeof EN_INST_HARP_LUTE!=="undefined"?EN_INST_HARP_LUTE:undefined),
+  G_(typeof EN_INST_WOODWIND_WESTERN!=="undefined"?EN_INST_WOODWIND_WESTERN:undefined),
+  G_(typeof EN_INST_WOODWIND_FOLK!=="undefined"?EN_INST_WOODWIND_FOLK:undefined),
+  G_(typeof EN_INST_BRASS_MALLET!=="undefined"?EN_INST_BRASS_MALLET:undefined),
+  G_(typeof EN_INST_PERC_HEALING_ELECTRONIC!=="undefined"?EN_INST_PERC_HEALING_ELECTRONIC:undefined));
+const EN_GUIDE = Object.assign({},
+  G_(typeof EN_GUIDE_KEYBOARD_FREEREED!=="undefined"?EN_GUIDE_KEYBOARD_FREEREED:undefined),
+  G_(typeof EN_GUIDE_BOWED!=="undefined"?EN_GUIDE_BOWED:undefined),
+  G_(typeof EN_GUIDE_FOLK_STRINGS!=="undefined"?EN_GUIDE_FOLK_STRINGS:undefined),
+  G_(typeof EN_GUIDE_GUITAR_MANDOLIN!=="undefined"?EN_GUIDE_GUITAR_MANDOLIN:undefined),
+  G_(typeof EN_GUIDE_HARP_LUTE!=="undefined"?EN_GUIDE_HARP_LUTE:undefined),
+  G_(typeof EN_GUIDE_WOODWIND_WESTERN!=="undefined"?EN_GUIDE_WOODWIND_WESTERN:undefined),
+  G_(typeof EN_GUIDE_WOODWIND_FOLK!=="undefined"?EN_GUIDE_WOODWIND_FOLK:undefined),
+  G_(typeof EN_GUIDE_BRASS_MALLET!=="undefined"?EN_GUIDE_BRASS_MALLET:undefined),
+  G_(typeof EN_GUIDE_PERC_HEALING_ELECTRONIC!=="undefined"?EN_GUIDE_PERC_HEALING_ELECTRONIC:undefined));
+const EN_GENRE = G_(typeof EN_GENRE_MAP!=="undefined"?EN_GENRE_MAP:undefined);
+const EN_GDESC = G_(typeof EN_GENRE_DESC!=="undefined"?EN_GENRE_DESC:undefined);
+const EN_TONE  = G_(typeof EN_TONE_MAP!=="undefined"?EN_TONE_MAP:undefined);
+const EN_ROLE  = G_(typeof EN_ROLE_MAP!=="undefined"?EN_ROLE_MAP:undefined);
+
+const isEN = () => LANG==="en";
+function L(ko,en){ return (isEN() && en!==undefined && en!==null) ? en : ko; }
+// 악기 표시 접근자 — 오버레이가 없으면 한국어로 자연 폴백
+function eo(inst){ return isEN() ? EN_INST[inst.id] : null; }
+function iName(inst){ const e=eo(inst); return (e&&e.name) || inst.name; }
+function iFam(inst){ const e=eo(inst); return (e&&e.family) || inst.family || ""; }
+function iToneDesc(inst){ const e=eo(inst); return (e&&e.toneDesc) || (inst.sound&&inst.sound.toneDesc) || ""; }
+function iCaveats(inst){ const e=eo(inst); return (e&&e.caveats) || inst.caveats || []; }
+function iTrackLabel(inst,t){ const e=eo(inst); return (e&&e.tracks&&e.tracks[t.id]&&e.tracks[t.id].label) || t.label; }
+function iTrackNote(inst,t){ const e=eo(inst); return (e&&e.tracks&&e.tracks[t.id]&&e.tracks[t.id].note) || t.note; }
+function iVarNote(inst,vid){ const e=eo(inst); return (e&&e.variants&&e.variants[vid]&&e.variants[vid].note) || null; }
+function iGuide(id){ return (isEN() && EN_GUIDE[id]) || GUIDE[id]; }
+function dName(slot){ return iName(slot.inst) + (slot.track ? " — " + iTrackLabel(slot.inst, slot.track) : ""); }
+// 장르·음색·역할 이름은 매칭 키라서 내부는 한국어 고정 — 화면에 쓸 때만 영어로 바꾼다
+function gLabel(n){ return (isEN() && EN_GENRE[n]) || n; }
+function gDesc(n){ return (isEN() && EN_GDESC[n]) || GDESC[n]; }
+function toneLabel(n){ return (isEN() && EN_TONE[n]) || n; }
+function roleLabel(n){ return (isEN() && EN_ROLE[n]) || n; }
 
 function famEmoji(f){
   f = f||"";
@@ -252,8 +319,7 @@ ALL.forEach(inst=>{
   tr.forEach(t=>{
     SLOTS.push({
       inst, track: t,
-      key: inst.id + (t? "::"+t.id : ""),
-      dispName: inst.name + (t? " — " + t.label : ""),
+      key: inst.id + (t? "::"+t.id : ""),   // 표시 이름은 dName(slot) — 언어에 따라 매번 만든다
       genres: {
         main: (t && t.genres && t.genres.length ? t.genres : (inst.genres&&inst.genres.main)||[]),
         sub: (inst.genres&&inst.genres.sub)||[]
@@ -280,204 +346,220 @@ function addG(name,w){ P.genres[name]=(P.genres[name]||0)+w; }
 
 /* ============ 질문 정의 ============ */
 const FAM_OPTS = [
-  {k:"keys", t:"피아노·건반"}, {k:"bow", t:"바이올린·첼로처럼 활로 켜는 것"},
-  {k:"pluck", t:"기타·우쿨렐레처럼 뜯는 것"}, {k:"wind", t:"부는 것"},
-  {k:"perc", t:"두드리는 것"}, {k:"gugak", t:"국악기"}, {k:"vocal", t:"노래(합창·성악)"}, {k:"daw", t:"컴퓨터 음악"}
+  {k:"keys", t:"피아노·건반", en:"Piano or keyboard"}, {k:"bow", t:"바이올린·첼로처럼 활로 켜는 것", en:"Something bowed, like violin or cello"},
+  {k:"pluck", t:"기타·우쿨렐레처럼 뜯는 것", en:"Something plucked, like guitar or ukulele"}, {k:"wind", t:"부는 것", en:"Something you blow into"},
+  {k:"perc", t:"두드리는 것", en:"Something you hit"}, {k:"gugak", t:"국악기", en:"A Korean traditional instrument"},
+  {k:"vocal", t:"노래(합창·성악)", en:"Singing (choir or voice lessons)"}, {k:"daw", t:"컴퓨터 음악", en:"Music on a computer"}
 ];
 const FAM_MATCH = {keys:/건반|피아노|아코디언|신디/, bow:/바이올린|비올라|첼로|베이스|활|해금|얼후|피들/, pluck:/기타|우쿨|만돌|류트|하프|밴조|가야금|발현/, wind:/플루트|리코더|클라리넷|색소폰|트럼펫|관|휘슬|오카리나|하모니카/, perc:/드럼|타악|마림바|퍼커션|장구|카혼/, gugak:/국악|가야금|해금|대금|장구|거문고|피리/, daw:/신디|미디|론치|전자/};
 
+const gOpt = g => ({t:g, en:(EN_GENRE[g]||g), sub:GDESC[g], subEn:EN_GDESC[g], fx:()=>addG(g,2)});
 const Q = [
-{id:"A1", icon:"🎒", title:"악기를 배워본 적 있나요?", flavor:"초등학교 리코더 시간도 어엿한 경력입니다.",
+{id:"A1", icon:"🎒", title:"악기를 배워본 적 있나요?", titleEn:"Have you ever learned an instrument?",
+ flavor:"초등학교 리코더 시간도 어엿한 경력입니다.", flavorEn:"Recorder class in primary school absolutely counts.",
  opts:[
-  {t:"처음이에요, 완전 백지", fx:()=>{P.exp=0}},
-  {t:"어릴 때 잠깐 (기억은 손가락 어딘가에)", fx:()=>{P.exp=1}},
-  {t:"1년 이상 해봤어요", fx:()=>{P.exp=2}},
-  {t:"지금도 다루는 악기가 있어요", fx:()=>{P.exp=3}},
+  {t:"처음이에요, 완전 백지", en:"Never — total blank slate", fx:()=>{P.exp=0}},
+  {t:"어릴 때 잠깐 (기억은 손가락 어딘가에)", en:"Briefly, as a kid (my fingers might remember)", fx:()=>{P.exp=1}},
+  {t:"1년 이상 해봤어요", en:"Yes, for a year or more", fx:()=>{P.exp=2}},
+  {t:"지금도 다루는 악기가 있어요", en:"I still play something today", fx:()=>{P.exp=3}},
  ]},
-{id:"A2", icon:"🗂️", title:"해본 것을 모두 골라주세요", flavor:"찔러본 것도 다 포함입니다. 솔직하게!", multi:true,
+{id:"A2", icon:"🗂️", title:"해본 것을 모두 골라주세요", titleEn:"Which of these have you tried?",
+ flavor:"찔러본 것도 다 포함입니다. 솔직하게!", flavorEn:"Even the ones you barely touched. Be honest!", multi:true,
  when:()=>P.exp>0,
  after:()=>{ if(P.expFams.length===1) P.mainFam=P.expFams[0]; },
- opts: FAM_OPTS.map(f=>({t:f.t, fx:()=>{P.expFams.push(f.k)}})) },
-{id:"A3", icon:"⭐", title:"그중 제일 오래 한 것은?", when:()=>P.expFams.length>1,
- dynOpts:()=>P.expFams.map(k=>({t:FAM_OPTS.find(f=>f.k===k).t, fx:()=>{P.mainFam=k}})) },
-{id:"A4", icon:"🧭", title:"그 경험, 어떻게 이어가고 싶어요?", when:()=>P.exp>0,
+ opts: FAM_OPTS.map(f=>({t:f.t, en:f.en, fx:()=>{P.expFams.push(f.k)}})) },
+{id:"A3", icon:"⭐", title:"그중 제일 오래 한 것은?", titleEn:"Which one did you stick with longest?", when:()=>P.expFams.length>1,
+ dynOpts:()=>P.expFams.map(k=>{ const f=FAM_OPTS.find(x=>x.k===k); return {t:f.t, en:f.en, fx:()=>{P.mainFam=k}}; }) },
+{id:"A4", icon:"🧭", title:"그 경험, 어떻게 이어가고 싶어요?", titleEn:"Where do you want that experience to take you?", when:()=>P.exp>0,
  opts:[
-  {t:"그 악기를 제대로 다시!", fx:()=>{P.expDir="same"}},
-  {t:"이어지는 다른 악기로 갈아타기", fx:()=>{P.expDir="near"}},
-  {t:"완전히 새로운 세계로", fx:()=>{P.expDir="new"}},
-  {t:"운명에 맡기겠습니다", fx:()=>{P.expDir=null}},
+  {t:"그 악기를 제대로 다시!", en:"Back to that same instrument, properly this time", fx:()=>{P.expDir="same"}},
+  {t:"이어지는 다른 악기로 갈아타기", en:"Something related, but new", fx:()=>{P.expDir="near"}},
+  {t:"완전히 새로운 세계로", en:"Somewhere completely different", fx:()=>{P.expDir="new"}},
+  {t:"운명에 맡기겠습니다", en:"I'll leave it to fate", fx:()=>{P.expDir=null}},
  ]},
-{id:"A5", icon:"🎼", title:"악보나 코드, 아는 게 있나요?", flavor:"해당되는 걸 모두 골라주세요. 콩나물무침 얘기가 아닙니다.", multi:true,
+{id:"A5", icon:"🎼", title:"악보나 코드, 아는 게 있나요?", titleEn:"Do you read music or know any chords?",
+ flavor:"해당되는 걸 모두 골라주세요. 콩나물무침 얘기가 아닙니다.", flavorEn:"Pick everything that applies — no wrong answers here.", multi:true,
  opts:[
-  {t:"악보(콩나물)를 술술 읽어요", fx:()=>{P.notation=Math.max(P.notation,2)}},
-  {t:"악보를 더듬더듬은 읽어요", fx:()=>{P.notation=Math.max(P.notation,1)}},
-  {t:"코드(C, Am7 같은 것)를 잡을 줄 알아요", fx:()=>{P.chords=Math.max(P.chords,2)}},
-  {t:"코드 이름 정도는 들어봤어요", fx:()=>{P.chords=Math.max(P.chords,1)}},
-  {t:"둘 다 처음이에요 (완전 백지)", exclusive:true, fx:()=>{}},
+  {t:"악보(콩나물)를 술술 읽어요", en:"I read sheet music fluently", fx:()=>{P.notation=Math.max(P.notation,2)}},
+  {t:"악보를 더듬더듬은 읽어요", en:"I can read sheet music slowly", fx:()=>{P.notation=Math.max(P.notation,1)}},
+  {t:"코드(C, Am7 같은 것)를 잡을 줄 알아요", en:"I can play chords (C, Am7, that sort of thing)", fx:()=>{P.chords=Math.max(P.chords,2)}},
+  {t:"코드 이름 정도는 들어봤어요", en:"I've at least heard of chord names", fx:()=>{P.chords=Math.max(P.chords,1)}},
+  {t:"둘 다 처음이에요 (완전 백지)", en:"Neither — completely new to both", exclusive:true, fx:()=>{}},
  ]},
 {id:"TESTS", type:"tests"},
-{id:"A7", icon:"🎤", title:"노래방에서 들어본 말은?", flavor:"테스트를 건너뛰셨으니 자백으로 대신합니다.",
+{id:"A7", icon:"🎤", title:"노래방에서 들어본 말은?", titleEn:"What do people say when you sing?",
+ flavor:"테스트를 건너뛰셨으니 자백으로 대신합니다.", flavorEn:"You skipped the test, so a confession will do instead.",
  when:()=>!!P.skipT,   // ⚠️ pitch===null로 판정하면 A7 답변(fx가 pitch 설정) 순간 A7이 activeQs에서 빠져 다음 질문이 건너뛰어짐
  opts:[
-  {t:"\"잘 맞춘다\" 자주 들어요", fx:()=>{P.pitch=75; P.singSelf=2}},
-  {t:"가끔 칭찬받는 정도", fx:()=>{P.pitch=55; P.singSelf=1}},
-  {t:"음치 소리 들어봤어요...", fx:()=>{P.pitch=25; P.singSelf=0}},
-  {t:"노래방을 안 갑니다", fx:()=>{P.pitch=50}},
+  {t:"\"잘 맞춘다\" 자주 들어요", en:"I often get told I'm right on pitch", fx:()=>{P.pitch=75; P.singSelf=2}},
+  {t:"가끔 칭찬받는 정도", en:"I get the occasional compliment", fx:()=>{P.pitch=55; P.singSelf=1}},
+  {t:"음치 소리 들어봤어요...", en:"I've been told I'm tone-deaf...", fx:()=>{P.pitch=25; P.singSelf=0}},
+  {t:"노래방을 안 갑니다", en:"I don't sing in front of people", fx:()=>{P.pitch=50}},
  ]},
-{id:"C1", icon:"💪", title:"\"이건 감당 못 하겠다\" 싶거나, 내 상황에 해당되는 걸 모두 골라주세요", flavor:"어떤 악기든 몸에 뭔가를 요구합니다. 미리 거르는 게 서로 편해요.", multi:true,
+{id:"C1", icon:"💪", title:"\"이건 감당 못 하겠다\" 싶거나, 내 상황에 해당되는 걸 모두 골라주세요",
+ titleEn:"Anything here you couldn't put up with — or that's true of you?",
+ flavor:"어떤 악기든 몸에 뭔가를 요구합니다. 미리 거르는 게 서로 편해요.",
+ flavorEn:"Every instrument asks something of your body. Easier to rule things out now.", multi:true,
  opts:[
-  {t:"연주 중에 침이 고여서 중간중간 빼야 함", fx:()=>{P.no.saliva=true}},
-  {t:"손끝이 아프고 굳은살이 박임", fx:()=>{P.no.callus=true}},
-  {t:"입술이 저리고 얼얼함", fx:()=>{P.no.embouchure=true}},
-  {t:"무거운 걸 메고 다님", fx:()=>{P.no.heavy=true}},
-  {t:"목과 어깨를 비튼 자세를 오래 유지", fx:()=>{P.no.posture=true}},
-  {t:"소모품을 계속 깎고 손질함", fx:()=>{P.no.maint=true}},
-  {t:"처음 몇 달은 소음에 가까운 소리가 남", fx:()=>{P.no.ugly=true}},
-  {t:"손끝이 직업 도구라 흠집도 안 됨 (정밀 작업·피부 만지는 일)", fx:()=>{P.handJob=2}},
-  {t:"숨차는 건 무리 — 계단 5층이면 헐떡·호흡기 지병", fx:()=>{P.breath=0}},
-  {t:"치아 교정 중이거나 계획 있음", fx:()=>{P.braces=true}},
-  {t:"다 감당 가능, 해당사항 없음 (각오 완료)", exclusive:true, fx:()=>{}},
+  {t:"연주 중에 침이 고여서 중간중간 빼야 함", en:"Spit pools up and you have to drain it mid-song", fx:()=>{P.no.saliva=true}},
+  {t:"손끝이 아프고 굳은살이 박임", en:"Sore fingertips that harden into calluses", fx:()=>{P.no.callus=true}},
+  {t:"입술이 저리고 얼얼함", en:"Lips going numb and buzzing", fx:()=>{P.no.embouchure=true}},
+  {t:"무거운 걸 메고 다님", en:"Hauling something heavy around", fx:()=>{P.no.heavy=true}},
+  {t:"목과 어깨를 비튼 자세를 오래 유지", en:"Holding your neck and shoulder twisted for long stretches", fx:()=>{P.no.posture=true}},
+  {t:"소모품을 계속 깎고 손질함", en:"Endlessly shaving and fussing over consumable parts", fx:()=>{P.no.maint=true}},
+  {t:"처음 몇 달은 소음에 가까운 소리가 남", en:"Months of sounding closer to noise than music", fx:()=>{P.no.ugly=true}},
+  {t:"손끝이 직업 도구라 흠집도 안 됨 (정밀 작업·피부 만지는 일)", en:"My hands are work tools — not a scratch allowed (fine handwork, touching people)", fx:()=>{P.handJob=2}},
+  {t:"숨차는 건 무리 — 계단 5층이면 헐떡·호흡기 지병", en:"Breath is an issue — five flights leaves me gasping, or I have a lung condition", fx:()=>{P.breath=0}},
+  {t:"치아 교정 중이거나 계획 있음", en:"I have braces, or I'm getting them", fx:()=>{P.braces=true}},
+  {t:"다 감당 가능, 해당사항 없음 (각오 완료)", en:"None of the above — bring it on", exclusive:true, fx:()=>{}},
  ]},
-{id:"E5", icon:"🏺", title:"물건을 고를 때 나는?",
+{id:"E5", icon:"🏺", title:"물건을 고를 때 나는?", titleEn:"When you're picking out a thing to own...",
  opts:[
-  {t:"세월과 이야기가 묻은 오래된 물건에 끌린다", fx:()=>{P.vintage+=1; P.trendPref=1}},
-  {t:"최신 유행·신상이 최고", fx:()=>{P.gear+=.3; P.trendPref=3}},
-  {t:"쓸모 있으면 그만, 딱히 감정 없음", fx:()=>{P.trendPref=2}},
+  {t:"세월과 이야기가 묻은 오래된 물건에 끌린다", en:"I'm drawn to old things with a story on them", fx:()=>{P.vintage+=1; P.trendPref=1}},
+  {t:"최신 유행·신상이 최고", en:"Newest and trendiest, please", fx:()=>{P.gear+=.3; P.trendPref=3}},
+  {t:"쓸모 있으면 그만, 딱히 감정 없음", en:"If it works, it works — no feelings involved", fx:()=>{P.trendPref=2}},
  ]},
-{id:"D1", icon:"🏠", title:"주로 연습하게 될 곳은?",
+{id:"D1", icon:"🏠", title:"주로 연습하게 될 곳은?", titleEn:"Where will you actually be practising?",
  opts:[
-  {t:"방음 되는 곳 / 단독주택", fx:()=>{P.noiseEnv=4}},
-  {t:"아파트, 낮에는 가능", fx:()=>{P.noiseEnv=2}},
-  {t:"아파트, 밤에만 가능...", fx:()=>{P.noiseEnv=1}},
-  {t:"연습실 다닐 각오 있음", fx:()=>{P.noiseEnv=3}},
+  {t:"방음 되는 곳 / 단독주택", en:"Somewhere soundproofed, or a detached house", fx:()=>{P.noiseEnv=4}},
+  {t:"아파트, 낮에는 가능", en:"An apartment — daytime is fine", fx:()=>{P.noiseEnv=2}},
+  {t:"아파트, 밤에만 가능...", en:"An apartment, and only at night...", fx:()=>{P.noiseEnv=1}},
+  {t:"연습실 다닐 각오 있음", en:"I'm willing to go to a rehearsal studio", fx:()=>{P.noiseEnv=3}},
  ]},
-{id:"E1", icon:"⏳", title:"시간여행이 가능하다면?",
+{id:"E1", icon:"⏳", title:"시간여행이 가능하다면?", titleEn:"If you could time travel...",
  opts:[
-  {t:"과거로 — 옛 도시의 골목을 걷고 싶다", fx:()=>{P.vintage+=1.5; addG("바로크·고음악",1.2)}},
-  {t:"미래로 — 신기술을 구경하고 싶다", fx:()=>{P.gear+=1; addG("일렉트로닉",.8)}},
-  {t:"지금이 제일 좋다", fx:()=>{}},
+  {t:"과거로 — 옛 도시의 골목을 걷고 싶다", en:"Backwards — I want to walk the alleys of an old city", fx:()=>{P.vintage+=1.5; addG("바로크·고음악",1.2)}},
+  {t:"미래로 — 신기술을 구경하고 싶다", en:"Forwards — I want to see the new technology", fx:()=>{P.gear+=1; addG("일렉트로닉",.8)}},
+  {t:"지금이 제일 좋다", en:"Now is fine, thanks", fx:()=>{}},
  ]},
-{id:"D2", icon:"🎧", title:"헤드폰 끼고 연습하는 전자악기는 어때요?",
+{id:"D2", icon:"🎧", title:"헤드폰 끼고 연습하는 전자악기는 어때요?", titleEn:"How do you feel about electronic instruments you practise in headphones?",
  opts:[
-  {t:"악기는 역시 통울림이지", fx:()=>{P.elec=0}},
-  {t:"전자도 좋아요", fx:()=>{P.elec=1}},
-  {t:"오히려 전자가 취향", fx:()=>{P.elec=2; P.gear+=1}},
+  {t:"악기는 역시 통울림이지", en:"An instrument should resonate in a real body of wood", fx:()=>{P.elec=0}},
+  {t:"전자도 좋아요", en:"Electronic is fine by me", fx:()=>{P.elec=1}},
+  {t:"오히려 전자가 취향", en:"Honestly, electronic is more my thing", fx:()=>{P.elec=2; P.gear+=1}},
  ]},
-{id:"E11", icon:"🚿", title:"샤워할 때 노래를 부르나요?",
+{id:"E11", icon:"🚿", title:"샤워할 때 노래를 부르나요?", titleEn:"Do you sing in the shower?",
  opts:[
-  {t:"욕실은 나의 콘서트홀", fx:()=>{P.sing=2}},
-  {t:"흥얼흥얼 정도", fx:()=>{P.sing=1}},
-  {t:"조용히 씻습니다", fx:()=>{P.sing=0}},
+  {t:"욕실은 나의 콘서트홀", en:"The bathroom is my concert hall", fx:()=>{P.sing=2}},
+  {t:"흥얼흥얼 정도", en:"A bit of humming", fx:()=>{P.sing=1}},
+  {t:"조용히 씻습니다", en:"I wash in silence", fx:()=>{P.sing=0}},
  ]},
-{id:"C5", icon:"🤏", title:"당신의 손 이야기 — 해당되는 걸 모두", multi:true,
+{id:"C5", icon:"🤏", title:"당신의 손 이야기 — 해당되는 걸 모두", titleEn:"About your hands — pick anything that applies", multi:true,
  after:()=>{ P.hand = (P._hs&&P._hb)?2 : P._hs?1 : P._hb?3 : 2; },
  opts:[
-  {t:"손이 작은 편", fx:()=>{P._hs=1}},
-  {t:"손이 큰 편 (문어발 소리 들음)", fx:()=>{P._hb=1}},
-  {t:"손톱을 기르거나 꾸미는 편", fx:()=>{P.nails=1}},
-  {t:"평범한 손입니다", exclusive:true, fx:()=>{}},
+  {t:"손이 작은 편", en:"My hands are on the small side", fx:()=>{P._hs=1}},
+  {t:"손이 큰 편 (문어발 소리 들음)", en:"My hands are big (people have said 'octopus')", fx:()=>{P._hb=1}},
+  {t:"손톱을 기르거나 꾸미는 편", en:"I keep my nails long, or done", fx:()=>{P.nails=1}},
+  {t:"평범한 손입니다", en:"Just ordinary hands", exclusive:true, fx:()=>{}},
  ]},
 {id:"E2", icon:"📱", title:"유튜브에 처음 보는 나라의 길거리 연주 영상이 떴어요",
+ titleEn:"A street performance from a country you've never seen pops up in your feed",
  opts:[
-  {t:"끝까지 보고 그 나라를 검색해본다", fx:()=>{P.ethnic=2}},
-  {t:"잠깐 보다가 넘긴다", fx:()=>{P.ethnic=1}},
-  {t:"0.5초 컷", fx:()=>{P.ethnic=0}},
+  {t:"끝까지 보고 그 나라를 검색해본다", en:"I watch to the end, then go look the country up", fx:()=>{P.ethnic=2}},
+  {t:"잠깐 보다가 넘긴다", en:"I watch a bit, then scroll on", fx:()=>{P.ethnic=1}},
+  {t:"0.5초 컷", en:"Gone in half a second", fx:()=>{P.ethnic=0}},
  ]},
-{id:"C6", icon:"🩹", title:"몸에 오래된 통증이 있다면?", multi:true,
+{id:"C6", icon:"🩹", title:"몸에 오래된 통증이 있다면?", titleEn:"Any long-standing aches?", multi:true,
  opts:[
-  {t:"없음", exclusive:true, fx:()=>{}},
-  {t:"목·어깨", fx:()=>{P.pain.push("목")}},
-  {t:"허리", fx:()=>{P.pain.push("허리")}},
-  {t:"손목", fx:()=>{P.pain.push("손목")}},
+  {t:"없음", en:"None", exclusive:true, fx:()=>{}},
+  {t:"목·어깨", en:"Neck and shoulders", fx:()=>{P.pain.push("목")}},
+  {t:"허리", en:"Lower back", fx:()=>{P.pain.push("허리")}},
+  {t:"손목", en:"Wrists", fx:()=>{P.pain.push("손목")}},
  ]},
-{id:"D3", icon:"💸", title:"시작 예산은? (악기 + 첫 몇 달)", flavor:"현실적인 이야기를 잠깐 하겠습니다.",
+{id:"D3", icon:"💸", title:"시작 예산은? (악기 + 첫 몇 달)", titleEn:"Your starting budget? (instrument plus the first few months)",
+ flavor:"현실적인 이야기를 잠깐 하겠습니다.", flavorEn:"Let's be practical for a second.",
  opts:[
-  {t:"10만 원대 (가성비 최우선)", fx:()=>{P.budget=1}},
-  {t:"50만 원 안팎", fx:()=>{P.budget=2}},
-  {t:"100~300만 원", fx:()=>{P.budget=3}},
-  {t:"그 이상도 가능 (지갑 각오 완료)", fx:()=>{P.budget=4}},
+  {t:"10만 원대 (가성비 최우선)", en:"Around ₩100,000 — value first", fx:()=>{P.budget=1}},
+  {t:"50만 원 안팎", en:"Roughly ₩500,000", fx:()=>{P.budget=2}},
+  {t:"100~300만 원", en:"₩1M–3M", fx:()=>{P.budget=3}},
+  {t:"그 이상도 가능 (지갑 각오 완료)", en:"More than that, if it's worth it", fx:()=>{P.budget=4}},
  ]},
-{id:"E3", icon:"🛋️", title:"가장 쉬고 싶은 공간은?",
+{id:"E3", icon:"🛋️", title:"가장 쉬고 싶은 공간은?", titleEn:"Where would you most like to rest?",
  opts:[
-  {t:"촛불 켠 조용한 방", fx:()=>{P.calm=2; addG("명상·사운드힐링",1.2); addG("뉴에이지",.6)}},
-  {t:"숲속 캠핑, 모닥불 앞", fx:()=>{addG("포크",1); addG("컨트리·블루그래스",.4)}},
-  {t:"사람 북적이는 페스티벌", fx:()=>{addG("록·메탈",.6); P.showPref+=.5}},
-  {t:"밤의 클럽·공연장", fx:()=>{addG("일렉트로닉",.8); addG("힙합·R&B",.6)}},
+  {t:"촛불 켠 조용한 방", en:"A quiet room with a candle lit", fx:()=>{P.calm=2; addG("명상·사운드힐링",1.2); addG("뉴에이지",.6)}},
+  {t:"숲속 캠핑, 모닥불 앞", en:"Camping in the woods, by the fire", fx:()=>{addG("포크",1); addG("컨트리·블루그래스",.4)}},
+  {t:"사람 북적이는 페스티벌", en:"A festival packed with people", fx:()=>{addG("록·메탈",.6); P.showPref+=.5}},
+  {t:"밤의 클럽·공연장", en:"A club or a venue, late at night", fx:()=>{addG("일렉트로닉",.8); addG("힙합·R&B",.6)}},
  ]},
-{id:"D4", icon:"🧑‍🏫", title:"어떻게 배우는 게 잘 맞아요?",
+{id:"D4", icon:"🧑‍🏫", title:"어떻게 배우는 게 잘 맞아요?", titleEn:"How do you learn best?",
  opts:[
-  {t:"선생님께 대면 레슨", fx:()=>{P.learn="lesson"}},
-  {t:"인강·유튜브·책으로 독학", fx:()=>{P.learn="self"}},
-  {t:"일단 만지면서 몸으로", fx:()=>{P.learn="wild"}},
+  {t:"선생님께 대면 레슨", en:"In-person lessons with a teacher", fx:()=>{P.learn="lesson"}},
+  {t:"인강·유튜브·책으로 독학", en:"Teaching myself with videos, courses and books", fx:()=>{P.learn="self"}},
+  {t:"일단 만지면서 몸으로", en:"Just picking it up and figuring it out", fx:()=>{P.learn="wild"}},
  ]},
-{id:"D5", icon:"🗺️", title:"동네에서 레슨 구하기는?", when:()=>P.learn==="lesson",
+{id:"D5", icon:"🗺️", title:"동네에서 레슨 구하기는?", titleEn:"How easy is it to find a teacher near you?", when:()=>P.learn==="lesson",
  opts:[
-  {t:"대도시라 웬만하면 다 있음", fx:()=>{P.lessonEnv=3}},
-  {t:"흔한 악기만 가능할 듯", fx:()=>{P.lessonEnv=2}},
-  {t:"온라인 아니면 힘들어요", fx:()=>{P.lessonEnv=1}},
+  {t:"대도시라 웬만하면 다 있음", en:"Big city — almost anything is available", fx:()=>{P.lessonEnv=3}},
+  {t:"흔한 악기만 가능할 듯", en:"Only for the common instruments, probably", fx:()=>{P.lessonEnv=2}},
+  {t:"온라인 아니면 힘들어요", en:"Realistically, online or nothing", fx:()=>{P.lessonEnv=1}},
  ]},
-{id:"E7", icon:"🍳", title:"요리를 한다면?",
+{id:"E7", icon:"🍳", title:"요리를 한다면?", titleEn:"When you cook...",
  opts:[
-  {t:"레시피 계량 그대로, 한 치 오차 없이", fx:()=>{P.improvPref=1; addG("클래식",.5)}},
-  {t:"냉장고 사정대로 즉흥으로", fx:()=>{P.improvPref=3; addG("재즈",.7); addG("블루스",.4)}},
-  {t:"요리는 시켜 먹는 것", fx:()=>{P.improvPref=2}},
+  {t:"레시피 계량 그대로, 한 치 오차 없이", en:"I follow the recipe exactly, to the gram", fx:()=>{P.improvPref=1; addG("클래식",.5)}},
+  {t:"냉장고 사정대로 즉흥으로", en:"I improvise with whatever's in the fridge", fx:()=>{P.improvPref=3; addG("재즈",.7); addG("블루스",.4)}},
+  {t:"요리는 시켜 먹는 것", en:"Cooking is what delivery is for", fx:()=>{P.improvPref=2}},
  ]},
-{id:"E6", icon:"🛍️", title:"남들과 같은 물건을 쓰는 것에 대해",
+{id:"E6", icon:"🛍️", title:"남들과 같은 물건을 쓰는 것에 대해", titleEn:"On owning the same things as everyone else...",
  opts:[
-  {t:"검증된 거라 마음 편함", fx:()=>{P.rarityPref=1}},
-  {t:"살짝 다른 게 좋음", fx:()=>{P.rarityPref=2}},
-  {t:"나만 쓰는 물건에 희열을 느낌", fx:()=>{P.rarityPref=3}},
+  {t:"검증된 거라 마음 편함", en:"It's proven — that's reassuring", fx:()=>{P.rarityPref=1}},
+  {t:"살짝 다른 게 좋음", en:"I like being a little different", fx:()=>{P.rarityPref=2}},
+  {t:"나만 쓰는 물건에 희열을 느낌", en:"Owning something nobody else has is a thrill", fx:()=>{P.rarityPref=3}},
  ]},
-{id:"D7", icon:"🎒", title:"악기를 들고 다닌다면?",
+{id:"D7", icon:"🎒", title:"악기를 들고 다닌다면?", titleEn:"If you had to carry it around...",
  opts:[
-  {t:"들고 다닐 수 있어요 (차든 대중교통이든)", fx:()=>{P.carry=2}},
-  {t:"주머니 사이즈였으면...", fx:()=>{P.carry=1}},
-  {t:"집에만 둘 거예요", fx:()=>{P.carry=4}},
+  {t:"들고 다닐 수 있어요 (차든 대중교통이든)", en:"I can manage (by car or public transport)", fx:()=>{P.carry=2}},
+  {t:"주머니 사이즈였으면...", en:"I'd really prefer pocket-sized...", fx:()=>{P.carry=1}},
+  {t:"집에만 둘 거예요", en:"It's never leaving my house", fx:()=>{P.carry=4}},
  ]},
-{id:"E9", icon:"🌱", title:"새 취미의 첫 한 달, 성과가 없다면?",
+{id:"E9", icon:"🌱", title:"새 취미의 첫 한 달, 성과가 없다면?", titleEn:"A month into a new hobby with nothing to show for it...",
  opts:[
-  {t:"재미없으면 바로 접는다", fx:()=>{P.patience=1}},
-  {t:"두세 달은 버텨본다", fx:()=>{P.patience=2}},
-  {t:"몇 년짜리일수록 오히려 끌린다", fx:()=>{P.patience=3}},
+  {t:"재미없으면 바로 접는다", en:"If it's not fun, I drop it immediately", fx:()=>{P.patience=1}},
+  {t:"두세 달은 버텨본다", en:"I'll give it two or three months", fx:()=>{P.patience=2}},
+  {t:"몇 년짜리일수록 오히려 끌린다", en:"The more years it takes, the more it appeals to me", fx:()=>{P.patience=3}},
  ]},
-{id:"E8", icon:"🎉", title:"모임에서 나는?",
+{id:"E8", icon:"🎉", title:"모임에서 나는?", titleEn:"At a gathering, you're...",
  opts:[
-  {t:"가운데서 주목받으면 신남", fx:()=>{P.showPref=3}},
-  {t:"필요할 때만 나섬", fx:()=>{P.showPref=2}},
-  {t:"뒤에서 관찰하는 게 좋음", fx:()=>{P.showPref=1}},
+  {t:"가운데서 주목받으면 신남", en:"In the middle, loving the attention", fx:()=>{P.showPref=3}},
+  {t:"필요할 때만 나섬", en:"Stepping up only when needed", fx:()=>{P.showPref=2}},
+  {t:"뒤에서 관찰하는 게 좋음", en:"Happiest watching from the back", fx:()=>{P.showPref=1}},
  ]},
-{id:"F1", icon:"🎧", title:"\"이건 한번 연주해보고 싶다\" 싶은 음악을 모두! (1/3)", flavor:"익숙한 것들부터.", multi:true, genrePick:true,
- opts:["클래식","재즈","록·메탈","팝·싱어송라이터","포크","일렉트로닉","힙합·R&B","영화·게임 OST","CCM·교회음악"].map(g=>({t:g, sub:GDESC[g], fx:()=>addG(g,2)}))},
-{id:"F2", icon:"🌍", title:"이런 음악도 끌린다면? (2/3)", flavor:"뿌리 깊은 것들.", multi:true, genrePick:true,
- opts:["바로크·고음악","블루스","컨트리·블루그래스","켈틱·아이리시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","트로트·가요"].map(g=>({t:g, sub:GDESC[g], fx:()=>addG(g,2)}))},
-{id:"F3", icon:"✨", title:"마지막! 개성파 음악들 (3/3)", flavor:"하나라도 심장이 뛰면 체크.", multi:true, genrePick:true,
- opts:["탱고","플라멩코·스페인","라틴","발칸·클레즈머·집시","북유럽 민속","명상·사운드힐링","뉴에이지","브라스밴드·취주악"].map(g=>({t:g, sub:GDESC[g], fx:()=>addG(g,2)}))},
-{id:"F4", icon:"🔊", title:"끌리는 소리는? (복수 가능)", multi:true,
+{id:"F1", icon:"🎧", title:"\"이건 한번 연주해보고 싶다\" 싶은 음악을 모두! (1/3)",
+ titleEn:"Which of these would you love to play? (1/3)",
+ flavor:"익숙한 것들부터.", flavorEn:"Starting with the familiar ones.", multi:true, genrePick:true,
+ opts:["클래식","재즈","록·메탈","팝·싱어송라이터","포크","일렉트로닉","힙합·R&B","영화·게임 OST","CCM·교회음악"].map(gOpt)},
+{id:"F2", icon:"🌍", title:"이런 음악도 끌린다면? (2/3)", titleEn:"Any of these pull at you too? (2/3)",
+ flavor:"뿌리 깊은 것들.", flavorEn:"The deep-rooted ones.", multi:true, genrePick:true,
+ opts:["바로크·고음악","블루스","컨트리·블루그래스","켈틱·아이리시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","트로트·가요"].map(gOpt)},
+{id:"F3", icon:"✨", title:"마지막! 개성파 음악들 (3/3)", titleEn:"Last one — the distinctive stuff (3/3)",
+ flavor:"하나라도 심장이 뛰면 체크.", flavorEn:"If even one makes your heart jump, tick it.", multi:true, genrePick:true,
+ opts:["탱고","플라멩코·스페인","라틴","발칸·클레즈머·집시","북유럽 민속","명상·사운드힐링","뉴에이지","브라스밴드·취주악"].map(gOpt)},
+{id:"F4", icon:"🔊", title:"끌리는 소리는? (복수 가능)", titleEn:"Which sounds draw you in? (pick as many as you like)", multi:true,
  opts:[
-  {t:"맑고 영롱한", fx:()=>{P.tones.push("맑음","영롱함","유리 같은","반짝임")}},
-  {t:"따뜻하고 부드러운", fx:()=>{P.tones.push("따뜻함","부드러움","나무 울림")}},
-  {t:"애수 어린, 먹먹한", fx:()=>{P.tones.push("애수","먹먹함","콧소리","숨소리 섞임")}},
-  {t:"화려하고 시원하게 빵빵한", fx:()=>{P.tones.push("화려함","빵빵함","금속성")}},
-  {t:"통통 튀는 그루브", fx:()=>{P.tones.push("타격감","그루브")}},
-  {t:"몽환적이고 신비로운", fx:()=>{P.tones.push("몽환","신비")}},
-  {t:"낮고 웅장한", fx:()=>{P.tones.push("웅장함","낮고 깊음")}},
-  {t:"카랑카랑 쨍한", fx:()=>{P.tones.push("카랑카랑","거칢")}},
+  {t:"맑고 영롱한", en:"Clear and shimmering", fx:()=>{P.tones.push("맑음","영롱함","유리 같은","반짝임")}},
+  {t:"따뜻하고 부드러운", en:"Warm and soft", fx:()=>{P.tones.push("따뜻함","부드러움","나무 울림")}},
+  {t:"애수 어린, 먹먹한", en:"Wistful, with a lump in the throat", fx:()=>{P.tones.push("애수","먹먹함","콧소리","숨소리 섞임")}},
+  {t:"화려하고 시원하게 빵빵한", en:"Brilliant, big and blazing", fx:()=>{P.tones.push("화려함","빵빵함","금속성")}},
+  {t:"통통 튀는 그루브", en:"Bouncy and full of groove", fx:()=>{P.tones.push("타격감","그루브")}},
+  {t:"몽환적이고 신비로운", en:"Dreamy and mysterious", fx:()=>{P.tones.push("몽환","신비")}},
+  {t:"낮고 웅장한", en:"Low and majestic", fx:()=>{P.tones.push("웅장함","낮고 깊음")}},
+  {t:"카랑카랑 쨍한", en:"Bright, ringing and sharp-edged", fx:()=>{P.tones.push("카랑카랑","거칢")}},
  ]},
-{id:"F5", icon:"🎭", title:"음악 속에서 어떤 역할이고 싶어요?", flavor:"끌리는 걸 모두 골라주세요.", multi:true,
+{id:"F5", icon:"🎭", title:"음악 속에서 어떤 역할이고 싶어요?", titleEn:"What role do you want in the music?",
+ flavor:"끌리는 걸 모두 골라주세요.", flavorEn:"Pick everything that appeals.", multi:true,
  opts:[
-  {t:"주인공 멜로디", fx:()=>{P.roles.push("멜로디")}},
-  {t:"옆에서 받쳐주는 화음", fx:()=>{P.roles.push("화음")}},
-  {t:"심장박동 같은 리듬", fx:()=>{P.roles.push("리듬")}},
-  {t:"바닥을 깔아주는 낮은 소리", fx:()=>{P.roles.push("베이스")}},
-  {t:"혼자 다 해내기", fx:()=>{P.roles.push("올라운드")}},
+  {t:"주인공 멜로디", en:"The melody — the lead role", fx:()=>{P.roles.push("멜로디")}},
+  {t:"옆에서 받쳐주는 화음", en:"The harmony holding it all up", fx:()=>{P.roles.push("화음")}},
+  {t:"심장박동 같은 리듬", en:"The rhythm, like a heartbeat", fx:()=>{P.roles.push("리듬")}},
+  {t:"바닥을 깔아주는 낮은 소리", en:"The low end laying the foundation", fx:()=>{P.roles.push("베이스")}},
+  {t:"혼자 다 해내기", en:"Doing the whole thing on my own", fx:()=>{P.roles.push("올라운드")}},
  ]},
-{id:"F6", icon:"🏁", title:"최종 그림은?",
+{id:"F6", icon:"🏁", title:"최종 그림은?", titleEn:"Where's this all going?",
  opts:[
-  {t:"조용한 취미, 나만의 힐링", fx:()=>{P.goal="힐링"}},
-  {t:"버스킹이나 유튜브", fx:()=>{P.goal="버스킹"}},
-  {t:"밴드 결성!", fx:()=>{P.goal="밴드"}},
-  {t:"오케스트라·합주단 입단", fx:()=>{P.goal="오케"}},
-  {t:"작곡·프로듀싱 도구로", fx:()=>{P.goal="작곡"}},
+  {t:"조용한 취미, 나만의 힐링", en:"A quiet hobby — something just for me", fx:()=>{P.goal="힐링"}},
+  {t:"버스킹이나 유튜브", en:"Busking, or posting videos", fx:()=>{P.goal="버스킹"}},
+  {t:"밴드 결성!", en:"Starting a band!", fx:()=>{P.goal="밴드"}},
+  {t:"오케스트라·합주단 입단", en:"Joining an orchestra or ensemble", fx:()=>{P.goal="오케"}},
+  {t:"작곡·프로듀싱 도구로", en:"As a tool for writing and producing", fx:()=>{P.goal="작곡"}},
  ]},
 ];
 
@@ -562,6 +644,50 @@ function goBack(){
 const $app = document.getElementById("app");
 function activeQs(){ if(!P) resetP(); return Q.filter(q=>{ try{ return !q.when || q.when(); }catch(e){ return false; } }); }
 function render(html){ $app.innerHTML = `<div class="fade">${html}</div>`; window.scrollTo({top:0}); }
+
+/* ---- 언어 전환 ----
+   VIEW는 "지금 그려져 있는 화면"을 다시 그리는 함수. 언어를 바꾸면 그 화면만 즉시 다시 그린다.
+   답변(P)은 건드리지 않으므로 진행 중에 바꿔도 결과가 달라지지 않는다. */
+let VIEW = showIntro;
+function setStaticTexts(){
+  document.documentElement.lang = isEN() ? "en" : "ko";
+  document.title = L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should be able to play one instrument");
+  const md=document.querySelector('meta[name="description"]');
+  if(md) md.setAttribute("content", L("간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.",
+    "A short test to uncover the musical talent you never knew you had. 189 instruments are waiting."));
+  const ko=document.getElementById("lang-ko"), en=document.getElementById("lang-en");
+  if(ko) ko.className = "langbtn"+(isEN()?"":" on");
+  if(en) en.className = "langbtn"+(isEN()?" on":"");
+}
+function setLang(l){
+  if(l===LANG) return;
+  LANG = (l==="en") ? "en" : "ko";
+  try{ localStorage.setItem("iq_lang", LANG); }catch(e){}
+  stopScheduled();                 // 테스트 도중이면 예약된 소리를 끊고 그 화면을 다시 그린다
+  setStaticTexts();
+  try{ VIEW(); }catch(e){ showIntro(); }
+}
+// 첫 진입 언어: 저장된 선택 > 링크의 ?l= > 접속 국가(KR만 한국어) > 브라우저 설정
+function bootLang(){
+  let l=null;
+  try{ l=localStorage.getItem("iq_lang"); }catch(e){}
+  if(!l){
+    const q=new URLSearchParams(location.search).get("l");
+    if(q==="en"||q==="ko") l=q;
+  }
+  if(!l) l = /^ko\b/i.test(navigator.language||"") ? "ko" : "en";
+  LANG = (l==="en") ? "en" : "ko";
+  setStaticTexts();
+  if(!(()=>{ try{ return !!localStorage.getItem("iq_lang"); }catch(e){ return false; } })()
+     && !new URLSearchParams(location.search).get("l")){
+    // 브라우저 언어는 추정일 뿐 — Cloudflare 엣지에서 실제 접속 국가를 받아 한 번만 정정한다(사용자가 진행하기 전에만)
+    fetch("/cdn-cgi/trace").then(r=>r.text()).then(txt=>{
+      const m=/^loc=([A-Z]{2})$/m.exec(txt); if(!m) return;
+      const want = m[1]==="KR" ? "ko" : "en";
+      if(want!==LANG && stepIdx<0){ LANG=want; setStaticTexts(); try{ VIEW(); }catch(e){} }
+    }).catch(()=>{});
+  }
+}
 function setBar(pct){
   document.getElementById("bar").style.display = "block";
   document.getElementById("barfill").style.width = pct+"%";
@@ -582,20 +708,26 @@ function progress(){
 function curQ(){ return activeQs()[stepIdx]; }
 
 function showIntro(){
+  VIEW=showIntro;
   stepIdx=-1; progress();
   render(`
   <div class="center" style="padding-top:26px">
     <div class="big-emoji">🎻🎺🥁</div>
-    <h1 style="font-size:1.9rem; margin:14px 0 6px">살면서 악기 하나쯤은<br>다룰 줄 알아야지</h1>
-    <p class="flavor">…라고 생각한 지 몇 년째죠?<br>
+    <h1 style="font-size:1.9rem; margin:14px 0 6px">${L("살면서 악기 하나쯤은<br>다룰 줄 알아야지","Everyone should be able<br>to play one instrument")}</h1>
+    <p class="flavor">${L(`…라고 생각한 지 몇 년째죠?<br>
     어릴 때 스쳐 간 리코더부터<br>바이올린, 기타, 드럼, 피아노까지.<br>
-    간단한 테스트로, 무의식 속에 잠들어 있던<br><b>나도 몰랐던 악기 재능</b>을 깨워드립니다.</p>
+    간단한 테스트로, 무의식 속에 잠들어 있던<br><b>나도 몰랐던 악기 재능</b>을 깨워드립니다.`,
+    `…and how many years have you been saying that?<br>
+    From the recorder you gave up on as a kid<br>to violin, guitar, drums and piano.<br>
+    A short test to wake up the <b>musical talent<br>you never knew you had</b>.`)}</p>
     <div class="card" style="text-align:left">
-      <span class="tag">⏱ 약 4분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔍 숨은 재능 찾기</span>
-      <p class="small" style="margin:10px 0 0">친숙한 악기부터 세상 구석의 낯선 악기까지 <b>189종</b>이 후보예요.
-      침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 헤아려서 골라드립니다.</p>
+      <span class="tag">${L("⏱ 약 4분","⏱ About 4 min")}</span><span class="tag mint">${L("🎧 이어폰 추천","🎧 Headphones help")}</span><span class="tag lav">${L("🔍 숨은 재능 찾기","🔍 Find your hidden knack")}</span>
+      <p class="small" style="margin:10px 0 0">${L(`친숙한 악기부터 세상 구석의 낯선 악기까지 <b>189종</b>이 후보예요.
+      침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 헤아려서 골라드립니다.`,
+      `<b>189 instruments</b> are in the running, from the familiar ones to the ones you've never heard of.
+      We take your real life into account too — the spit, the sore fingertips, the neighbours through the wall.`)}</p>
     </div>
-    <button class="btn" onclick="APP.start()">내 악기 찾으러 가기 🚀</button>
+    <button class="btn" onclick="APP.start()">${L("내 악기 찾으러 가기 🚀","Find my instrument 🚀")}</button>
   </div>`);
 }
 
@@ -603,17 +735,18 @@ function showQ(){
   const q = curQ();
   if(!q){ return showResult(); }
   if(q.type==="tests"){ return showTestIntro(); }
+  VIEW=showQ;
   progress();
   const opts = q.dynOpts ? q.dynOpts() : q.opts;
   const sel = new Set();
-  const optHtml = opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="APP.pick(${i})">${o.t}${o.sub?`<small>${o.sub}</small>`:""}</button>`).join("");
+  const optHtml = opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="APP.pick(${i})">${L(o.t,o.en)}${o.sub?`<small>${L(o.sub,o.subEn)}</small>`:""}</button>`).join("");
   render(`
     <div class="qicon">${q.icon||"🎵"}</div>
-    <h2 class="qtitle">${q.title}</h2>
-    ${q.flavor?`<p class="flavor">${q.flavor}</p>`:""}
+    <h2 class="qtitle">${L(q.title,q.titleEn)}</h2>
+    ${q.flavor?`<p class="flavor">${L(q.flavor,q.flavorEn)}</p>`:""}
     ${optHtml}
-    ${q.multi?`<button class="btn mint" style="margin-top:8px" onclick="APP.next()">선택 완료 →</button>`:""}
-    <div class="center" style="margin-top:14px"><button class="backbtn" onclick="APP.back()">← 이전 질문으로</button></div>
+    ${q.multi?`<button class="btn mint" style="margin-top:8px" onclick="APP.next()">${L("선택 완료 →","Done selecting →")}</button>`:""}
+    <div class="center" style="margin-top:14px"><button class="backbtn" onclick="APP.back()">${L("← 이전 질문으로","← Previous question")}</button></div>
   `);
   APP._sel = sel; APP._opts = opts; APP._q = q;
 }
@@ -712,7 +845,9 @@ function unpackAnswers(s){
 }
 function resultLink(){
   const R=APP._R, id=R&&R.top1?R.top1.slot.inst.id:"";
-  return location.origin+"/r/"+id+"#4."+packAnswers();   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐. "4." = 질문은행 v4 표식
+  // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐. "4." = 질문은행 v4 표식.
+  // ?l= 은 서버(워커)가 미리보기 언어를 고르는 데 쓴다 — #뒤 데이터는 서버로 전송되지 않기 때문.
+  return location.origin+"/r/"+id+(isEN()?"?l=en":"")+"#4."+packAnswers();
 }
 function loadShared(){
   const h=location.hash;
@@ -733,36 +868,42 @@ function toRoot(){
 }
 function copyLink(){
   const url=resultLink();
-  navigator.clipboard.writeText(url).then(()=>alert("결과 링크 복사 완료! 친구가 누르면 이 결과가 그대로 열려요 🔗"))
-    .catch(()=>prompt("이 링크를 복사하세요", url));
+  navigator.clipboard.writeText(url).then(()=>alert(L("결과 링크 복사 완료! 친구가 누르면 이 결과가 그대로 열려요 🔗","Link copied! Tapping it opens this exact result 🔗")))
+    .catch(()=>prompt(L("이 링크를 복사하세요","Copy this link"), url));
 }
 function showImgModal(dataUrl){
   const old=document.getElementById("imgmodal"); if(old) old.remove();
   const d=document.createElement("div"); d.id="imgmodal";
   d.style.cssText="position:fixed;inset:0;background:rgba(74,59,50,.75);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px";
   d.innerHTML=`<img src="${dataUrl}" style="max-width:88%;max-height:70vh;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.4)">
-    <p style="color:#fff;font-family:Jua;margin:14px 0 6px;text-align:center">이미지를 <b>길게 눌러</b> 저장·공유하세요!<br><span style="font-size:.85rem;opacity:.8">(PC는 우클릭 → 이미지 저장)</span></p>
-    <button class="btn ghost" style="max-width:220px" onclick="document.getElementById('imgmodal').remove()">닫기</button>`;
+    <p style="color:#fff;font-family:Jua;margin:14px 0 6px;text-align:center">${L("이미지를 <b>길게 눌러</b> 저장·공유하세요!<br><span style=\"font-size:.85rem;opacity:.8\">(PC는 우클릭 → 이미지 저장)</span>","<b>Press and hold</b> the image to save or share it!<br><span style=\"font-size:.85rem;opacity:.8\">(On a computer: right-click → Save image)</span>")}</p>
+    <button class="btn ghost" style="max-width:220px" onclick="document.getElementById('imgmodal').remove()">${L("닫기","Close")}</button>`;
   d.addEventListener("click",e=>{ if(e.target===d) d.remove(); });
   document.body.appendChild(d);
 }
 
 /* ============ 테스트 ============ */
 function showTestIntro(){
+  VIEW=showTestIntro;
   progress();
   render(`
     <div class="center">
       <div class="big-emoji">👂</div>
-      <h2 class="qtitle">이제 귀 테스트 시간!</h2>
-      <p class="flavor">높낮이 비교 → 미세 음정 → 멜로디 기억 → <b>절대음감</b> → 리듬 따라치기.<br>
+      <h2 class="qtitle">${L("이제 귀 테스트 시간!","Time for the ear test!")}</h2>
+      <p class="flavor">${L(`높낮이 비교 → 미세 음정 → 멜로디 기억 → <b>절대음감</b> → 리듬 따라치기.<br>
       약 2분. 조용한 곳에서 이어폰을 끼면 정확해요.<br>
       모든 문제에서 <b>▶️ 듣기는 몇 번이든 다시 누를 수 있고</b>,<br>
       여기까지 끝나면 전체의 <b>절반</b>이 끝난 겁니다!<br>
-      <b>못해도 전혀 불이익 없습니다.</b> 못하는 방향에도 좋은 악기가 잔뜩 있거든요.</p>
-      ${isIOS?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:10px 14px">🔇 <b>아이폰이라면</b> 옆면 <b>무음 스위치</b>를 꼭 풀어주세요! 무음 모드면 소리가 안 납니다.<br>볼륨도 한 번 올려주시고요 🎧</p>`:""}
-      <button class="btn" onclick="APP.startTests()">테스트 시작 🎧</button>
-      <button class="btn ghost" onclick="APP.skipTests()">건너뛰기 (자백으로 대체)</button>
-      <div style="margin-top:14px"><button class="backbtn" onclick="APP.back()">← 이전 질문으로</button></div>
+      <b>못해도 전혀 불이익 없습니다.</b> 못하는 방향에도 좋은 악기가 잔뜩 있거든요.`,
+      `High or low → tiny pitch differences → melody memory → <b>perfect pitch</b> → tapping rhythms.<br>
+      About 2 minutes. Somewhere quiet with headphones gives the most accurate read.<br>
+      You can hit <b>▶️ Listen as many times as you want</b> on every question,<br>
+      and once this is done you're <b>halfway</b> through!<br>
+      <b>Doing badly costs you nothing.</b> There are wonderful instruments in every direction.`)}</p>
+      ${isIOS?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:10px 14px">${L(`🔇 <b>아이폰이라면</b> 옆면 <b>무음 스위치</b>를 꼭 풀어주세요! 무음 모드면 소리가 안 납니다.<br>볼륨도 한 번 올려주시고요 🎧`,`🔇 <b>On iPhone</b>, flip the <b>silent switch</b> off — you'll hear nothing in silent mode.<br>Turn the volume up a bit too 🎧`)}</p>`:""}
+      <button class="btn" onclick="APP.startTests()">${L("테스트 시작 🎧","Start the test 🎧")}</button>
+      <button class="btn ghost" onclick="APP.skipTests()">${L("건너뛰기 (자백으로 대체)","Skip it (I'll just confess instead)")}</button>
+      <div style="margin-top:14px"><button class="backbtn" onclick="APP.back()">${L("← 이전 질문으로","← Previous question")}</button></div>
     </div>`);
 }
 function skipTests(){ snap(); P.pitch=null; P.rhythm=50; P.skipT=true; stepIdx++; showQ(); }
@@ -771,7 +912,7 @@ const T1_INTERVALS=[7,4,2,1,.5,.25], T2_CENTS=[100,50,25,15];
 function startTests(){ ac(); snap(); testState={phase:"t1", trial:0, score:0, t2:0, t3:0, abs:0, taps:[], t1correct:0}; runT1(); }
 
 function runT1(){
-  const ts=testState;
+  const ts=testState; VIEW=runT1;
   if(ts.trial>=T1_INTERVALS.length){ ts.phase="t2"; ts.trial=0; return runT2(); }
   const semi=T1_INTERVALS[ts.trial];
   const base=57+Math.floor(Math.random()*12); // A3~
@@ -780,13 +921,13 @@ function runT1(){
   ts.answer=firstHigher?0:1;
   render(`
     <div class="center">
-      <span class="tag">귀 테스트 1/5 · 높낮이</span>
-      <h2 class="qtitle">둘 중 어느 소리가 더 높나요?</h2>
-      <p class="flavor">${ts.trial+1} / ${T1_INTERVALS.length} ${semi<1?"— 이제 좀 어렵습니다 😈":""}<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
-      <button class="testbtn" onclick="APP._playPair(${f1},${f2})">▶️ 듣기</button>
+      <span class="tag">${L("귀 테스트 1/5 · 높낮이","Ear test 1/5 · High or low")}</span>
+      <h2 class="qtitle">${L("둘 중 어느 소리가 더 높나요?","Which of the two sounds is higher?")}</h2>
+      <p class="flavor">${ts.trial+1} / ${T1_INTERVALS.length} ${semi<1?L("— 이제 좀 어렵습니다 😈","— this is where it gets mean 😈"):""}<br><span class="small">${L("▶️ 몇 번이든 다시 들어도 돼요","▶️ Listen as many times as you like")}</span></p>
+      <button class="testbtn" onclick="APP._playPair(${f1},${f2})">${L("▶️ 듣기","▶️ Listen")}</button>
       <div class="pillrow" style="margin-top:16px">
-        <button class="pill" onclick="APP._t1(0)">첫 번째</button>
-        <button class="pill" onclick="APP._t1(1)">두 번째</button>
+        <button class="pill" onclick="APP._t1(0)">${L("첫 번째","The first")}</button>
+        <button class="pill" onclick="APP._t1(1)">${L("두 번째","The second")}</button>
       </div>
     </div>`);
   setTimeout(()=>APP._playPair(f1,f2),300);
@@ -795,7 +936,7 @@ function _playPair(f1,f2){ flashPlaying(); withAudio(()=>{ tone(f1,0,.7); tone(f
 function _t1(a){ const ts=testState; if(a===ts.answer){ts.score+=[5,8,12,15,20,25][ts.trial]; ts.t1correct++;} ts.trial++; runT1(); }
 
 function runT2(){
-  const ts=testState;
+  const ts=testState; VIEW=runT2;
   if(ts.trial>=T2_CENTS.length){ ts.phase="t3"; ts.trial=0; return runT3(); }
   const cents=T2_CENTS[ts.trial];
   const base=60+Math.floor(Math.random()*10);
@@ -804,13 +945,13 @@ function runT2(){
   ts.answer=same?0:1;
   render(`
     <div class="center">
-      <span class="tag mint">귀 테스트 2/5 · 미세 음정</span>
-      <h2 class="qtitle">두 소리, 같나요 다르나요?</h2>
-      <p class="flavor">${ts.trial+1} / ${T2_CENTS.length} — 차이가 점점 미세해집니다<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
-      <button class="testbtn" onclick="APP._playPair(${f1},${f2})">▶️ 듣기</button>
+      <span class="tag mint">${L("귀 테스트 2/5 · 미세 음정","Ear test 2/5 · Fine pitch")}</span>
+      <h2 class="qtitle">${L("두 소리, 같나요 다르나요?","Are these two the same, or different?")}</h2>
+      <p class="flavor">${ts.trial+1} / ${T2_CENTS.length} ${L("— 차이가 점점 미세해집니다","— the gap keeps getting smaller")}<br><span class="small">${L("▶️ 몇 번이든 다시 들어도 돼요","▶️ Listen as many times as you like")}</span></p>
+      <button class="testbtn" onclick="APP._playPair(${f1},${f2})">${L("▶️ 듣기","▶️ Listen")}</button>
       <div class="pillrow" style="margin-top:16px">
-        <button class="pill" onclick="APP._t2(0)">같다</button>
-        <button class="pill" onclick="APP._t2(1)">다르다</button>
+        <button class="pill" onclick="APP._t2(0)">${L("같다","Same")}</button>
+        <button class="pill" onclick="APP._t2(1)">${L("다르다","Different")}</button>
       </div>
     </div>`);
   setTimeout(()=>APP._playPair(f1,f2),300);
@@ -818,7 +959,7 @@ function runT2(){
 function _t2(a){ const ts=testState; if(a===ts.answer) ts.score+=[5,10,15,15][ts.trial]; ts.trial++; runT2(); }
 
 function runT3(){
-  const ts=testState;
+  const ts=testState; VIEW=runT3;
   if(ts.trial>=3){ ts.phase="abs"; ts.trial=0; return runAbs(); }
   const len=4, base=60+Math.floor(Math.random()*6);
   const mel=[base]; for(let i=1;i<len;i++) mel.push(mel[i-1]+[-4,-2,2,3,4][Math.floor(Math.random()*5)]);
@@ -827,13 +968,13 @@ function runT3(){
   ts.answer=same?0:1; ts.mel=mel; ts.mel2=mel2;
   render(`
     <div class="center">
-      <span class="tag lav">귀 테스트 3/5 · 멜로디 기억</span>
-      <h2 class="qtitle">두 멜로디, 같나요?</h2>
-      <p class="flavor">${ts.trial+1} / 3 — 한 음만 슬쩍 바뀔 수도 있어요<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
-      <button class="testbtn" onclick="APP._playMel()">▶️ 듣기</button>
+      <span class="tag lav">${L("귀 테스트 3/5 · 멜로디 기억","Ear test 3/5 · Melody memory")}</span>
+      <h2 class="qtitle">${L("두 멜로디, 같나요?","Are these two melodies the same?")}</h2>
+      <p class="flavor">${ts.trial+1} / 3 ${L("— 한 음만 슬쩍 바뀔 수도 있어요","— one single note might have moved")}<br><span class="small">${L("▶️ 몇 번이든 다시 들어도 돼요","▶️ Listen as many times as you like")}</span></p>
+      <button class="testbtn" onclick="APP._playMel()">${L("▶️ 듣기","▶️ Listen")}</button>
       <div class="pillrow" style="margin-top:16px">
-        <button class="pill" onclick="APP._t3(0)">같다</button>
-        <button class="pill" onclick="APP._t3(1)">다르다 (한 음 바뀜)</button>
+        <button class="pill" onclick="APP._t3(0)">${L("같다","Same")}</button>
+        <button class="pill" onclick="APP._t3(1)">${L("다르다 (한 음 바뀜)","Different (one note changed)")}</button>
       </div>
     </div>`);
   setTimeout(()=>APP._playMel(),300);
@@ -842,19 +983,20 @@ function _playMel(){ flashPlaying(); withAudio(()=>{ const ts=testState; ts.mel.
 function _t3(a){ const ts=testState; if(a===ts.answer){ts.score+=10; ts.t3++;} ts.trial++; runT3(); }
 
 const NOTE_NAMES=["도","도#","레","레#","미","파","파#","솔","솔#","라","라#","시"];
+const NOTE_NAMES_EN=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 function runAbs(){
-  const ts=testState;
+  const ts=testState; VIEW=runAbs;
   if(ts.trial>=4){ ts.phase="rhythm"; return runRhythm(); }
   ts.absNote=Math.floor(Math.random()*12); // C4=60 기준
-  const kb = NOTE_NAMES.map((n,i)=>`<button class="${n.includes("#")?"black":""}" onclick="APP._abs(${i})">${n}</button>`).join("");
+  const kb = (isEN()?NOTE_NAMES_EN:NOTE_NAMES).map((n,i)=>`<button class="${n.includes("#")?"black":""}" onclick="APP._abs(${i})">${n}</button>`).join("");
   render(`
     <div class="center">
-      <span class="tag sun">귀 테스트 4/5 · 절대음감</span>
-      <h2 class="qtitle">기준음 없이, 이 음은 무슨 음일까요?</h2>
-      <p class="flavor">${ts.trial+1} / 4 — 못 맞혀도 완전 정상입니다. 절대음감은 보너스 스탯일 뿐!<br><span class="small">▶️ 몇 번이든 다시 들어도 돼요</span></p>
-      <button class="testbtn" onclick="APP._playAbs()">▶️ 듣기</button>
+      <span class="tag sun">${L("귀 테스트 4/5 · 절대음감","Ear test 4/5 · Perfect pitch")}</span>
+      <h2 class="qtitle">${L("기준음 없이, 이 음은 무슨 음일까요?","No reference tone — what note is this?")}</h2>
+      <p class="flavor">${ts.trial+1} / 4 ${L("— 못 맞혀도 완전 정상입니다. 절대음감은 보너스 스탯일 뿐!","— getting these wrong is completely normal. Perfect pitch is just a bonus stat!")}<br><span class="small">${L("▶️ 몇 번이든 다시 들어도 돼요","▶️ Listen as many times as you like")}</span></p>
+      <button class="testbtn" onclick="APP._playAbs()">${L("▶️ 듣기","▶️ Listen")}</button>
       <div class="kbd">${kb}</div>
-      <button class="btn ghost" onclick="APP._abs(-1)">모르겠어요 (당당하게)</button>
+      <button class="btn ghost" onclick="APP._abs(-1)">${L("모르겠어요 (당당하게)","No idea (and that's fine)")}</button>
     </div>`);
   setTimeout(()=>APP._playAbs(),300);
 }
@@ -864,35 +1006,39 @@ function _abs(i){ const ts=testState;
   ts.trial++; runAbs(); }
 
 const RPATTERNS=[
-  {name:"기본 박자",        beats:[0,1,2,3],           max:10, hint:"쿵. 쿵. 쿵. 쿵. 이건 몸풀기예요."},
-  {name:"8분음표",          beats:[0,1,1.5,2,3,3.5],   max:15, hint:"중간에 잰걸음이 섞입니다."},
-  {name:"엇박(싱코페이션)", beats:[0,.75,1.5,2,3,3.5], max:20, hint:"살짝 밀리는 맛이 포인트."},
-  {name:"타악 리듬(클라베)",beats:[0,.75,1.5,2.5,3],   max:25, hint:"쿠바 타악의 심장 박동."},
-  {name:"폴리리듬 최종보스",beats:[0,.75,1,1.75,2.25,2.5,3.25,3.5], max:30, hint:"프로 타악 주자도 집중해야 하는 16비트 엇박. 틀려도 도전 자체가 자랑입니다."},
+  {name:"기본 박자",        nameEn:"Straight beat",       beats:[0,1,2,3],           max:10, hint:"쿵. 쿵. 쿵. 쿵. 이건 몸풀기예요.", hintEn:"Boom. Boom. Boom. Boom. This one's just a warm-up."},
+  {name:"8분음표",          nameEn:"Eighth notes",        beats:[0,1,1.5,2,3,3.5],   max:15, hint:"중간에 잰걸음이 섞입니다.", hintEn:"A couple of quick steps sneak in."},
+  {name:"엇박(싱코페이션)", nameEn:"Syncopation",         beats:[0,.75,1.5,2,3,3.5], max:20, hint:"살짝 밀리는 맛이 포인트.", hintEn:"The whole point is that slight push against the beat."},
+  {name:"타악 리듬(클라베)",nameEn:"Clave pattern",       beats:[0,.75,1.5,2.5,3],   max:25, hint:"쿠바 타악의 심장 박동.", hintEn:"The heartbeat of Cuban percussion."},
+  {name:"폴리리듬 최종보스",nameEn:"Polyrhythm final boss",beats:[0,.75,1,1.75,2.25,2.5,3.25,3.5], max:30, hint:"프로 타악 주자도 집중해야 하는 16비트 엇박. 틀려도 도전 자체가 자랑입니다.", hintEn:"Sixteenth-note syncopation that makes professional percussionists concentrate. Missing it is fine — attempting it is the flex."},
 ];
 const RBEAT=667; // 90bpm
 function runRhythm(){ const ts=testState; ts.rTrial=0; ts.rScore=0; ts.lastPct=null; runRhythmTrial(); }
 function runRhythmTrial(){
-  const ts=testState;
+  const ts=testState; VIEW=runRhythmTrial;
   clearRVis();                                   // 이전 마디 카운트가 새 화면에 남아 뛰지 않도록
   if(ts.rTrial>=RPATTERNS.length){ return finishTests(); }
   const pat=RPATTERNS[ts.rTrial];
   render(`
     <div class="center">
-      <span class="tag">귀 테스트 5/5 · 리듬 따라치기</span>
-      ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">한 번도 안 치셨네요! ▶️를 누르고 <b>「지금! 따라 치세요」가 뜨는 마디</b>에 쳐보세요.</p>`
-        :(ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
-      <h2 class="qtitle">${ts.rTrial+1}단계 — ${pat.name}</h2>
-      <p class="flavor">${pat.hint}<br>
-      <b>딱-딱-</b> 메트로놈이 처음부터 끝까지 울립니다. 4마디로 진행돼요.<br>
+      <span class="tag">${L("귀 테스트 5/5 · 리듬 따라치기","Ear test 5/5 · Tap the rhythm")}</span>
+      ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">${L(`한 번도 안 치셨네요! ▶️를 누르고 <b>「지금! 따라 치세요」가 뜨는 마디</b>에 쳐보세요.`,`You didn't tap at all! Hit ▶️ and tap during the bar that says <b>'Now! Tap along'</b>.`)}</p>`
+        :(ts.lastPct!=null?`<p class="small">${L(`방금 리듬: <b>${ts.lastPct}% 일치</b>`,`That last one: <b>${ts.lastPct}% match</b>`)} ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
+      <h2 class="qtitle">${L(`${ts.rTrial+1}단계 — ${pat.name}`,`Level ${ts.rTrial+1} — ${pat.nameEn}`)}</h2>
+      <p class="flavor">${L(pat.hint,pat.hintEn)}<br>
+      ${L(`<b>딱-딱-</b> 메트로놈이 처음부터 끝까지 울립니다. 4마디로 진행돼요.<br>
       ① <b>준비</b> → ② <b>문제</b>(둥- 둥- 낮은 북소리) → ③ <b>터치 준비</b> → ④ <b>따라 치기</b><br>
       마디마다 <b>4·3·2·1</b>을 세어주니, 1 다음에 새 마디가 시작돼요.<br>
-      <span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span></p>
-      <button class="testbtn" onclick="APP._playRhythm()">▶️ 듣고 시작하기</button>
-      <div id="rphase">▶️를 누르면 시작해요</div>
+      <span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span>`,
+      `A <b>click-click</b> metronome runs the whole way through, across four bars.<br>
+      ① <b>Get ready</b> → ② <b>The pattern</b> (low drum hits) → ③ <b>Hands up</b> → ④ <b>Tap it back</b><br>
+      Each bar counts down <b>4·3·2·1</b>, so a new bar starts right after 1.<br>
+      <span class="small">You can replay ▶️ as often as you like (replaying clears what you tapped)</span>`)}</p>
+      <button class="testbtn" onclick="APP._playRhythm()">${L("▶️ 듣고 시작하기","▶️ Listen and start")}</button>
+      <div id="rphase">${L("▶️를 누르면 시작해요","Press ▶️ to begin")}</div>
       <div id="rcount">·</div>
-      <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">먼저 들어보세요</div>
-      <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">다 쳤어요 ✓</button>
+      <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">${L("먼저 들어보세요","Listen first")}</div>
+      <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">${L("다 쳤어요 ✓","I'm done ✓")}</button>
     </div>`);
 }
 // 4마디 구조: ①준비 → ②문제 리듬 → ③터치 준비 → ④따라치기.
@@ -902,20 +1048,20 @@ const RBAR_Q=1, RBAR_TAP=3;          // 문제 마디 / 따라치기 마디 (0�
 const RTAP_START=RBAR_TAP*RBPB;      // 12박째부터 따라치기
 const RTOTAL=(RBAR_TAP+1)*RBPB;      // 총 16박 + 여유 2박
 const RPHASE=[
-  {t:"① 준비 — 박자를 느껴보세요", c:""},
-  {t:"② 문제 — 잘 들어보세요 🥁",  c:"q"},
-  {t:"③ 터치 준비 — 곧 칩니다",    c:"set"},
-  {t:"④ 지금! 따라 치세요 👏",     c:"go"},
+  {t:"① 준비 — 박자를 느껴보세요", en:"① Get ready — feel the pulse",   c:""},
+  {t:"② 문제 — 잘 들어보세요 🥁",  en:"② The pattern — listen close 🥁", c:"q"},
+  {t:"③ 터치 준비 — 곧 칩니다",    en:"③ Hands up — almost there",       c:"set"},
+  {t:"④ 지금! 따라 치세요 👏",     en:"④ Now! Tap along 👏",             c:"go"},
 ];
 function clearRVis(){ const ts=testState; if(!ts) return; (ts.rVis||[]).forEach(clearTimeout); ts.rVis=[]; }
 function _rbeat(i){
   const bar=Math.floor(i/RBPB), ph=RPHASE[bar];
   const p=document.getElementById("rphase"), cd=document.getElementById("rcount");
   if(ph){
-    if(p) p.textContent=ph.t;
+    if(p) p.textContent=L(ph.t,ph.en);
     if(cd){ cd.textContent=String(RBPB-(i%RBPB)); cd.className=ph.c; }   // 4·3·2·1
   }else{                                                                  // 여유 박 — 조금 늦어도 받아준다
-    if(p) p.textContent="아직 받고 있어요";
+    if(p) p.textContent=L("아직 받고 있어요","Still listening");
     if(cd){ cd.textContent="·"; cd.className="go"; }
   }
 }
@@ -930,12 +1076,12 @@ function _playRhythm(){
     pat.beats.forEach(b=>patTick((RBAR_Q*RBPB+b)*B));                // 문제 리듬 = 2번째 마디
   });
   const z=document.getElementById("tapzone");
-  if(z){ z.style.opacity=".45"; z.textContent="아직이에요"; }
+  if(z){ z.style.opacity=".45"; z.textContent=L("아직이에요","Not yet"); }
   const d=document.getElementById("rdoneBtn"); if(d) d.style.display="none";
   for(let i=0;i<RTOTAL+2;i++) ts.rVis.push(setTimeout(()=>_rbeat(i), i*RBEAT));   // 박마다 안내·카운트
   ts.rReadyTimer=setTimeout(()=>{
     ts.rReady=true; ts.rTaps=[]; ts.rStart=performance.now();
-    const z2=document.getElementById("tapzone"); if(z2){ z2.style.opacity=1; z2.textContent="지금! 따라 치세요"; }
+    const z2=document.getElementById("tapzone"); if(z2){ z2.style.opacity=1; z2.textContent=L("지금! 따라 치세요","Now! Tap along"); }
     const d2=document.getElementById("rdoneBtn"); if(d2) d2.style.display="block";
     ts.rTimer=setTimeout(()=>_rdone(), (RBPB+2)*RBEAT);
   }, RTAP_START*RBEAT);
@@ -974,22 +1120,24 @@ function _rdone(){
   ts.rTrial++; runRhythmTrial();
 }
 function finishTests(){
-  const ts=testState;
+  const ts=testState; VIEW=finishTests;
   P.rhythm=Math.max(5, Math.min(100, Math.round(ts.rScore)));
   P.pitch=Math.min(100, Math.round(ts.score/145*100));
   P.abs=ts.abs; P.melody=ts.t3;
-  const absMsg = ts.abs>=6 ? "🏅 <b>절대음감 보유 가능성!</b> 상위 1% 귀입니다." : (ts.abs>=3 ? "귀가 꽤 예민하시네요!" : "절대음감은 없지만 <b>연주엔 상대음감이 훨씬 중요</b>합니다. 진짜예요.");
+  const absMsg = ts.abs>=6 ? L("🏅 <b>절대음감 보유 가능성!</b> 상위 1% 귀입니다.","🏅 <b>You may well have perfect pitch!</b> That's a top-1% ear.")
+               : (ts.abs>=3 ? L("귀가 꽤 예민하시네요!","You've got a pretty sharp ear!")
+               : L("절대음감은 없지만 <b>연주엔 상대음감이 훨씬 중요</b>합니다. 진짜예요.","No perfect pitch — but <b>relative pitch matters far more for playing</b>. Genuinely."));
   render(`
     <div class="center">
       <div class="big-emoji">📊</div>
-      <h2 class="qtitle">귀 테스트 결과</h2>
+      <h2 class="qtitle">${L("귀 테스트 결과","Your ear test results")}</h2>
       <div class="card" style="text-align:left">
-        <p>🎯 <b>청음 점수: ${P.pitch}점</b> / 100 ${P.pitch>=65?"— 음정을 스스로 만드는 악기도 노려볼 귀!":P.pitch>=35?"— 평균적인 좋은 귀입니다":"— 음정을 잡아주는 악기와 찰떡궁합"}</p>
-        <p>🥁 <b>리듬 점수: ${P.rhythm}점</b> / 100 ${P.rhythm>=70?"— 몸에 메트로놈 내장하셨네요":""}</p>
-        <p>🏅 절대음감 테스트: ${ts.abs}점 / 8 — ${absMsg}</p>
+        <p>🎯 <b>${L(`청음 점수: ${P.pitch}점`,`Pitch score: ${P.pitch}`)}</b> / 100 ${P.pitch>=65?L("— 음정을 스스로 만드는 악기도 노려볼 귀!","— good enough to aim at instruments where you make the pitch yourself!"):P.pitch>=35?L("— 평균적인 좋은 귀입니다","— a solidly good ear"):L("— 음정을 잡아주는 악기와 찰떡궁합","— a perfect fit for instruments that hold the pitch for you")}</p>
+        <p>🥁 <b>${L(`리듬 점수: ${P.rhythm}점`,`Rhythm score: ${P.rhythm}`)}</b> / 100 ${P.rhythm>=70?L("— 몸에 메트로놈 내장하셨네요","— you've got a metronome built in"):""}</p>
+        <p>🏅 ${L(`절대음감 테스트: ${ts.abs}점 / 8 — `,`Perfect pitch test: ${ts.abs} / 8 — `)}${absMsg}</p>
       </div>
-      <p class="small">🎉 여기까지가 전체의 절반! 이제 취향 문답만 남았어요.</p>
-      <button class="btn" onclick="APP.next()">계속 →</button>
+      <p class="small">${L("🎉 여기까지가 전체의 절반! 이제 취향 문답만 남았어요.","🎉 That's the halfway mark! Only the taste questions left.")}</p>
+      <button class="btn" onclick="APP.next()">${L("계속 →","Continue →")}</button>
     </div>`);
   setBar(50);
 }
@@ -1017,25 +1165,26 @@ function scoreSlot(slot){
 
   // ---- 게이트 ----
   if(P.no.saliva && (B.saliva||0)>=1){
-    if(hasQuietVariant===false || P.elec===0) gate="침이 생기는 악기 (감당 불가 선택)";
+    if(hasQuietVariant===false || P.elec===0) gate=L("침이 생기는 악기 (감당 불가 선택)","it collects spit — you ruled that out");
   }
-  if(!gate && (P.no.callus||P.handJob===2) && (B.callus||0)>=2) gate="손끝 굳은살·통증 (감당 불가 선택)";
-  if(!gate && P.handJob===2 && (B.callus||0)>=1) gate="손끝을 보호해야 하는 직업";
-  if(!gate && P.no.embouchure && (B.embouchure||0)>=2) gate="입술 부담 (감당 불가 선택)";
-  if(!gate && P.no.heavy && (B.weight||1)>=4 && P.carry!==4) gate="무거운 운반 (감당 불가 선택)";
-  if(!gate && P.no.posture && JSON.stringify(B.postureRisk||[]).includes("목")) gate="목·어깨 비트는 자세 (감당 불가 선택)";
-  if(!gate && P.no.maint && (PR.maintenance||1)>=4) gate="소모품 손질 (감당 불가 선택)";
-  if(!gate && P.breath===0 && (B.breath||0)>=3) gate="큰 폐활량 필요";
+  if(!gate && (P.no.callus||P.handJob===2) && (B.callus||0)>=2) gate=L("손끝 굳은살·통증 (감당 불가 선택)","sore fingertips and calluses — you ruled that out");
+  if(!gate && P.handJob===2 && (B.callus||0)>=1) gate=L("손끝을 보호해야 하는 직업","your hands are work tools");
+  if(!gate && P.no.embouchure && (B.embouchure||0)>=2) gate=L("입술 부담 (감당 불가 선택)","the strain on your lips — you ruled that out");
+  if(!gate && P.no.heavy && (B.weight||1)>=4 && P.carry!==4) gate=L("무거운 운반 (감당 불가 선택)","hauling something heavy — you ruled that out");
+  if(!gate && P.no.posture && JSON.stringify(B.postureRisk||[]).includes("목")) gate=L("목·어깨 비트는 자세 (감당 불가 선택)","the twisted neck-and-shoulder posture — you ruled that out");
+  if(!gate && P.no.maint && (PR.maintenance||1)>=4) gate=L("소모품 손질 (감당 불가 선택)","the constant fussing over consumables — you ruled that out");
+  if(!gate && P.breath===0 && (B.breath||0)>=3) gate=L("큰 폐활량 필요","it needs serious lung capacity");
   if(!gate && (C.entryKRW&&C.entryKRW[0]||0) > BUDGET_CAP[P.budget]){
-    if(INSTITUTIONAL.has(inst.id)){ variantNote = variantNote || "🏫 이 악기는 처음부터 사는 게 아니에요 — 학원·교회·연습실·합주단의 악기로 배우기 시작하면 됩니다"; }
-    else gate=`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`;
+    if(INSTITUTIONAL.has(inst.id)){ variantNote = variantNote || L("🏫 이 악기는 처음부터 사는 게 아니에요 — 학원·교회·연습실·합주단의 악기로 배우기 시작하면 됩니다",
+      "🏫 You don't buy this one to start — you learn on an instrument that belongs to a school, a church, a rehearsal room or an ensemble."); }
+    else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about ₩${(C.entryKRW[0]).toLocaleString("en-US")})`);
   }
-  if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1) gate="동네에서 레슨을 못 구하는 악기";
+  if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1) gate=L("동네에서 레슨을 못 구하는 악기","you won't find a teacher for it nearby");
   if(!gate && P.noiseEnv===1 && noiseV>=4){
-    if(hasQuietVariant && P.elec>=1){ variantNote="🔇 소음 문제는 전자·약음 버전으로 해결하는 조건!"; s-=3; }
-    else gate="야간 아파트에서 불가능한 소음";
+    if(hasQuietVariant && P.elec>=1){ variantNote=L("🔇 소음 문제는 전자·약음 버전으로 해결하는 조건!","🔇 On the condition that you solve the noise with an electric or muted version!"); s-=3; }
+    else gate=L("야간 아파트에서 불가능한 소음","far too loud for an apartment at night");
   }
-  if(!gate && P.carry===1 && (PR.portability||3)<=2) gate="주머니 사이즈를 원하셨는데 대형 악기";
+  if(!gate && P.carry===1 && (PR.portability||3)<=2) gate=L("주머니 사이즈를 원하셨는데 대형 악기","you wanted pocket-sized, and this is not that");
 
   // ---- 청음 적합 (핵심 축) ----
   const pf = PL.pitchFixed||"F1";
@@ -1044,14 +1193,14 @@ function scoreSlot(slot){
   const pitchTable = { F0:[15,10,2], F1:[2,10,8], F2:[-10,6,15], F3:[-28,-4,25], P:[0,0,0] };
   const pAdd = (pitchTable[pf]||pitchTable.F1)[band];
   s+=pAdd;
-  if(pf==="F3"&&band===2) why.push({t:`청음 ${ps}점 — 프렛도 건반도 없는 곳에서 음정을 스스로 만들 수 있는 귀예요`, p:pAdd});
-  if(pf==="F0"&&band===0) why.push({t:`음정을 악기가 잡아줘요. 청음 점수 부담 제로!`, p:pAdd});
-  if(pf==="P"&&band===0&&(P.rhythm||0)>=60){ s+=18; why.push({t:"음정 걱정 없이 리듬으로 승부하는 포지션 — 당신의 리듬 점수가 아깝지 않게", p:18}); }
-  if(P.abs>=6 && (pf==="F3"||/테레민|뮤지컬 쏘|톱|팀파니/.test(inst.name))){ s+=10; why.push({t:`절대음감 ${P.abs}/8점 — 이 악기에선 초능력입니다`, p:10}); }
+  if(pf==="F3"&&band===2) why.push({t:L(`청음 ${ps}점 — 프렛도 건반도 없는 곳에서 음정을 스스로 만들 수 있는 귀예요`,`Pitch score ${ps} — an ear that can find the notes itself, with no frets and no keys to help`), p:pAdd});
+  if(pf==="F0"&&band===0) why.push({t:L(`음정을 악기가 잡아줘요. 청음 점수 부담 제로!`,`The instrument holds the pitch for you — your ear score doesn't have to carry anything.`), p:pAdd});
+  if(pf==="P"&&band===0&&(P.rhythm||0)>=60){ s+=18; why.push({t:L("음정 걱정 없이 리듬으로 승부하는 포지션 — 당신의 리듬 점수가 아깝지 않게","No pitch to worry about — this is a position you win on rhythm, which is exactly where your score is"), p:18}); }
+  if(P.abs>=6 && (pf==="F3"||/테레민|뮤지컬 쏘|톱|팀파니/.test(inst.name))){ s+=10; why.push({t:L(`절대음감 ${P.abs}/8점 — 이 악기에선 초능력입니다`,`Perfect pitch ${P.abs}/8 — on this instrument that's close to a superpower`), p:10}); }
 
   // ---- 리듬 ----
   const roles=(PL.roles||[]).join(" ");
-  if((P.rhythm||50)>=70 && /리듬|베이스/.test(roles)){ s+=14; why.push({t:`리듬 ${P.rhythm}점 — 박자를 책임지는 역할에 딱`, p:14}); }
+  if((P.rhythm||50)>=70 && /리듬|베이스/.test(roles)){ s+=14; why.push({t:L(`리듬 ${P.rhythm}점 — 박자를 책임지는 역할에 딱`,`Rhythm score ${P.rhythm} — perfect for a part that carries the beat`), p:14}); }
   if((P.rhythm||50)<35 && /리듬/.test(roles)) s-=10;
   if((P.rhythm||50)>=70 && (PL.fastPlay||3)>=4) s+=4;
 
@@ -1060,57 +1209,57 @@ function scoreSlot(slot){
   slot.genres.main.forEach(gn=>{ if(P.genres[gn]){ gpts+=P.genres[gn]*7; gm.push(gn); } });
   slot.genres.sub.forEach(gn=>{ if(P.genres[gn]){ gpts+=P.genres[gn]*3.5; } });
   gpts=Math.min(gpts,45); s+=gpts;
-  if(gm.length) why.push({t:`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`, p:gpts});
+  if(gm.length) why.push({t:L(`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`,`Lands right on the music you picked (${gm.map(gLabel).join(", ")})`), p:gpts});
 
   // ---- 역할 ----
   if(P.roles && P.roles.length){
     const roleMap={"멜로디":/멜로디/,"화음":/화음|반주/,"리듬":/리듬/,"베이스":/베이스/,"올라운드":/올라운드/};
     const hit=P.roles.filter(rl=>roleMap[rl] && roleMap[rl].test(roles));
-    if(hit.length){ const rp=Math.min(12+(hit.length-1)*4, 20); s+=rp; why.push({t:`"${hit.join("·")}" 역할 지망과 일치`, p:rp}); }
+    if(hit.length){ const rp=Math.min(12+(hit.length-1)*4, 20); s+=rp; why.push({t:L(`"${hit.join("·")}" 역할 지망과 일치`,`Matches the role you wanted: ${hit.map(roleLabel).join(", ")}`), p:rp}); }
   }
   // ---- 음색 ----
   const toneMatch=(g(inst,"sound.tone",[])).filter(t=>P.tones.includes(t));
-  if(toneMatch.length){ const tp=Math.min(toneMatch.length*6,18); s+=tp; why.push({t:`끌린다고 한 소리(${toneMatch.slice(0,2).join("·")})가 이 악기의 목소리`, p:tp}); }
+  if(toneMatch.length){ const tp=Math.min(toneMatch.length*6,18); s+=tp; why.push({t:L(`끌린다고 한 소리(${toneMatch.slice(0,2).join("·")})가 이 악기의 목소리`,`The sound you said you liked (${toneMatch.slice(0,2).map(toneLabel).join(", ")}) is exactly this instrument's voice`), p:tp}); }
 
   // ---- 희귀도·유행 ----
   const rar=V.rarityKR||3;
-  if(P.rarityPref>=3){ const rp=(rar-2)*7; s+=rp; if(rar>=4) why.push({t:`희귀도 ${rar}/5 — "나만 쓰는 악기"의 희열 보장`, p:rp}); }
+  if(P.rarityPref>=3){ const rp=(rar-2)*7; s+=rp; if(rar>=4) why.push({t:L(`희귀도 ${rar}/5 — "나만 쓰는 악기"의 희열 보장`,`Rarity ${rar}/5 — guaranteed 'nobody else I know plays this' satisfaction`), p:rp}); }
   else if(P.rarityPref<=1){ s+=(3-rar)*5; if(rar>=4){ s-=8; } }
   if(P.trendPref===1 && (V.trendy||3)<=2){ s+=6; }
   if(P.trendPref===3 && (V.trendy||3)>=4){ s+=6; }
 
   // ---- 즉흥·무대 ----
-  if(P.improvPref===3 && (PL.improv||2)>=4){ s+=8; why.push({t:"즉흥으로 노는 문화가 살아있는 악기", p:8}); }
+  if(P.improvPref===3 && (PL.improv||2)>=4){ s+=8; why.push({t:L("즉흥으로 노는 문화가 살아있는 악기","An instrument with a living culture of improvising"), p:8}); }
   if(P.improvPref===1 && (PL.improv||2)<=2) s+=5;
-  if(P.showPref>=3 && (V.showOff||2)>=4){ s+=8; why.push({t:"무대 장악용으로 검증된 악기", p:8}); }
+  if(P.showPref>=3 && (V.showOff||2)>=4){ s+=8; why.push({t:L("무대 장악용으로 검증된 악기","A proven scene-stealer on stage"), p:8}); }
   if(P.showPref<=1 && (V.showOff||2)<=2) s+=5;
 
   // ---- 인내 vs 즉각보상 ----
   const eb=PR.entryBarrier||3, qr=PR.quickReward||3;
-  if(P.patience===1){ s+=(qr-3)*6-(Math.max(0,eb-3))*7; if(qr>=4) why.push({t:"한 달 안에 곡 하나 뽑히는 속성 보상형", p:(qr-3)*6}); }
-  if(P.patience===3 && eb>=4){ s+=7; why.push({t:"몇 년짜리 프로젝트를 원하셨죠? 마침 그런 악기입니다", p:7}); }
+  if(P.patience===1){ s+=(qr-3)*6-(Math.max(0,eb-3))*7; if(qr>=4) why.push({t:L("한 달 안에 곡 하나 뽑히는 속성 보상형","Fast payoff — you'll have a real tune within a month"), p:(qr-3)*6}); }
+  if(P.patience===3 && eb>=4){ s+=7; why.push({t:L("몇 년짜리 프로젝트를 원하셨죠? 마침 그런 악기입니다","You wanted a multi-year project. This is very much one of those."), p:7}); }
   if(P.daily===1 && eb>=4) s-=8;
   if(P.repeatOk===0 && eb>=4) s-=6;
 
   // ---- 학습 환경 ----
-  if(P.learn!=="lesson"){ const sl=PR.selfLearn||3; if(sl>=4){s+=6;} else if(sl<=2){s-=8; warn.push("독학 자료가 부족한 악기 — 커뮤니티부터 찾으세요");} }
-  else { if((PR.lessonKR||3)>=4){ s+=5; why.push({t:"레슨 선생님 구하기 쉬움 (전국 어디나)", p:5}); } }
+  if(P.learn!=="lesson"){ const sl=PR.selfLearn||3; if(sl>=4){s+=6;} else if(sl<=2){s-=8; warn.push(L("독학 자료가 부족한 악기 — 커뮤니티부터 찾으세요","Thin self-teaching material — find the community first"));} }
+  else { if((PR.lessonKR||3)>=4){ s+=5; why.push({t:L("레슨 선생님 구하기 쉬움 (전국 어디나)","Teachers are easy to find, just about anywhere"), p:5}); } }
 
   // ---- 환경 적합 보너스 ----
-  if(P.noiseEnv===1 && noiseV<=2){ s+=8; why.push({t:"야간 아파트에서도 눈치 안 보이는 음량", p:8}); }
+  if(P.noiseEnv===1 && noiseV<=2){ s+=8; why.push({t:L("야간 아파트에서도 눈치 안 보이는 음량","Quiet enough to play at night without annoying anyone"), p:8}); }
   if(P.goal==="버스킹" && (PR.portability||3)>=4) s+=6;
 
   // ---- 목표·합주 ----
   const ens=(inst.ensemble||[]).join(" ");
-  if(P.goal==="밴드" && /밴드/.test(ens)){ s+=10; why.push({t:"밴드 자리가 실제로 있는 악기", p:10}); }
-  if(P.goal==="오케" && /오케스트라|관현악|윈드/.test(ens)){ s+=12; why.push({t:"합주단 입단 루트 있음", p:12}); }
+  if(P.goal==="밴드" && /밴드/.test(ens)){ s+=10; why.push({t:L("밴드 자리가 실제로 있는 악기","There's a real seat for this in a band"), p:10}); }
+  if(P.goal==="오케" && /오케스트라|관현악|윈드/.test(ens)){ s+=12; why.push({t:L("합주단 입단 루트 있음","There's a clear route into an ensemble"), p:12}); }
   if(P.goal==="작곡" && /건반|전자|특수/.test(inst.family||"")){ s+=8; }
   if(P.goal==="힐링" && ((V.tags||[]).includes("명상적")||slot.genres.main.includes("명상·사운드힐링"))){ s+=8; }
   if(P.social==="big" && /오케스트라|밴드|앙상블|합주/.test(ens)) s+=4;
   if(P.social==="solo" && /독주|솔로/.test(roles+ens+(inst.desc||""))) s+=3;
 
   // ---- 노래 반주 ----
-  if(P.sing===2 && PL.singAlong===true){ s+=12; why.push({t:"샤워장 열창러에게: 노래하면서 칠 수 있는 악기입니다", p:12}); }
+  if(P.sing===2 && PL.singAlong===true){ s+=12; why.push({t:L("샤워장 열창러에게: 노래하면서 칠 수 있는 악기입니다","For the shower singer: you can play this one and sing at the same time"), p:12}); }
   if(P.sing===2 && P.goal==="버스킹" && PL.singAlong===true) s+=5;
 
   // ---- 경험·친족 ----
@@ -1128,28 +1277,28 @@ function scoreSlot(slot){
     });
     if(P.expDir==="same" && P.mainFam && fk.includes(P.mainFam)) kin=Math.max(kin, 20);
     if(P.expDir==="new" && fk.some(f=>P.expFams.includes(f))){ s-=10; kin=0; }
-    if(kin){ s+=kin; why.push({t:`이미 해본 악기 경험이 그대로 이어집니다 (운지·감각 호환)`, p:kin}); }
+    if(kin){ s+=kin; why.push({t:L(`이미 해본 악기 경험이 그대로 이어집니다 (운지·감각 호환)`,`What you already learned carries straight over — the fingering and feel transfer`), p:kin}); }
   }
   if(P.chords>=2 && PL.chordal) s+=5;
   if(P.notation===0 && eb>=4 && /클래식/.test(slot.genres.main.join())) s-=5;
 
   // ---- 간접 취향 ----
-  if(P.vintage>=1 && (slot.genres.main.includes("바로크·고음악")||(V.tags||[]).some(t=>/고풍|장인/.test(t)))){ const vp=Math.round(P.vintage*5); s+=vp; why.push({t:"옛것에 끌리는 당신 취향의 정중앙", p:vp}); }
-  if(P.ethnic>=1 && slot.genres.main.some(gn=>ETHNIC_GENRES.includes(gn))){ const ep=P.ethnic*4+(rar>=3?3:0); s+=ep; if(P.ethnic===2) why.push({t:"낯선 나라 음악 영상을 끝까지 보는 사람의 악기", p:ep}); }
-  if(P.gear>=1 && /전자|특수/.test(inst.family||"")){ const gp2=Math.round(P.gear*6); s+=gp2; why.push({t:"장비 만지는 재미까지 세트", p:gp2}); }
+  if(P.vintage>=1 && (slot.genres.main.includes("바로크·고음악")||(V.tags||[]).some(t=>/고풍|장인/.test(t)))){ const vp=Math.round(P.vintage*5); s+=vp; why.push({t:L("옛것에 끌리는 당신 취향의 정중앙","Dead centre of your pull towards old things"), p:vp}); }
+  if(P.ethnic>=1 && slot.genres.main.some(gn=>ETHNIC_GENRES.includes(gn))){ const ep=P.ethnic*4+(rar>=3?3:0); s+=ep; if(P.ethnic===2) why.push({t:L("낯선 나라 음악 영상을 끝까지 보는 사람의 악기","An instrument for someone who watches the whole video from a country they've never been to"), p:ep}); }
+  if(P.gear>=1 && /전자|특수/.test(inst.family||"")){ const gp2=Math.round(P.gear*6); s+=gp2; why.push({t:L("장비 만지는 재미까지 세트","Comes with the fun of tinkering with gear"), p:gp2}); }
   if(P.calm>=2 && slot.genres.main.includes("명상·사운드힐링")){ s+=6; }
 
   // ---- 통증·신체 ----
-  if(P.pain.includes("목") && JSON.stringify(B.postureRisk||[]).includes("목")){ s-=22; warn.push("목·어깨 통증에 부담되는 자세"); }
-  if(P.pain.includes("허리") && ((B.weight||1)>=4||JSON.stringify(B.postureRisk||[]).includes("허리"))){ s-=15; warn.push("허리에 부담 가능"); }
-  if(P.pain.includes("손목") && /건반/.test(inst.family||"")) warn.push("손목 통증 시 연습량 조절 필요");
+  if(P.pain.includes("목") && JSON.stringify(B.postureRisk||[]).includes("목")){ s-=22; warn.push(L("목·어깨 통증에 부담되는 자세","The playing posture is rough on a sore neck and shoulders")); }
+  if(P.pain.includes("허리") && ((B.weight||1)>=4||JSON.stringify(B.postureRisk||[]).includes("허리"))){ s-=15; warn.push(L("허리에 부담 가능","Could be hard on your lower back")); }
+  if(P.pain.includes("손목") && /건반/.test(inst.family||"")) warn.push(L("손목 통증 시 연습량 조절 필요","With wrist pain, keep practice sessions short"));
   if(P.hand===1 && /작아도|짧은 스케일|소형/.test(g(B,"handSize",""))) { s+=4; }
   if(P.hand===3 && /콘트라|더블베이스|튜바|바리톤/.test(inst.name)) s+=3;
   if(P.physical===0 && (B.weight||1)>=4) s-=4;
   if(P.physical===2 && /드럼|타악/.test(inst.family||"")) s+=4;
-  if(P.braces && (B.embouchure||0)>=2){ s-=15; warn.push("치아 교정 중엔 마우스피스가 고생 — 교정 후 재도전 추천"); }
-  if(P.nails===1 && /건반|피아노/.test(inst.family||"")) warn.push("긴 손톱과 건반은 앙숙입니다");
-  if(P.nails===1 && /클래식 기타/.test(inst.name)){ s+=3; why.push({t:"오른손 손톱이 필요한 악기 — 기른 손톱이 드디어 쓸모", p:3}); }
+  if(P.braces && (B.embouchure||0)>=2){ s-=15; warn.push(L("치아 교정 중엔 마우스피스가 고생 — 교정 후 재도전 추천","A mouthpiece against braces is genuinely painful — worth revisiting after they come off")); }
+  if(P.nails===1 && /건반|피아노/.test(inst.family||"")) warn.push(L("긴 손톱과 건반은 앙숙입니다","Long nails and keyboards do not get along"));
+  if(P.nails===1 && /클래식 기타/.test(inst.name)){ s+=3; why.push({t:L("오른손 손톱이 필요한 악기 — 기른 손톱이 드디어 쓸모","This one needs right-hand nails — yours finally have a job"), p:3}); }
   if(P.no.ugly && (pf==="F3"||(B.embouchure||0)>=2)) s-=8;
 
   return {slot, score:Math.round(s), gate, why, warn, variantNote};
@@ -1157,26 +1306,26 @@ function scoreSlot(slot){
 
 /* ============ 결과 ============ */
 function personaOf(){
-  if(P.abs>=6) return ["절대귀 초능력자형","기준음도 없이 음을 맞히는 그 귀, 아무나 못 가집니다"];
-  if((P.pitch||0)>=70 && P.vintage>=1.5) return ["시간여행 낭만파형","옛 소리에 반응하는 예민한 귀"];
-  if((P.rhythm||0)>=70 && (P.pitch||0)>=70) return ["올라운드 재능러형","귀도 몸도 준비된 사기 캐릭터"];
-  if((P.rhythm||0)>=70) return ["그루브 본능형","몸에 메트로놈이 내장된 타입"];
-  if((P.pitch||0)>=70) return ["예민한 귀 예술가형","미세한 음정 차이를 잡아내는 귀"];
-  if(P.rarityPref>=3) return ["희귀종 헌터형","남들 다 하는 건 재미없는 타입"];
-  if(P.calm>=2) return ["고요 수집가형","소리로 쉬는 법을 아는 사람"];
-  if(P.gear>=1) return ["장비덕후 개척자형","스펙표 읽는 게 취미인 타입"];
-  if(P.sing===2) return ["타고난 프론트맨형","마이크를 놓지 않는 타입"];
-  if(P.patience>=3) return ["대기만성 장인형","몇 년짜리 프로젝트에 설레는 타입"];
-  if(P.ethnic>=2) return ["세계음악 탐험가형","낯선 소리를 끝까지 듣는 귀"];
-  return ["숨은 재능 잠복기형","아직 만나지 못했을 뿐, 재능은 있습니다"];
+  if(P.abs>=6) return [L("절대귀 초능력자형","The Perfect-Pitch Superpower"),L("기준음도 없이 음을 맞히는 그 귀, 아무나 못 가집니다","Naming notes with no reference tone — not many people can do that")];
+  if((P.pitch||0)>=70 && P.vintage>=1.5) return [L("시간여행 낭만파형","The Time-Travelling Romantic"),L("옛 소리에 반응하는 예민한 귀","A sharp ear that lights up for old sounds")];
+  if((P.rhythm||0)>=70 && (P.pitch||0)>=70) return [L("올라운드 재능러형","The All-Rounder"),L("귀도 몸도 준비된 사기 캐릭터","Ear and body both ready — frankly a bit overpowered")];
+  if((P.rhythm||0)>=70) return [L("그루브 본능형","The Groove Instinct"),L("몸에 메트로놈이 내장된 타입","You've got a metronome built in somewhere")];
+  if((P.pitch||0)>=70) return [L("예민한 귀 예술가형","The Fine-Eared Artist"),L("미세한 음정 차이를 잡아내는 귀","An ear that catches the tiniest difference in pitch")];
+  if(P.rarityPref>=3) return [L("희귀종 헌터형","The Rare-Bird Hunter"),L("남들 다 하는 건 재미없는 타입","If everyone's doing it, you're already bored")];
+  if(P.calm>=2) return [L("고요 수집가형","The Collector of Quiet"),L("소리로 쉬는 법을 아는 사람","You know how to rest inside a sound")];
+  if(P.gear>=1) return [L("장비덕후 개척자형","The Gear Explorer"),L("스펙표 읽는 게 취미인 타입","Reading the spec sheet is half the fun for you")];
+  if(P.sing===2) return [L("타고난 프론트맨형","The Natural Frontperson"),L("마이크를 놓지 않는 타입","You are not putting that microphone down")];
+  if(P.patience>=3) return [L("대기만성 장인형","The Slow-Burn Craftsperson"),L("몇 년짜리 프로젝트에 설레는 타입","A multi-year project sounds exciting, not exhausting")];
+  if(P.ethnic>=2) return [L("세계음악 탐험가형","The World-Music Explorer"),L("낯선 소리를 끝까지 듣는 귀","You listen to unfamiliar sounds all the way through")];
+  return [L("숨은 재능 잠복기형","The Undiscovered Talent"),L("아직 만나지 못했을 뿐, 재능은 있습니다","You just haven't met your instrument yet")];
 }
 function radarSVG(){
   const vals=[
-    {l:"청음", v:P.pitch==null?50:P.pitch},
-    {l:"리듬", v:P.rhythm==null?50:P.rhythm},
-    {l:"절대음감", v:Math.round(P.abs/8*100)},
-    {l:"개성", v:Math.round(Math.min(3,P.rarityPref)/3*100)},
-    {l:"끈기", v:Math.round(P.patience/3*100)},
+    {l:L("청음","Pitch"), v:P.pitch==null?50:P.pitch},
+    {l:L("리듬","Rhythm"), v:P.rhythm==null?50:P.rhythm},
+    {l:L("절대음감","Abs. pitch"), v:Math.round(P.abs/8*100)},   // 레이더 라벨은 짧게 — SVG는 줄바꿈이 안 된다
+    {l:L("개성","Uniqueness"), v:Math.round(Math.min(3,P.rarityPref)/3*100)},
+    {l:L("끈기","Grit"), v:Math.round(P.patience/3*100)},
   ];
   const cx=130, cy=118, R0=78, n=vals.length;
   const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n; return (cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1);};
@@ -1195,28 +1344,32 @@ function contribHtml(r){
   const ws=[...r.why].sort((a,b)=>b.p-a.p).slice(0,5).filter(w=>w.p>0);
   if(!ws.length) return "";
   const mx=ws[0].p;
-  return `<hr class="divider"><p class="small" style="margin:4px 0 8px"><b>📊 점수는 이렇게 쌓였어요</b></p>`+
-    ws.map(w=>{const lbl=w.t.split("—")[0].split("(")[0].slice(0,20); return `<div class="cb"><span>${lbl}</span><div class="cbar"><i style="width:${Math.max(8,Math.round(w.p/mx*100))}%"></i></div><b>+${Math.round(w.p)}</b></div>`;}).join("");
+  return `<hr class="divider"><p class="small" style="margin:4px 0 8px"><b>${L("📊 점수는 이렇게 쌓였어요","📊 Where the points came from")}</b></p>`+
+    // 영어는 글자당 정보량이 적어 같은 20자면 너무 잘린다(넘치는 부분은 CSS ellipsis가 처리)
+    ws.map(w=>{const lbl=w.t.split("—")[0].split("(")[0].slice(0,isEN()?34:20); return `<div class="cb"><span>${lbl}</span><div class="cbar"><i style="width:${Math.max(8,Math.round(w.p/mx*100))}%"></i></div><b>+${Math.round(w.p)}</b></div>`;}).join("");
 }
 function rarityHtml(id){
   let p=RAR_TABLE[id];
   let txt;
-  if(p==null){ txt=`🦄 <b>측정 불가급 유니콘</b> — 시뮬레이션 수천 번에도 거의 안 나온 결과예요`; }
-  else if(p<=0.5) txt=`🦄 <b>유니콘급</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
-  else if(p<=1.5) txt=`💎 <b>초희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
-  else if(p<=4) txt=`🌟 <b>희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
-  else if(p<=10) txt=`✨ <b>흔치 않음</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`;
-  else txt=`🍀 국민 악기 당첨 — 약 <b>${p}%</b>가 같은 결과. 그만큼 검증된 길이에요`;
+  if(p==null){ txt=L(`🦄 <b>측정 불가급 유니콘</b> — 시뮬레이션 수천 번에도 거의 안 나온 결과예요`,
+                     `🦄 <b>Off-the-charts unicorn</b> — thousands of simulated quiz-takers, and almost none landed here.`); }
+  else if(p<=0.5) txt=L(`🦄 <b>유니콘급</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🦄 <b>Unicorn tier</b> — only about <b>${p}%</b> of people get this result.`);
+  else if(p<=1.5) txt=L(`💎 <b>초희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `💎 <b>Ultra rare</b> — only about <b>${p}%</b> of people get this result.`);
+  else if(p<=4)   txt=L(`🌟 <b>희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🌟 <b>Rare</b> — about <b>${p}%</b> of people get this result.`);
+  else if(p<=10)  txt=L(`✨ <b>흔치 않음</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `✨ <b>Uncommon</b> — about <b>${p}%</b> of people get this result.`);
+  else txt=L(`🍀 국민 악기 당첨 — 약 <b>${p}%</b>가 같은 결과. 그만큼 검증된 길이에요`,
+             `🍀 A crowd favorite — about <b>${p}%</b> land here too. That's a well-worn, well-supported path.`);
   return `<p class="rar">${txt}</p>`;
 }
 function guideHtml(id){
-  const g=GUIDE[id];
-  if(!g) return `<details class="guide"><summary>입문 가이드 보기</summary><p class="small">가이드를 준비하고 있어요! 조금만 기다려주세요.</p></details>`;
-  return `<details class="guide"><summary>입문 가이드 보기</summary>
-    <p>🚪 <b>이렇게 시작하세요</b><br>${g.how}</p>
-    <p>🧑‍🏫 <b>레슨은?</b><br>${g.lesson}</p>
-    <p>💸 <b>뭘 사면 되나요?</b><br>${g.buy}</p>
-    <p>🎯 <b>첫 한 달 목표</b><br>${g.firstGoal}</p></details>`;
+  const g=iGuide(id);
+  const sum=L("입문 가이드 보기","Read the starter guide");
+  if(!g) return `<details class="guide"><summary>${sum}</summary><p class="small">${L("가이드를 준비하고 있어요! 조금만 기다려주세요.","We're still writing this one — check back soon!")}</p></details>`;
+  return `<details class="guide"><summary>${sum}</summary>
+    <p>🚪 <b>${L("이렇게 시작하세요","How to start")}</b><br>${g.how}</p>
+    <p>🧑‍🏫 <b>${L("레슨은?","Do you need lessons?")}</b><br>${g.lesson}</p>
+    <p>💸 <b>${L("뭘 사면 되나요?","What should you buy?")}</b><br>${g.buy}</p>
+    <p>🎯 <b>${L("첫 한 달 목표","Your first-month goal")}</b><br>${g.firstGoal}</p></details>`;
 }
 const TRACK_YT=[["재즈","jazz"],["블루그래스","bluegrass"],["아이리시","irish"],["클래식","classical"],["록","rock"],["메탈","metal"],["블루스","blues"],["컨트리","country"],["탱고","tango"],["플라멩코","flamenco"],["클레즈머","klezmer"],["집시","gypsy"],["펑크","funk"],["보사노바","bossa nova"],["로커빌리","rockabilly slap"],["츠가루","tsugaru"],["트로트",""],["발칸","balkan"]];
 function ytQuery(slot){
@@ -1230,6 +1383,11 @@ function ytQuery(slot){
 function fmtCost(c){
   if(!c||!c.entryKRW) return "";
   const [a,b]=c.entryKRW;
+  if(isEN()){
+    // 한국 시장 실구매가라 통화는 원 그대로 두고, 자릿수만 영어권이 읽기 쉬운 K/M로 바꾼다
+    const e=n=>n>=1000000?(n/1000000).toFixed(n%1000000?1:0).replace(/\.0$/,"")+"M":(n>=1000?Math.round(n/1000)+"K":String(n));
+    return `Starter ≈ ₩${e(a)}–${e(b)}`;
+  }
   const f=n=>n>=10000000?(n/100000000).toFixed(1)+"억":n>=10000?Math.round(n/10000)+"만":n;
   return `입문가 약 ${f(a)}~${f(b)}원`;
 }
@@ -1240,11 +1398,12 @@ function accessInfo(inst){
   const lesson=PR.lessonKR||1, self=PR.selfLearn||1, bar=PR.entryBarrier||3, rare=g(inst,"vibe.rarityKR",3);
   const ok = (lesson>=3 || self>=4) && bar<=3 && price<=700000 && rare<=3;
   const bits=[];
-  if(lesson>=4) bits.push("동네 학원·레슨이 흔하고");
-  else if(lesson>=3) bits.push("레슨 구하기 어렵지 않고");
-  else if(self>=4) bits.push("독학 자료가 넘치고");
-  if(price>0) bits.push(price<100000?"입문 악기가 10만원 안쪽":`입문 악기가 ${Math.round(price/10000)}만원대부터`);
-  if(bar<=2) bits.push("첫 소리도 금방 나요");
+  if(lesson>=4) bits.push(L("동네 학원·레슨이 흔하고","teachers are easy to find"));
+  else if(lesson>=3) bits.push(L("레슨 구하기 어렵지 않고","lessons aren't hard to come by"));
+  else if(self>=4) bits.push(L("독학 자료가 넘치고","there's no shortage of self-teaching material"));
+  if(price>0) bits.push(price<100000 ? L("입문 악기가 10만원 안쪽","a starter costs under ₩100,000")
+                                     : L(`입문 악기가 ${Math.round(price/10000)}만원대부터`,`starters begin around ₩${price.toLocaleString("en-US")}`));
+  if(bar<=2) bits.push(L("첫 소리도 금방 나요","and you'll get a real sound out of it quickly"));
   return {ok, reason: bits.join(", ")};
 }
 function buildResult(){
@@ -1287,14 +1446,14 @@ function buildResult(){
 function easyNote(r){
   const a=accessInfo(r.slot.inst);
   return a.ok
-    ? `1순위 악기가 부담스럽다면 여기부터. ${a.reason}.`
-    : "1순위가 부담스럽다면 이쪽도 고려해보세요.";
+    ? L(`1순위 악기가 부담스럽다면 여기부터. ${a.reason}.`, `If your top match feels like a lot, start here instead — ${a.reason}.`)
+    : L("1순위가 부담스럽다면 이쪽도 고려해보세요.", "If your top match feels like a lot, this one's worth a look too.");
 }
 function resCardHtml(r, cls, rankTxt, crown, note){
   const inst=r.slot.inst;
   const isTop = cls==="";
   const whys=r.why.sort((a,b)=>b.p-a.p).slice(0, isTop?5:3);
-  const cavs=(inst.caveats||[]).slice(0, isTop?2:1);
+  const cavs=iCaveats(inst).slice(0, isTop?2:1);
   return `
   <div class="card resCard ${cls}">
     ${crown?`<div class="crown">👑</div>`:""}
@@ -1302,9 +1461,9 @@ function resCardHtml(r, cls, rankTxt, crown, note){
       <span class="rank">${rankTxt}</span>
       ${note?`<p class="small" style="margin:8px 4px 0">${note}</p>`:""}
       <div style="margin-top:8px">${artHtml(inst.id, isTop?110:88) || `<span class="big-emoji">${nameEmoji(inst.name, inst.family)}</span>`}</div>
-      <h2 style="margin:6px 0 0; font-size:1.6rem">${r.slot.dispName}</h2>
-      <p class="small">${inst.family} · ${fmtCost(inst.cost)}</p>
-      <p style="margin:8px 0" class="flavor">"${g(inst,"sound.toneDesc","")}"</p>
+      <h2 style="margin:6px 0 0; font-size:1.6rem">${dName(r.slot)}</h2>
+      <p class="small">${iFam(inst)} · ${fmtCost(inst.cost)}</p>
+      <p style="margin:8px 0" class="flavor">"${iToneDesc(inst)}"</p>
     </div>
     ${isTop?rarityHtml(inst.id):""}
     ${r.variantNote?`<p class="small" style="background:#E5F7F1;border-radius:14px;padding:8px 12px">${r.variantNote}</p>`:""}
@@ -1313,11 +1472,11 @@ function resCardHtml(r, cls, rankTxt, crown, note){
       ${r.warn.slice(0,2).map(w=>`<li class="warn">${w}</li>`).join("")}
     </ul>
     ${isTop?contribHtml(r):""}
-    ${cavs.length?`<p class="small">😈 각오할 것: ${cavs.join(" / ")}</p>`:""}
-    ${r.slot.track&&r.slot.track.note?`<p class="small">🎯 추천 트랙: ${r.slot.track.note}</p>`:""}
+    ${cavs.length?`<p class="small">${L("😈 각오할 것: ","😈 Go in knowing: ")}${cavs.join(" / ")}</p>`:""}
+    ${r.slot.track&&iTrackNote(inst,r.slot.track)?`<p class="small">${L("🎯 추천 트랙: ","🎯 Suggested path: ")}${iTrackNote(inst,r.slot.track)}</p>`:""}
     ${guideHtml(inst.id)}
-    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">▶️ 유튜브에서 연주 보기</a>
-    <p class="small center" style="margin:6px 0 0">유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요</p>
+    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube")}</a>
+    <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`)}</p>
   </div>`;
 }
 function wrapText(x, text, cx, y, maxW, lh, maxLines){
@@ -1346,7 +1505,7 @@ async function buildCard(){
     x.beginPath(); x.arc(rx,ry,sz,0,Math.PI*2); x.fill();
   }
   x.globalAlpha=1; x.textAlign="center";
-  x.fillStyle="#8A7A6E"; x.font="38px Jua"; x.fillText("살면서 악기 하나쯤은 다룰 줄 알아야지", W/2, 128);
+  x.fillStyle="#8A7A6E"; x.font="38px Jua"; x.fillText(L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should play one instrument"), W/2, 128);
   // 메인 카드
   x.fillStyle="#fff"; rr(60,190,960,1340,56); x.fill();
   x.lineWidth=7; x.strokeStyle="#FF7E67"; rr(60,190,960,1340,56); x.stroke();
@@ -1367,9 +1526,9 @@ async function buildCard(){
     URL.revokeObjectURL(url);
   }
   // 악기 이름 (스타일 트랙은 아래 칩으로 분리해 이름이 잘리지 않게)
-  const parts=R.top1.slot.dispName.split(" — ");
+  const parts=dName(R.top1.slot).split(" — ");
   const base=parts[0], track=parts.slice(1).join(" · ");
-  x.fillStyle="#8A7A6E"; x.font="34px Jua"; x.fillText("내 악기는 🎵", W/2, 968);
+  x.fillStyle="#8A7A6E"; x.font="34px Jua"; x.fillText(L("내 악기는 🎵","My instrument is 🎵"), W/2, 968);
   x.fillStyle="#4A3B32"; x.font=(base.length>11?"64px Jua":"82px Jua");
   x.fillText(base.length>17?base.slice(0,17)+"…":base, W/2, 1052);
   let ny=1052;
@@ -1382,12 +1541,13 @@ async function buildCard(){
   }
   // 한 줄 소개
   x.fillStyle="#8A7A6E"; x.font="34px 'Gowun Dodum'";
-  ny=wrapText(x, (g(inst,"sound.toneDesc","")||"").replace(/^"|"$/g,""), W/2, ny+70, 820, 48, track?2:3);
+  ny=wrapText(x, (iToneDesc(inst)||"").replace(/^"|"$/g,""), W/2, ny+70, 820, 48, track?2:3);
   // 점수 배지
   ny+=42;
   if(P.pitch!=null){
     x.font="36px Jua";
-    const line=`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":"");
+    const line=L(`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":""),
+                 `👂 Pitch ${P.pitch}   🥁 Rhythm ${P.rhythm}`+(P.abs>=6?"   🏅 Perfect pitch":""));
     const bw=Math.min(900, x.measureText(line).width+70);
     x.fillStyle="#FFF0EA"; rr(W/2-bw/2, ny-46, bw, 72, 36); x.fill();
     x.fillStyle="#E85F47"; x.fillText(line, W/2, ny);
@@ -1396,21 +1556,24 @@ async function buildCard(){
   // 희귀도
   const rp=RAR_TABLE[inst.id];
   x.font="36px Jua";
-  const rtxt = rp==null ? "🦄 아무도 못 받아본 유니콘 결과" : (rp<=1.5?`💎 상위 ${rp}%만 나오는 결과`:(rp<=4?`🌟 흔치 않은 결과 (약 ${rp}%)`:`🍀 같은 결과 약 ${rp}%`));
+  const rtxt = rp==null ? L("🦄 아무도 못 받아본 유니콘 결과","🦄 A unicorn result almost nobody gets")
+             : (rp<=1.5? L(`💎 상위 ${rp}%만 나오는 결과`,`💎 Only ${rp}% of people get this`)
+             : (rp<=4?   L(`🌟 흔치 않은 결과 (약 ${rp}%)`,`🌟 An uncommon result (about ${rp}%)`)
+             :           L(`🍀 같은 결과 약 ${rp}%`,`🍀 About ${rp}% share this result`)));
   const rw=Math.min(900, x.measureText(rtxt).width+70);
   x.fillStyle="#FFF4D6"; rr(W/2-rw/2, ny-46, rw, 72, 36); x.fill();
   x.fillStyle="#B8860B"; x.fillText(rtxt, W/2, ny);
   // 하단 CTA + 워터마크
-  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum'"; x.fillText("당신에게 맞는 악기는 뭘까요?", W/2, 1642);
+  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum'"; x.fillText(L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), W/2, 1642);
   x.fillStyle="#FF7E67"; rr(W/2-330, 1686, 660, 96, 48); x.fill();
   x.fillStyle="#fff"; x.font="44px Jua"; x.fillText("instrumentquiz.org", W/2, 1749);
-  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum'"; x.fillText("3분 테스트 · 악기 189종", W/2, 1826);
+  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum'"; x.fillText(L("3분 테스트 · 악기 189종","3-minute quiz · 189 instruments"), W/2, 1826);
   return c.toDataURL("image/png");
 }
 async function shareCard(){
   const btn=document.getElementById("shareBtn");
   const label=btn?btn.textContent:"";
-  if(btn){ btn.disabled=true; btn.textContent="🎨 카드 만드는 중…"; }
+  if(btn){ btn.disabled=true; btn.textContent=L("🎨 카드 만드는 중…","🎨 Making your card…"); }
   let dataUrl=null;
   try{ dataUrl=await buildCard(); }catch(e){}
   if(btn){ btn.disabled=false; btn.textContent=label; }
@@ -1419,7 +1582,7 @@ async function shareCard(){
     const blob=await (await fetch(dataUrl)).blob();
     const file=new File([blob], "my-instrument.png", {type:"image/png"});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:"나의 운명의 악기", text:"나한테 맞는 악기 찾았어요 🎵 "+resultLink()});
+      await navigator.share({files:[file], title:L("나의 운명의 악기","The instrument I was made for"), text:L("나한테 맞는 악기 찾았어요 🎵 ","I found the instrument that fits me 🎵 ")+resultLink()});
       return;
     }
   }catch(e){ /* 공유 취소·미지원 → 모달 폴백 */ }
@@ -1427,69 +1590,75 @@ async function shareCard(){
 }
 
 function showResult(shared){
+  VIEW=()=>showResult(shared);
   document.getElementById("bar").style.display="none";
   const R=buildResult();
-  if(!R.top1){ render(`<div class="center card"><h2>이럴 수가...</h2><p>모든 악기가 걸러졌습니다. 조건을 조금 느슨하게 다시 해볼까요?</p><button class="btn" onclick="APP.restart()">다시 하기</button></div>`); return; }
-  const absBadge = P.abs>=6 ? `<span class="tag sun">🏅 절대음감 가능성</span>` : "";
-  const pitchTag = P.pitch!=null ? `<span class="tag">👂 청음 ${P.pitch}점</span>` : "";
-  const rhyTag = P.rhythm!=null ? `<span class="tag mint">🥁 리듬 ${P.rhythm}점</span>` : "";
+  if(!R.top1){ render(`<div class="center card"><h2>${L("이럴 수가...","Well, this is awkward...")}</h2><p>${L("모든 악기가 걸러졌습니다. 조건을 조금 느슨하게 다시 해볼까요?","Every single instrument got filtered out. Want to try again with slightly looser conditions?")}</p><button class="btn" onclick="APP.restart()">${L("다시 하기","Start over")}</button></div>`); return; }
+  const absBadge = P.abs>=6 ? `<span class="tag sun">${L("🏅 절대음감 가능성","🏅 Possible perfect pitch")}</span>` : "";
+  const pitchTag = P.pitch!=null ? `<span class="tag">${L(`👂 청음 ${P.pitch}점`,`👂 Pitch ${P.pitch}`)}</span>` : "";
+  const rhyTag = P.rhythm!=null ? `<span class="tag mint">${L(`🥁 리듬 ${P.rhythm}점`,`🥁 Rhythm ${P.rhythm}`)}</span>` : "";
   const mateHtml = R.mate ? `
     <div class="card">
-      <h3 class="jua" style="margin:0 0 6px">💘 당신과 잘 맞는 연주자</h3>
-      <p><b>${R.mate.slot.dispName}</b> 하는 사람 — 당신이 나설 때 묵묵히 받쳐주고, 당신이 지칠 때 멜로디를 넘겨받는 사이. 같이 합주하면 케미 터집니다.</p>
-      ${R.rival?`<p class="small">⚡ 부딪힐 수 있는 사람: <b>${R.rival.slot.dispName}</b> 하는 사람 — 서로 주인공을 하겠다고 싸울 확률 높음. (그래도 미워하진 마세요)</p>`:""}
+      <h3 class="jua" style="margin:0 0 6px">${L("💘 당신과 잘 맞는 연주자","💘 Your musical soulmate")}</h3>
+      <p>${L(`<b>${dName(R.mate.slot)}</b> 하는 사람 — 당신이 나설 때 묵묵히 받쳐주고, 당신이 지칠 때 멜로디를 넘겨받는 사이. 같이 합주하면 케미 터집니다.`,
+             `Someone who plays the <b>${dName(R.mate.slot)}</b> — they'll hold everything together while you step forward, and take the melody when you run out of breath. Put you two in a room and it just works.`)}</p>
+      ${R.rival?`<p class="small">${L(`⚡ 부딪힐 수 있는 사람: <b>${dName(R.rival.slot)}</b> 하는 사람 — 서로 주인공을 하겠다고 싸울 확률 높음. (그래도 미워하진 마세요)`,
+             `⚡ Who you'd butt heads with: someone on the <b>${dName(R.rival.slot)}</b> — you'd both want the spotlight. (Be nice to them anyway.)`)}</p>`:""}
     </div>`:"";
   const wildHtml = R.wild ? `
     <div class="card" style="border-style:dashed">
-      <h3 class="jua" style="margin:0 0 6px">🃏 와일드카드</h3>
-      <p><b>${R.wild.slot.dispName}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — 점수가 꽤 나왔는데 아무도 안 하는 악기입니다. "그게 뭐예요?"라는 질문을 평생 듣고 싶다면.</p>
+      <h3 class="jua" style="margin:0 0 6px">${L("🃏 와일드카드","🃏 Wild card")}</h3>
+      <p>${L(`<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — 점수가 꽤 나왔는데 아무도 안 하는 악기입니다. "그게 뭐예요?"라는 질문을 평생 듣고 싶다면.`,
+             `<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — it scored surprisingly well for you, and almost nobody plays it. Pick this if you want to hear 'wait, what is that?' for the rest of your life.`)}</p>
     </div>`:"";
   const pityHtml = R.pity && R.pity.score>=70 ? `
     <div class="card" style="background:#FFF4F0">
-      <h3 class="jua" style="margin:0 0 6px">🥲 아차상</h3>
-      <p><b>${R.pity.slot.dispName}</b> — 사실 점수는 최상위권이었는데, <b>"${R.pity.gate}"</b> 때문에 눈물을 머금고 탈락했습니다. 마음이 바뀌면 다시 오세요.</p>
+      <h3 class="jua" style="margin:0 0 6px">${L("🥲 아차상","🥲 So close")}</h3>
+      <p>${L(`<b>${dName(R.pity.slot)}</b> — 사실 점수는 최상위권이었는데, <b>"${R.pity.gate}"</b> 때문에 눈물을 머금고 탈락했습니다. 마음이 바뀌면 다시 오세요.`,
+             `<b>${dName(R.pity.slot)}</b> — it actually scored near the very top, but we had to rule it out over one thing: <b>${R.pity.gate}</b>. If you ever change your mind about that, come back.`)}</p>
     </div>`:"";
   const per=personaOf();
   render(`
     ${shared?`<div class="card" style="background:#F0EAFE; text-align:center">
-      <p style="margin:0 0 2px"><b>👀 친구가 공유한 결과예요!</b></p>
-      <p class="small" style="margin:0 0 12px">아래는 친구의 운명의 악기. 당신 것도 궁금하지 않나요?</p>
-      <button class="btn big" onclick="APP.start()">🎵 나도 테스트 해보기<br><span style="font-size:.8rem;opacity:.9">3분이면 끝나요</span></button>
+      <p style="margin:0 0 2px"><b>${L("👀 친구가 공유한 결과예요!","👀 A friend shared their result with you!")}</b></p>
+      <p class="small" style="margin:0 0 12px">${L("아래는 친구의 운명의 악기. 당신 것도 궁금하지 않나요?","That's their instrument below. Curious what yours would be?")}</p>
+      <button class="btn big" onclick="APP.start()">${L("🎵 나도 테스트 해보기","🎵 Take the quiz myself")}<br><span style="font-size:.8rem;opacity:.9">${L("3분이면 끝나요","Takes about 3 minutes")}</span></button>
     </div>`:""}
     <div class="center" style="margin-bottom:10px">
-      <h1 style="font-size:1.5rem; margin:10px 0 4px">🔮 운명의 악기가 정해졌습니다</h1>
+      <h1 style="font-size:1.5rem; margin:10px 0 4px">${L("🔮 운명의 악기가 정해졌습니다","🔮 Your instrument has been decided")}</h1>
       <div>${pitchTag}${rhyTag}${absBadge}</div>
     </div>
     <div class="card">
       <div class="center">
-        <span class="tag lav" style="font-size:1rem">🧬 당신은 「${per[0]}」</span>
+        <span class="tag lav" style="font-size:1rem">${L(`🧬 당신은 「${per[0]}」`,`🧬 You are: ${per[0]}`)}</span>
         <p class="small" style="margin:6px 0 0">${per[1]}</p>
       </div>
       <div class="radarwrap">${radarSVG()}</div>
-      <p class="small center" style="margin:2px 0 0">악기 <b>189종</b> 중 당신의 조건(몸·환경·예산)을 통과한 건 <b>${R.aliveN}종</b>.<br>그 안에서 적성·취향 점수를 합산해 아래 순위가 나왔어요.</p>
+      <p class="small center" style="margin:2px 0 0">${L(`악기 <b>189종</b> 중 당신의 조건(몸·환경·예산)을 통과한 건 <b>${R.aliveN}종</b>.<br>그 안에서 적성·취향 점수를 합산해 아래 순위가 나왔어요.`,
+        `Of <b>189 instruments</b>, <b>${R.aliveN}</b> made it past your body, living situation and budget.<br>We then ranked those by aptitude and taste to get the results below.`)}</p>
     </div>
-    ${resCardHtml(R.top1, "", "가장 어울리는 악기", true)}
-    ${R.cands[0]?resCardHtml(R.cands[0], "second", "🌱 좀 더 쉽게 시작하고 싶다면", false, easyNote(R.cands[0])):""}
-    ${R.cands[1]?resCardHtml(R.cands[1], "third", "👀 이런 악기도 있어요", false, "취향은 맞는데 조금 색다른 쪽이에요. 이런 선택지도 있다는 정도로 봐주세요."):""}
+    ${resCardHtml(R.top1, "", L("가장 어울리는 악기","Your best match"), true)}
+    ${R.cands[0]?resCardHtml(R.cands[0], "second", L("🌱 좀 더 쉽게 시작하고 싶다면","🌱 If you'd rather start easy"), false, easyNote(R.cands[0])):""}
+    ${R.cands[1]?resCardHtml(R.cands[1], "third", L("👀 이런 악기도 있어요","👀 And there's also this"), false, L("취향은 맞는데 조금 색다른 쪽이에요. 이런 선택지도 있다는 정도로 봐주세요.","It fits your taste but comes from a different corner. Just so you know the option exists.")):""}
     ${mateHtml}
     ${wildHtml}
     ${pityHtml}
     ${shared?`
     <div class="card" style="background:#FFF0EA; text-align:center">
-      <p style="margin:0 0 4px"><b>🤔 나한테 맞는 악기는 뭘까?</b></p>
-      <p class="small" style="margin:0 0 12px">귀 테스트 + 취향 문답으로 악기 189종 중에서 찾아드려요</p>
-      <button class="btn big" onclick="APP.start()">🎵 나도 테스트 해보기<br><span style="font-size:.8rem;opacity:.9">3분이면 끝나요 · 무료</span></button>
+      <p style="margin:0 0 4px"><b>${L("🤔 나한테 맞는 악기는 뭘까?","🤔 So what's YOUR instrument?")}</b></p>
+      <p class="small" style="margin:0 0 12px">${L("귀 테스트 + 취향 문답으로 악기 189종 중에서 찾아드려요","An ear test plus a few questions about you, matched against 189 instruments")}</p>
+      <button class="btn big" onclick="APP.start()">${L("🎵 나도 테스트 해보기","🎵 Take the quiz myself")}<br><span style="font-size:.8rem;opacity:.9">${L("3분이면 끝나요 · 무료","About 3 minutes · free")}</span></button>
     </div>
     `:`
     <div class="card" style="background:#FFF0EA; text-align:center; padding-bottom:16px">
-      <p style="margin:0 0 2px"><b>내 악기 재능, 친구들에게 공유해봐요 🎵</b></p>
-      <p class="small" style="margin:0 0 12px">친구는 어떤 악기가 나올지도 궁금하잖아요</p>
-      <button class="btn big" id="shareBtn" onclick="APP.shareCard()">📸 인스타 스토리에 자랑하기</button>
-      <button class="btn mint" style="margin-top:10px" onclick="APP.copyLink()">🔗 친구에게 내 악기 공유하기</button>
-      <p class="small" style="margin:8px 0 0">링크를 누르면 친구도 바로 이 결과를 볼 수 있어요</p>
+      <p style="margin:0 0 2px"><b>${L("내 악기 재능, 친구들에게 공유해봐요 🎵","Show your friends what you got 🎵")}</b></p>
+      <p class="small" style="margin:0 0 12px">${L("친구는 어떤 악기가 나올지도 궁금하잖아요","Aren't you curious what they'd get?")}</p>
+      <button class="btn big" id="shareBtn" onclick="APP.shareCard()">${L("📸 인스타 스토리에 자랑하기","📸 Share to Instagram Stories")}</button>
+      <button class="btn mint" style="margin-top:10px" onclick="APP.copyLink()">${L("🔗 친구에게 내 악기 공유하기","🔗 Send a friend my result")}</button>
+      <p class="small" style="margin:8px 0 0">${L("링크를 누르면 친구도 바로 이 결과를 볼 수 있어요","One tap on the link and they'll see exactly this result")}</p>
     </div>
-    <button class="btn ghost" onclick="APP.share()">결과 텍스트 복사 📋</button>
-    <button class="btn ghost" onclick="APP.restart()">🔄 다시 테스트하기</button>`}
+    <button class="btn ghost" onclick="APP.share()">${L("결과 텍스트 복사 📋","Copy result as text 📋")}</button>
+    <button class="btn ghost" onclick="APP.restart()">${L("🔄 다시 테스트하기","🔄 Retake the quiz")}</button>`}
   `);
   APP._R=R;
 }
@@ -1497,13 +1666,14 @@ function showResult(shared){
 function share(){
   const R=APP._R; if(!R)return;
   const lines=[
-    "🎵 살면서 악기 하나쯤은 다룰 줄 알아야지 — 내 결과",
-    `👑 운명의 악기: ${R.top1.slot.dispName}`,
-    ...(R.cands.map((c,i)=>`${i+2}위: ${c.slot.dispName}`)),
-    P.pitch!=null?`👂 청음 ${P.pitch}점 / 🥁 리듬 ${P.rhythm}점${P.abs>=6?" / 🏅 절대음감 가능성":""}`:"",
-    "내 결과 그대로 보기: "+resultLink()
+    L("🎵 살면서 악기 하나쯤은 다룰 줄 알아야지 — 내 결과","🎵 Everyone should play one instrument — here's mine"),
+    L(`👑 운명의 악기: ${dName(R.top1.slot)}`,`👑 My instrument: ${dName(R.top1.slot)}`),
+    ...(R.cands.map((c,i)=>L(`${i+2}위: ${dName(c.slot)}`,`#${i+2}: ${dName(c.slot)}`))),
+    P.pitch!=null?L(`👂 청음 ${P.pitch}점 / 🥁 리듬 ${P.rhythm}점${P.abs>=6?" / 🏅 절대음감 가능성":""}`,
+                    `👂 Pitch ${P.pitch} / 🥁 Rhythm ${P.rhythm}${P.abs>=6?" / 🏅 possible perfect pitch":""}`):"",
+    L("내 결과 그대로 보기: ","See my full result: ")+resultLink()
   ].filter(Boolean);
-  navigator.clipboard.writeText(lines.join("\n")).then(()=>alert("복사 완료! 어디든 붙여넣어 자랑하세요 🎉"));
+  navigator.clipboard.writeText(lines.join("\n")).then(()=>alert(L("복사 완료! 어디든 붙여넣어 자랑하세요 🎉","Copied! Paste it anywhere and show off 🎉")));
 }
 
 /* ============ 배경 낙서 배치 (실물 일러스트 우선, 없으면 기본 낙서) ============ */
@@ -1536,7 +1706,7 @@ window.APP={
   _rhythm:runRhythm, _ts:()=>testState, _sched:()=>SCHED.length, _pat:()=>RPATTERNS,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
-  share, shareCard,
+  share, shareCard, setLang, _lang:()=>LANG,
   // 시뮬레이션: 랜덤 프로필 n명을 엔진에 통과시켜 1위 악기 분포 집계 (희귀도 테이블용)
   _mc(n){
     const cnt={};
@@ -1575,6 +1745,7 @@ window.APP={
   _slots: SLOTS, _profile:()=>P, _score:scoreSlot, _build:buildResult
 };
 resetP();
+bootLang();
 if(!loadShared()) showIntro();
 window.addEventListener("hashchange", ()=>{ if(location.hash.length>1) loadShared(); });
 })();
