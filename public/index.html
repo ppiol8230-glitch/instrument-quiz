@@ -266,8 +266,8 @@ ALL.forEach(inst=>{
 let P;
 function resetP(){
   P = {
-    exp:0, expFams:[], mainFam:null, expDir:null, notation:1, chords:0,
-    pitch:null, abs:0, melody:0, rhythm:null, singSelf:1,
+    exp:0, expFams:[], mainFam:null, expDir:null, notation:0, chords:0,
+    pitch:null, abs:0, melody:0, rhythm:null, singSelf:1, skipT:false,
     no:{saliva:false,callus:false,embouchure:false,heavy:false,posture:false,maint:false,ugly:false},
     handJob:0, breath:2, braces:false, hand:2, pain:[], nails:0, physical:1,
     noiseEnv:2, elec:1, budget:2, learn:"lesson", lessonEnv:2, daily:2, carry:2, care:1,
@@ -307,28 +307,24 @@ const Q = [
   {t:"완전히 새로운 세계로", fx:()=>{P.expDir="new"}},
   {t:"운명에 맡기겠습니다", fx:()=>{P.expDir=null}},
  ]},
-{id:"A5", icon:"🎼", title:"악보(콩나물)를 보면?", flavor:"콩나물무침 얘기가 아닙니다.",
+{id:"A5", icon:"🎼", title:"악보나 코드, 아는 게 있나요?", flavor:"해당되는 걸 모두 골라주세요. 콩나물무침 얘기가 아닙니다.", multi:true,
  opts:[
-  {t:"못 읽어요. 콩나물은 먹는 것", fx:()=>{P.notation=0}},
-  {t:"더듬더듬 읽어요", fx:()=>{P.notation=1}},
-  {t:"술술 읽어요", fx:()=>{P.notation=2}},
- ]},
-{id:"A6", icon:"🎸", title:"코드(C, Am7 같은 것)를 아나요?",
- opts:[
-  {t:"몰라요, 암호 같아요", fx:()=>{P.chords=0}},
-  {t:"이름만 들어봤어요", fx:()=>{P.chords=1}},
-  {t:"몇 개는 잡을 줄 알아요", fx:()=>{P.chords=2}},
+  {t:"악보(콩나물)를 술술 읽어요", fx:()=>{P.notation=Math.max(P.notation,2)}},
+  {t:"악보를 더듬더듬은 읽어요", fx:()=>{P.notation=Math.max(P.notation,1)}},
+  {t:"코드(C, Am7 같은 것)를 잡을 줄 알아요", fx:()=>{P.chords=Math.max(P.chords,2)}},
+  {t:"코드 이름 정도는 들어봤어요", fx:()=>{P.chords=Math.max(P.chords,1)}},
+  {t:"둘 다 처음이에요 (완전 백지)", exclusive:true, fx:()=>{}},
  ]},
 {id:"TESTS", type:"tests"},
 {id:"A7", icon:"🎤", title:"노래방에서 들어본 말은?", flavor:"테스트를 건너뛰셨으니 자백으로 대신합니다.",
- when:()=>P.pitch===null,
+ when:()=>!!P.skipT,   // ⚠️ pitch===null로 판정하면 A7 답변(fx가 pitch 설정) 순간 A7이 activeQs에서 빠져 다음 질문이 건너뛰어짐
  opts:[
   {t:"\"잘 맞춘다\" 자주 들어요", fx:()=>{P.pitch=75; P.singSelf=2}},
   {t:"가끔 칭찬받는 정도", fx:()=>{P.pitch=55; P.singSelf=1}},
   {t:"음치 소리 들어봤어요...", fx:()=>{P.pitch=25; P.singSelf=0}},
   {t:"노래방을 안 갑니다", fx:()=>{P.pitch=50}},
  ]},
-{id:"C1", icon:"💪", title:"\"이건 감당 못 하겠다\" 싶은 걸 모두 골라주세요", flavor:"어떤 악기든 몸에 뭔가를 요구합니다. 미리 거르는 게 서로 편해요.", multi:true,
+{id:"C1", icon:"💪", title:"\"이건 감당 못 하겠다\" 싶거나, 내 상황에 해당되는 걸 모두 골라주세요", flavor:"어떤 악기든 몸에 뭔가를 요구합니다. 미리 거르는 게 서로 편해요.", multi:true,
  opts:[
   {t:"연주 중에 침이 고여서 중간중간 빼야 함", fx:()=>{P.no.saliva=true}},
   {t:"손끝이 아프고 굳은살이 박임", fx:()=>{P.no.callus=true}},
@@ -337,25 +333,16 @@ const Q = [
   {t:"목과 어깨를 비튼 자세를 오래 유지", fx:()=>{P.no.posture=true}},
   {t:"소모품을 계속 깎고 손질함", fx:()=>{P.no.maint=true}},
   {t:"처음 몇 달은 소음에 가까운 소리가 남", fx:()=>{P.no.ugly=true}},
-  {t:"다 감당할 수 있습니다 (각오 완료)", exclusive:true, fx:()=>{}},
+  {t:"손끝이 직업 도구라 흠집도 안 됨 (정밀 작업·피부 만지는 일)", fx:()=>{P.handJob=2}},
+  {t:"숨차는 건 무리 — 계단 5층이면 헐떡·호흡기 지병", fx:()=>{P.breath=0}},
+  {t:"치아 교정 중이거나 계획 있음", fx:()=>{P.braces=true}},
+  {t:"다 감당 가능, 해당사항 없음 (각오 완료)", exclusive:true, fx:()=>{}},
  ]},
-{id:"C2", icon:"🖐️", title:"당신의 손은 직업 도구인가요?", flavor:"정밀한 손작업, 피부를 만지는 일 등등.",
+{id:"E5", icon:"🏺", title:"물건을 고를 때 나는?",
  opts:[
-  {t:"네, 손끝에 흠집도 안 돼요", fx:()=>{P.handJob=2}},
-  {t:"어느 정도는 괜찮아요", fx:()=>{P.handJob=1}},
-  {t:"전혀 상관없어요", fx:()=>{P.handJob=0}},
- ]},
-{id:"E5", icon:"👕", title:"옷을 고를 때 나는?",
- opts:[
-  {t:"유행 안 타는 클래식한 스타일", fx:()=>{P.trendPref=1}},
-  {t:"요즘 트렌드는 챙기는 편", fx:()=>{P.trendPref=3}},
-  {t:"아무거나 잘 어울리면 그만", fx:()=>{P.trendPref=2}},
- ]},
-{id:"C3", icon:"🏃", title:"계단 5층을 오르면?",
- opts:[
-  {t:"멀쩡합니다", fx:()=>{P.breath=2}},
-  {t:"숨이 좀 차지만 금방 회복", fx:()=>{P.breath=1}},
-  {t:"한참 헐떡여요 / 호흡기 지병 있음", fx:()=>{P.breath=0}},
+  {t:"세월과 이야기가 묻은 오래된 물건에 끌린다", fx:()=>{P.vintage+=1; P.trendPref=1}},
+  {t:"최신 유행·신상이 최고", fx:()=>{P.gear+=.3; P.trendPref=3}},
+  {t:"쓸모 있으면 그만, 딱히 감정 없음", fx:()=>{P.trendPref=2}},
  ]},
 {id:"D1", icon:"🏠", title:"주로 연습하게 될 곳은?",
  opts:[
@@ -370,16 +357,11 @@ const Q = [
   {t:"미래로 — 신기술을 구경하고 싶다", fx:()=>{P.gear+=1; addG("일렉트로닉",.8)}},
   {t:"지금이 제일 좋다", fx:()=>{}},
  ]},
-{id:"C4", icon:"😬", title:"치아 교정 중이거나 계획이 있나요?", when:()=>!P.no.embouchure,
- opts:[
-  {t:"네", fx:()=>{P.braces=true}},
-  {t:"아니오", fx:()=>{}},
- ]},
 {id:"D2", icon:"🎧", title:"헤드폰 끼고 연습하는 전자악기는 어때요?",
  opts:[
   {t:"악기는 역시 통울림이지", fx:()=>{P.elec=0}},
   {t:"전자도 좋아요", fx:()=>{P.elec=1}},
-  {t:"오히려 전자가 취향", fx:()=>{P.elec=2; P.gear+=.5}},
+  {t:"오히려 전자가 취향", fx:()=>{P.elec=2; P.gear+=1}},
  ]},
 {id:"E11", icon:"🚿", title:"샤워할 때 노래를 부르나요?",
  opts:[
@@ -387,11 +369,13 @@ const Q = [
   {t:"흥얼흥얼 정도", fx:()=>{P.sing=1}},
   {t:"조용히 씻습니다", fx:()=>{P.sing=0}},
  ]},
-{id:"C5", icon:"🤏", title:"손 크기는?",
+{id:"C5", icon:"🤏", title:"당신의 손 이야기 — 해당되는 걸 모두", multi:true,
+ after:()=>{ P.hand = (P._hs&&P._hb)?2 : P._hs?1 : P._hb?3 : 2; },
  opts:[
-  {t:"작은 편", fx:()=>{P.hand=1}},
-  {t:"보통", fx:()=>{P.hand=2}},
-  {t:"큰 편 (문어발 소리 들음)", fx:()=>{P.hand=3}},
+  {t:"손이 작은 편", fx:()=>{P._hs=1}},
+  {t:"손이 큰 편 (문어발 소리 들음)", fx:()=>{P._hb=1}},
+  {t:"손톱을 기르거나 꾸미는 편", fx:()=>{P.nails=1}},
+  {t:"평범한 손입니다", exclusive:true, fx:()=>{}},
  ]},
 {id:"E2", icon:"📱", title:"유튜브에 처음 보는 나라의 길거리 연주 영상이 떴어요",
  opts:[
@@ -423,8 +407,7 @@ const Q = [
 {id:"D4", icon:"🧑‍🏫", title:"어떻게 배우는 게 잘 맞아요?",
  opts:[
   {t:"선생님께 대면 레슨", fx:()=>{P.learn="lesson"}},
-  {t:"인강·유튜브 독학", fx:()=>{P.learn="self"}},
-  {t:"책 보면서 독학", fx:()=>{P.learn="self"}},
+  {t:"인강·유튜브·책으로 독학", fx:()=>{P.learn="self"}},
   {t:"일단 만지면서 몸으로", fx:()=>{P.learn="wild"}},
  ]},
 {id:"D5", icon:"🗺️", title:"동네에서 레슨 구하기는?", when:()=>P.learn==="lesson",
@@ -439,12 +422,6 @@ const Q = [
   {t:"냉장고 사정대로 즉흥으로", fx:()=>{P.improvPref=3; addG("재즈",.7); addG("블루스",.4)}},
   {t:"요리는 시켜 먹는 것", fx:()=>{P.improvPref=2}},
  ]},
-{id:"D6", icon:"⏰", title:"하루에 현실적으로 낼 수 있는 시간은?",
- opts:[
-  {t:"15분 (양치질 2번 분량)", fx:()=>{P.daily=1}},
-  {t:"30분~1시간", fx:()=>{P.daily=2}},
-  {t:"1시간 이상 (진심임)", fx:()=>{P.daily=3}},
- ]},
 {id:"E6", icon:"🛍️", title:"남들과 같은 물건을 쓰는 것에 대해",
  opts:[
   {t:"검증된 거라 마음 편함", fx:()=>{P.rarityPref=1}},
@@ -453,8 +430,7 @@ const Q = [
  ]},
 {id:"D7", icon:"🎒", title:"악기를 들고 다닌다면?",
  opts:[
-  {t:"차가 있어서 뭐든 OK", fx:()=>{P.carry=3}},
-  {t:"대중교통 — 백팩 사이즈까지", fx:()=>{P.carry=2}},
+  {t:"들고 다닐 수 있어요 (차든 대중교통이든)", fx:()=>{P.carry=2}},
   {t:"주머니 사이즈였으면...", fx:()=>{P.carry=1}},
   {t:"집에만 둘 거예요", fx:()=>{P.carry=4}},
  ]},
@@ -464,55 +440,11 @@ const Q = [
   {t:"두세 달은 버텨본다", fx:()=>{P.patience=2}},
   {t:"몇 년짜리일수록 오히려 끌린다", fx:()=>{P.patience=3}},
  ]},
-{id:"D8", icon:"🪴", title:"식물이나 반려동물을 돌보는 편인가요?",
- opts:[
-  {t:"잘 돌봐요, 루틴 좋아함", fx:()=>{P.care=2}},
-  {t:"노력은 합니다", fx:()=>{P.care=1}},
-  {t:"선인장도 죽였습니다", fx:()=>{P.care=0}},
- ]},
 {id:"E8", icon:"🎉", title:"모임에서 나는?",
  opts:[
   {t:"가운데서 주목받으면 신남", fx:()=>{P.showPref=3}},
   {t:"필요할 때만 나섬", fx:()=>{P.showPref=2}},
   {t:"뒤에서 관찰하는 게 좋음", fx:()=>{P.showPref=1}},
- ]},
-{id:"E4", icon:"📲", title:"새 스마트폰을 사면?",
- opts:[
-  {t:"설정을 다 뒤져보고 세팅한다", fx:()=>{P.gear+=1}},
-  {t:"기본 그대로 쓴다", fx:()=>{}},
- ]},
-{id:"E10", icon:"🔋", title:"주말에 충전되는 방식은?",
- opts:[
-  {t:"혼자 몰입하는 시간", fx:()=>{P.social="solo"}},
-  {t:"소수의 친구와 도란도란", fx:()=>{P.social="small"}},
-  {t:"여럿이 왁자지껄", fx:()=>{P.social="big"}},
- ]},
-{id:"E13", icon:"🧶", title:"반복 작업(뜨개질·퍼즐·필사 같은 것)은?",
- opts:[
-  {t:"명상 같아서 좋다", fx:()=>{P.repeatOk=1}},
-  {t:"3분 만에 딴생각 함", fx:()=>{P.repeatOk=0}},
- ]},
-{id:"C8", icon:"💅", title:"손톱을 기르는 편인가요?",
- opts:[
-  {t:"기르거나 꾸미는 편", fx:()=>{P.nails=1}},
-  {t:"짧게 유지", fx:()=>{P.nails=0}},
- ]},
-{id:"E12", icon:"🏺", title:"오래된 물건(빈티지·중고·골동품)에 대한 감정은?",
- opts:[
-  {t:"이야기가 담겨 있어 좋다", fx:()=>{P.vintage+=1}},
-  {t:"새것이 최고다", fx:()=>{P.gear+=.3}},
-  {t:"딱히 감정 없음", fx:()=>{}},
- ]},
-{id:"E14", icon:"🧭", title:"지도에 없는 골목길을 발견하면?",
- opts:[
-  {t:"일단 들어가 본다", fx:()=>{P.explore=1; P.rarityPref+=.5}},
-  {t:"원래 가던 길로 간다", fx:()=>{}},
- ]},
-{id:"C9", icon:"🕺", title:"몸을 쓰는 활동(운동·춤)은?",
- opts:[
-  {t:"좋아함, 몸이 근질근질", fx:()=>{P.physical=2}},
-  {t:"보통", fx:()=>{P.physical=1}},
-  {t:"싫음, 나는 정적인 사람", fx:()=>{P.physical=0}},
  ]},
 {id:"F1", icon:"🎧", title:"\"이건 한번 연주해보고 싶다\" 싶은 음악을 모두! (1/3)", flavor:"익숙한 것들부터.", multi:true, genrePick:true,
  opts:["클래식","재즈","록·메탈","팝·싱어송라이터","포크","일렉트로닉","힙합·R&B","영화·게임 OST","CCM·교회음악"].map(g=>({t:g, sub:GDESC[g], fx:()=>addG(g,2)}))},
@@ -546,11 +478,6 @@ const Q = [
   {t:"밴드 결성!", fx:()=>{P.goal="밴드"}},
   {t:"오케스트라·합주단 입단", fx:()=>{P.goal="오케"}},
   {t:"작곡·프로듀싱 도구로", fx:()=>{P.goal="작곡"}},
- ]},
-{id:"F7", icon:"🫲", title:"왼손잡이세요?",
- opts:[
-  {t:"네", fx:()=>{P.lefty=true}},
-  {t:"아니오", fx:()=>{}},
  ]},
 ];
 
@@ -664,7 +591,7 @@ function showIntro(){
     어릴 때 스쳐 간 리코더부터<br>바이올린, 기타, 드럼, 피아노까지.<br>
     간단한 테스트로, 무의식 속에 잠들어 있던<br><b>나도 몰랐던 악기 재능</b>을 깨워드립니다.</p>
     <div class="card" style="text-align:left">
-      <span class="tag">⏱ 약 5분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔍 숨은 재능 찾기</span>
+      <span class="tag">⏱ 약 4분</span><span class="tag mint">🎧 이어폰 추천</span><span class="tag lav">🔍 숨은 재능 찾기</span>
       <p class="small" style="margin:10px 0 0">친숙한 악기부터 세상 구석의 낯선 악기까지 <b>189종</b>이 후보예요.
       침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 헤아려서 골라드립니다.</p>
     </div>
@@ -757,7 +684,7 @@ function packAnswers(){
   w.put(pitch==null?0:1,1); if(pitch!=null) w.put(Math.max(0,Math.min(100,Math.round(pitch))),7);
   w.put(rhythm==null?0:1,1); if(rhythm!=null) w.put(Math.max(0,Math.min(100,Math.round(rhythm))),7);
   w.put(abs,4);
-  resetP(); P.pitch=pitch; P.rhythm=rhythm; P.abs=abs;
+  resetP(); P.pitch=pitch; P.rhythm=rhythm; P.abs=abs; P.skipT=pitch==null;
   walkQs((q,opts)=>{
     const v=picks[q.id];
     if(q.multi){
@@ -777,6 +704,7 @@ function unpackAnswers(s){
   P.pitch  = r.get(1) ? r.get(7) : null;
   P.rhythm = r.get(1) ? r.get(7) : null;
   P.abs    = r.get(4);
+  P.skipT  = P.pitch==null;
   walkQs((q,opts)=>{
     if(q.multi) applyPick(q, maskToArr(r.get(opts.length)));
     else applyPick(q, r.get(bitsFor(opts.length)));
@@ -784,36 +712,16 @@ function unpackAnswers(s){
 }
 function resultLink(){
   const R=APP._R, id=R&&R.top1?R.top1.slot.inst.id:"";
-  return location.origin+"/r/"+id+"#"+packAnswers();   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐
+  return location.origin+"/r/"+id+"#4."+packAnswers();   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐. "4." = 질문은행 v4 표식
 }
 function loadShared(){
   const h=location.hash;
   if(h.length<2) return false;
   try{
-    if(h.startsWith("#s=")){                       // 1세대(JSON) 링크 호환
-      const b=h.slice(3).replace(/-/g,"+").replace(/_/g,"/");
-      const payload=JSON.parse(decodeURIComponent(escape(atob(b))));
-      resetP();
-      (payload.t||[]).forEach(pair=>{ const q=Q.find(x=>x.id===pair[0]); if(q) applyPick(q, pair[1]); });
-      if(payload.p!=null) P.pitch=payload.p;
-      if(payload.r!=null) P.rhythm=payload.r;
-      P.abs=payload.a||0;
-    } else if(h.startsWith("#r=")){                // 2세대(글자 단위) 링크 호환
-      const s=h.slice(3); let i=0;
-      const d1=ch=>B64.indexOf(ch);
-      resetP();
-      Q.forEach(q=>{
-        if(q.type) return;
-        const ch=s[i++]; if(ch===undefined||ch===".") return;
-        if(q.multi){ const lo=s[i++]; applyPick(q, maskToArr((d1(ch)<<6)|d1(lo))); }
-        else applyPick(q, d1(ch));
-      });
-      const p=s[i++], rr=s[i++], a=s[i++];
-      P.pitch = (p===undefined||p===".") ? null : d1(p)*2;
-      P.rhythm= (rr===undefined||rr===".") ? null : d1(rr)*2;
-      P.abs   = (a===undefined||a===".") ? 0 : d1(a);
-    } else {                                        // 3세대(비트 단위) 링크
-      unpackAnswers(h.slice(1));
+    if(h.startsWith("#4.")){                        // 4세대(질문은행 v4, 비트 단위) 링크
+      unpackAnswers(h.slice(3));
+    } else {                                        // 1~3세대 링크 — 질문 개편(v4)으로 문항·선택지 배치가 달라져 해독 불가(잘못된 결과 방지)
+      return false;
     }
     showResult(true);
     return true;
@@ -857,7 +765,7 @@ function showTestIntro(){
       <div style="margin-top:14px"><button class="backbtn" onclick="APP.back()">← 이전 질문으로</button></div>
     </div>`);
 }
-function skipTests(){ snap(); P.pitch=null; P.rhythm=50; stepIdx++; showQ(); }
+function skipTests(){ snap(); P.pitch=null; P.rhythm=50; P.skipT=true; stepIdx++; showQ(); }
 
 const T1_INTERVALS=[7,4,2,1,.5,.25], T2_CENTS=[100,50,25,15];
 function startTests(){ ac(); snap(); testState={phase:"t1", trial:0, score:0, t2:0, t3:0, abs:0, taps:[], t1correct:0}; runT1(); }
@@ -1122,7 +1030,7 @@ function scoreSlot(slot){
     if(INSTITUTIONAL.has(inst.id)){ variantNote = variantNote || "🏫 이 악기는 처음부터 사는 게 아니에요 — 학원·교회·연습실·합주단의 악기로 배우기 시작하면 됩니다"; }
     else gate=`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`;
   }
-  if(!gate && P.learn==="lesson" && P.lessonEnv===2 && (PR.lessonKR||3)<=1) gate="동네에서 레슨을 못 구하는 악기";
+  if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1) gate="동네에서 레슨을 못 구하는 악기";
   if(!gate && P.noiseEnv===1 && noiseV>=4){
     if(hasQuietVariant && P.elec>=1){ variantNote="🔇 소음 문제는 전자·약음 버전으로 해결하는 조건!"; s-=3; }
     else gate="야간 아파트에서 불가능한 소음";
@@ -1642,6 +1550,21 @@ window.APP={
       if(r.top1){ const id=r.top1.slot.inst.id; cnt[id]=(cnt[id]||0)+1; }
     }
     return cnt;
+  },
+  // 시뮬레이션: 1위뿐 아니라 후보·와일드카드 노출까지 집계 (질문 개편 시 "누락 악기 0" 검증용)
+  _cov(n){
+    const t1={}, rec={};
+    for(let k=0;k<n;k++){
+      resetP(); P.pitch=Math.floor(Math.random()*100); P.rhythm=Math.floor(Math.random()*100); P.abs=Math.floor(Math.random()*9);
+      activeQs().forEach(q=>{ if(q.type)return; const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts||!opts.length)return;
+        if(q.multi){ const m=1+Math.floor(Math.random()*Math.min(3,opts.length)); const st=new Set(); while(st.size<m) st.add(Math.floor(Math.random()*opts.length)); [...st].forEach(i=>{ if(!opts[i].exclusive) opts[i].fx&&opts[i].fx(); }); }
+        else { const i=Math.floor(Math.random()*opts.length); opts[i].fx&&opts[i].fx(); }
+        q.after&&q.after(); });
+      const r=buildResult();
+      if(r.top1){ const id=r.top1.slot.inst.id; t1[id]=(t1[id]||0)+1; }
+      [r.top1,...(r.cands||[]),r.wild].forEach(x=>{ if(x){ const id=x.slot.inst.id; rec[id]=(rec[id]||0)+1; } });
+    }
+    return {t1, rec};
   },
   // 디버그: 랜덤 답변으로 결과까지 자동 진행 (테스트는 스킵)
   _auto(){ resetP(); P.pitch=Math.floor(Math.random()*100); P.rhythm=Math.floor(Math.random()*100); P.abs=Math.floor(Math.random()*9);
