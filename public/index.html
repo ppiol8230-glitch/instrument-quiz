@@ -269,7 +269,7 @@ function resetP(){
     noiseEnv:2, elec:1, budget:2, learn:"lesson", lessonEnv:2, daily:2, carry:2, care:1,
     vintage:0, ethnic:1, gear:0, trendPref:2, rarityPref:2, improvPref:2, showPref:2,
     patience:2, social:"small", sing:1, repeatOk:1, explore:0, calm:0,
-    genres:{}, tones:[], role:null, goal:null, lefty:false, answers:{}, trail:[]
+    genres:{}, tones:[], roles:[], goal:null, lefty:false, answers:{}, trail:[]
   };
 }
 function addG(name,w){ P.genres[name]=(P.genres[name]||0)+w; }
@@ -527,13 +527,13 @@ const Q = [
   {t:"낮고 웅장한", fx:()=>{P.tones.push("웅장함","낮고 깊음")}},
   {t:"카랑카랑 쨍한", fx:()=>{P.tones.push("카랑카랑","거칢")}},
  ]},
-{id:"F5", icon:"🎭", title:"음악 속에서 어떤 역할이고 싶어요?",
+{id:"F5", icon:"🎭", title:"음악 속에서 어떤 역할이고 싶어요?", flavor:"끌리는 걸 모두 골라주세요.", multi:true,
  opts:[
-  {t:"주인공 멜로디", fx:()=>{P.role="멜로디"}},
-  {t:"옆에서 받쳐주는 화음", fx:()=>{P.role="화음"}},
-  {t:"심장박동 같은 리듬", fx:()=>{P.role="리듬"}},
-  {t:"바닥을 깔아주는 낮은 소리", fx:()=>{P.role="베이스"}},
-  {t:"혼자 다 해내기", fx:()=>{P.role="올라운드"}},
+  {t:"주인공 멜로디", fx:()=>{P.roles.push("멜로디")}},
+  {t:"옆에서 받쳐주는 화음", fx:()=>{P.roles.push("화음")}},
+  {t:"심장박동 같은 리듬", fx:()=>{P.roles.push("리듬")}},
+  {t:"바닥을 깔아주는 낮은 소리", fx:()=>{P.roles.push("베이스")}},
+  {t:"혼자 다 해내기", fx:()=>{P.roles.push("올라운드")}},
  ]},
 {id:"F6", icon:"🏁", title:"최종 그림은?",
  opts:[
@@ -589,6 +589,31 @@ function tone(freq, t0, dur, vol){
   g.gain.linearRampToValueAtTime(0, c.currentTime+t0+dur);
   o.connect(g); g.connect(c.destination);
   o.start(c.currentTime+t0); o.stop(c.currentTime+t0+dur+.02);
+}
+// 예약해둔 소리들 (다시 듣기 누르면 이전 예약을 끊는다)
+let SCHED=[];
+function stopScheduled(){ SCHED.forEach(o=>{ try{ o.stop(); }catch(e){} }); SCHED=[]; }
+// 메트로놈 — 기준 박. 마디 첫 박은 더 높고 세게
+function metroTick(t0, accent){
+  const c=ac(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type="square"; o.frequency.value=accent?1700:1150;
+  g.gain.setValueAtTime(accent?.13:.075, c.currentTime+t0);
+  g.gain.exponentialRampToValueAtTime(.0008, c.currentTime+t0+.05);
+  o.connect(g); g.connect(c.destination);
+  o.start(c.currentTime+t0); o.stop(c.currentTime+t0+.08); SCHED.push(o);
+}
+// 문제 리듬 — 메트로놈과 확실히 구분되는 낮은 북소리
+function patTick(t0){
+  const c=ac(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type="triangle";
+  o.frequency.setValueAtTime(430, c.currentTime+t0);
+  o.frequency.exponentialRampToValueAtTime(170, c.currentTime+t0+.13);
+  g.gain.setValueAtTime(.34, c.currentTime+t0);
+  g.gain.exponentialRampToValueAtTime(.0008, c.currentTime+t0+.2);
+  o.connect(g); g.connect(c.destination);
+  o.start(c.currentTime+t0); o.stop(c.currentTime+t0+.22); SCHED.push(o);
 }
 function click(t0){ const c=ac(); if(!c) return; const o=c.createOscillator(), g=c.createGain();
   o.type="square"; o.frequency.value=1200; g.gain.setValueAtTime(.15,c.currentTime+t0);
@@ -942,47 +967,68 @@ function runRhythmTrial(){
   render(`
     <div class="center">
       <span class="tag">귀 테스트 5/5 · 리듬 따라치기</span>
-      ${ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:""}
+      ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">한 번도 안 치셨네요! ▶️를 누르고 <b>메트로놈이 도는 동안</b> 따라 쳐보세요.</p>`
+        :(ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
       <h2 class="qtitle">${ts.rTrial+1}단계 — ${pat.name}</h2>
-      <p class="flavor">${pat.hint}<br>리듬을 듣고, <b>조용해지면 그대로 따라 치세요.</b><br><span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span></p>
-      <button class="testbtn" onclick="APP._playRhythm()">▶️ 리듬 듣기</button>
+      <p class="flavor">${pat.hint}<br>
+      <b>딱-딱-</b> 메트로놈이 계속 울려요. 그 위에 <b>둥- 둥-</b> 낮은 북소리로 리듬이 한 번 나옵니다.<br>
+      바로 <b>다음 마디</b>에 메트로놈에 맞춰 똑같이 따라 치세요.<br>
+      <span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span></p>
+      <button class="testbtn" onclick="APP._playRhythm()">▶️ 듣고 시작하기</button>
       <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">먼저 들어보세요</div>
       <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">다 쳤어요 ✓</button>
     </div>`);
 }
+// 카운트인 1마디 → 문제 리듬 1마디 → 따라치기 1마디. 메트로놈은 처음부터 끝까지 계속 울린다.
+const RCOUNTIN=4, RBARS=4;
 function _playRhythm(){
   const ts=testState, pat=RPATTERNS[ts.rTrial];
-  ts.rTaps=[]; ts.rReady=false; clearTimeout(ts.rTimer);
-  withAudio(()=>pat.beats.forEach(b=>click(b*RBEAT/1000)));
-  const dur=(pat.beats[pat.beats.length-1])*RBEAT+500;
-  setTimeout(()=>{ ts.rReady=true; const z=document.getElementById("tapzone"); if(z){ z.style.opacity=1; z.textContent="따라 치세요!"; } const d=document.getElementById("rdoneBtn"); if(d) d.style.display="block"; }, dur);
+  ts.retry=false; ts.rTaps=[]; ts.rReady=false;
+  clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer);
+  stopScheduled();
+  const B=RBEAT/1000;
+  withAudio(()=>{
+    for(let i=0;i<RCOUNTIN+RBARS*2+2;i++) metroTick(i*B, i%4===0);   // 기준 박
+    pat.beats.forEach(b=>patTick((RCOUNTIN+b)*B));                    // 문제 리듬(다른 음색)
+  });
+  const z=document.getElementById("tapzone");
+  if(z){ z.style.opacity=".45"; z.textContent="잘 들어보세요"; }
+  const d=document.getElementById("rdoneBtn"); if(d) d.style.display="none";
+  ts.rReadyTimer=setTimeout(()=>{
+    ts.rReady=true; ts.rTaps=[]; ts.rStart=performance.now();
+    const z2=document.getElementById("tapzone"); if(z2){ z2.style.opacity=1; z2.textContent="지금! 따라 치세요"; }
+    const d2=document.getElementById("rdoneBtn"); if(d2) d2.style.display="block";
+    ts.rTimer=setTimeout(()=>_rdone(), (RBARS+2)*RBEAT);
+  }, (RCOUNTIN+RBARS)*RBEAT);
 }
 function _rtap(ev){
   if(ev&&ev.preventDefault) ev.preventDefault();
   const ts=testState; if(!ts.rReady) return;
   ts.rTaps.push(performance.now());
-  const z=document.getElementById("tapzone"); z.textContent=["🥁","👏","🎶","✨"][ts.rTaps.length%4];
-  clearTimeout(ts.rTimer);
+  const z=document.getElementById("tapzone"); if(z) z.textContent=["🥁","👏","🎶","✨"][ts.rTaps.length%4];
   const pat=RPATTERNS[ts.rTrial];
-  if(ts.rTaps.length>=pat.beats.length) ts.rTimer=setTimeout(()=>_rdone(), 900);
-  else ts.rTimer=setTimeout(()=>_rdone(), pat.beats[pat.beats.length-1]*RBEAT+1800);
+  if(ts.rTaps.length>=pat.beats.length){ clearTimeout(ts.rTimer); ts.rTimer=setTimeout(()=>_rdone(), 800); }
 }
+// 메트로놈이 템포를 주므로 템포 보정 없이 리듬 모양만 본다(첫 타를 기준점으로 삼아 반응 지연만 흡수)
 function evalRhythmTaps(taps, trialIdx){
   const pat=RPATTERNS[trialIdx];
   if(!taps||taps.length<2) return 0;
   const e=pat.beats.map(b=>b*RBEAT);
   const t0=taps[0], t=taps.map(x=>x-t0);
   const n=Math.min(t.length, e.length);
-  let s=1;
-  if(t[n-1]>200){ s=e[n-1]/t[n-1]; s=Math.max(.7,Math.min(1.4,s)); }
-  let sum=0; for(let i=0;i<n;i++) sum+=Math.abs(t[i]*s-e[i]);
+  let sum=0; for(let i=0;i<n;i++) sum+=Math.abs(t[i]-e[i]);
   const acc=Math.max(0,1-(sum/n)/300);
   const cnt=Math.max(0,1-Math.abs(t.length-e.length)*.25);
   return acc*cnt;
 }
 function _rdone(){
-  const ts=testState; clearTimeout(ts.rTimer);
+  const ts=testState; clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer);
   if(!ts.rReady) return;
+  ts.rReady=false;                       // 다음 화면에서 미리 눌리는 것 방지
+  stopScheduled();
+  if(!ts.rTaps || !ts.rTaps.length){     // 한 번도 안 쳤으면 0점 대신 다시 기회
+    ts.retry=true; runRhythmTrial(); return;
+  }
   const ratio=evalRhythmTaps(ts.rTaps, ts.rTrial);
   ts.lastPct=Math.round(ratio*100);
   ts.rScore+=RPATTERNS[ts.rTrial].max*ratio;
@@ -1078,9 +1124,10 @@ function scoreSlot(slot){
   if(gm.length) why.push({t:`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`, p:gpts});
 
   // ---- 역할 ----
-  if(P.role){
+  if(P.roles && P.roles.length){
     const roleMap={"멜로디":/멜로디/,"화음":/화음|반주/,"리듬":/리듬/,"베이스":/베이스/,"올라운드":/올라운드/};
-    if(roleMap[P.role] && roleMap[P.role].test(roles)){ s+=12; why.push({t:`"${P.role}" 역할 지망과 일치`, p:12}); }
+    const hit=P.roles.filter(rl=>roleMap[rl] && roleMap[rl].test(roles));
+    if(hit.length){ const rp=Math.min(12+(hit.length-1)*4, 20); s+=rp; why.push({t:`"${hit.join("·")}" 역할 지망과 일치`, p:rp}); }
   }
   // ---- 음색 ----
   const toneMatch=(g(inst,"sound.tone",[])).filter(t=>P.tones.includes(t));
@@ -1547,6 +1594,7 @@ window.APP={
   start(){ toRoot(); resetP(); hist=[]; stepIdx=0; showQ(); },
   restart(){ toRoot(); showIntro(); },
   back:goBack, copyLink, _link:resultLink, _loadShared:loadShared, _buildCard:buildCard, _access:accessInfo,
+  _rhythm:runRhythm, _ts:()=>testState, _sched:()=>SCHED.length, _pat:()=>RPATTERNS,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
   share, shareCard,
