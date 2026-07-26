@@ -8,12 +8,12 @@
 <meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
 <meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 189종)">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://instrument-quiz.hspatrick.workers.dev/">
-<meta property="og:image" content="https://instrument-quiz.hspatrick.workers.dev/og.png">
+<meta property="og:url" content="https://instrumentquiz.org/">
+<meta property="og:image" content="https://instrumentquiz.org/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://instrument-quiz.hspatrick.workers.dev/og.png">
+<meta name="twitter:image" content="https://instrumentquiz.org/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -39,6 +39,8 @@ h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; lette
 .btn:active{transform:translateY(4px); box-shadow:0 1px 0 var(--coral-d)}
 .btn.mint{background:var(--mint); box-shadow:0 5px 0 var(--mint-d)}
 .btn.ghost{background:#fff; color:var(--sub); box-shadow:0 5px 0 rgba(74,59,50,.12); border:2px solid var(--line); font-size:1rem}
+.btn.big{font-size:1.32rem; padding:19px 22px; line-height:1.25}
+.btn+.btn{margin-top:10px}
 .opt{display:block; width:100%; text-align:left; cursor:pointer; background:#fff; border:2px solid var(--line);
   border-radius:20px; padding:14px 16px; margin:10px 0; font-family:'Gowun Dodum'; font-size:1.02rem; color:var(--ink);
   transition:transform .06s, border-color .1s, background .1s; position:relative}
@@ -690,48 +692,76 @@ function next(){
   }
   stepIdx++; showQ();
 }
-/* ============ 결과 링크 공유 (초압축 인코딩) ============
-   질문 순서(Q 배열)가 고정이라 질문 id를 실을 필요가 없다.
-   질문마다 1글자(단일선택=옵션 인덱스 / 미응답=".") 또는 2글자(복수선택=비트마스크 12bit).
-   맨 뒤 3글자 = 청음·리듬(2로 나눈 값)·절대음감. 전체 약 50자.                        */
+/* ============ 결과 링크 공유 (비트 단위 초압축) ============
+   질문 순서와 선택지 개수가 코드에 고정돼 있으므로, 질문 id도 "미응답" 표시도 실을 필요가 없다.
+   조건부 질문(when)은 디코드 때 상태를 재생하며 그대로 판정되므로 비트를 소비하지 않는다.
+   → 질문마다 필요한 최소 비트(2지선다=1비트)만 담아 약 25자.
+   앞머리에 테스트 점수를 먼저 넣는다(A7의 when이 pitch에 의존하므로 순서가 중요).   */
 const B64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-const enc1=n=>B64[Math.max(0,Math.min(63,n|0))], dec1=ch=>B64.indexOf(ch);
-function resultLink(){
-  const picks={}; (P.trail||[]).forEach(([id,v])=>{ picks[id]=v; });
-  let s="";
-  Q.forEach(q=>{
-    if(q.type) return;
-    const v=picks[q.id];
-    if(v===undefined){ s+="."; return; }
-    if(q.multi){ const m=(Array.isArray(v)?v:[v]).reduce((a,i)=>a|(1<<i),0); s+=enc1(m>>6)+enc1(m&63); }
-    else s+=enc1(v);
-  });
-  s+= (P.pitch==null?".":enc1(Math.round(P.pitch/2))) + (P.rhythm==null?".":enc1(Math.round(P.rhythm/2))) + enc1(P.abs||0);
-  return location.origin+location.pathname+"#r="+s;
-}
+const bitsFor=n=>Math.max(1, Math.ceil(Math.log2(Math.max(2,n))));
+function BitW(){ this.b=[]; }
+BitW.prototype.put=function(v,n){ v=v|0; for(let i=n-1;i>=0;i--) this.b.push((v>>i)&1); };
+BitW.prototype.str=function(){ let s=""; for(let i=0;i<this.b.length;i+=6){ let v=0; for(let j=0;j<6;j++) v=(v<<1)|(this.b[i+j]||0); s+=B64[v]; } return s; };
+function BitR(s){ this.b=[]; for(const ch of s){ const v=B64.indexOf(ch); if(v<0) continue; for(let i=5;i>=0;i--) this.b.push((v>>i)&1); } this.i=0; }
+BitR.prototype.get=function(n){ let v=0; for(let k=0;k<n;k++) v=(v<<1)|(this.b[this.i++]||0); return v; };
+function maskToArr(m){ const a=[]; for(let i=0;i<16;i++) if(m&(1<<i)) a.push(i); return a; }
 function applyPick(q, v){
   const opts=q.dynOpts?q.dynOpts():q.opts; if(!opts) return;
   if(Array.isArray(v)) v.forEach(i=>{ const o=opts[i]; if(o&&!o.exclusive&&o.fx) o.fx(); });
   else { const o=opts[v]; if(o&&o.fx) o.fx(); }
   q.after&&q.after();
 }
+// 인코드·디코드가 완전히 같은 순서로 상태를 재생하도록 공통 루프를 쓴다
+function walkQs(step){
+  Q.forEach(q=>{
+    if(q.type) return;
+    if(q.when && !q.when()) return;
+    const opts=q.dynOpts?q.dynOpts():q.opts;
+    if(!opts||!opts.length) return;
+    step(q, opts);
+  });
+}
+function packAnswers(){
+  const picks={}; (P.trail||[]).forEach(([id,v])=>{ picks[id]=v; });
+  const keep=P, pitch=P.pitch, rhythm=P.rhythm, abs=P.abs||0;
+  const w=new BitW();
+  w.put(pitch==null?0:1,1); if(pitch!=null) w.put(Math.round(pitch/2),6);
+  w.put(rhythm==null?0:1,1); if(rhythm!=null) w.put(Math.round(rhythm/2),6);
+  w.put(abs,4);
+  resetP(); P.pitch=pitch; P.rhythm=rhythm; P.abs=abs;
+  walkQs((q,opts)=>{
+    const v=picks[q.id];
+    if(q.multi){
+      const mask=(Array.isArray(v)?v:(v==null?[]:[v])).reduce((a,i)=>a|(1<<i),0);
+      w.put(mask, opts.length); applyPick(q, maskToArr(mask));
+    } else {
+      const idx=(v==null||v>=opts.length)?0:v;
+      w.put(idx, bitsFor(opts.length)); applyPick(q, idx);
+    }
+  });
+  P=keep;
+  return w.str();
+}
+function unpackAnswers(s){
+  const r=new BitR(s);
+  resetP();
+  P.pitch  = r.get(1) ? r.get(6)*2 : null;
+  P.rhythm = r.get(1) ? r.get(6)*2 : null;
+  P.abs    = r.get(4);
+  walkQs((q,opts)=>{
+    if(q.multi) applyPick(q, maskToArr(r.get(opts.length)));
+    else applyPick(q, r.get(bitsFor(opts.length)));
+  });
+}
+function resultLink(){
+  const R=APP._R, id=R&&R.top1?R.top1.slot.inst.id:"";
+  return location.origin+"/r/"+id+"#"+packAnswers();   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐
+}
 function loadShared(){
   const h=location.hash;
+  if(h.length<2) return false;
   try{
-    if(h.startsWith("#r=")){                       // 신형 압축 링크
-      const s=h.slice(3); let i=0;
-      resetP();
-      Q.forEach(q=>{
-        if(q.type) return;
-        const ch=s[i++]; if(ch===undefined||ch===".") return;
-        if(q.multi){ const lo=s[i++]; applyPick(q, maskToArr((dec1(ch)<<6)|dec1(lo))); }
-        else applyPick(q, dec1(ch));
-      });
-      const p=s[i++], r=s[i++], a=s[i++];
-      P.pitch = (p===undefined||p===".") ? null : dec1(p)*2;
-      P.rhythm= (r===undefined||r===".") ? null : dec1(r)*2;
-      P.abs   = (a===undefined||a===".") ? 0 : dec1(a);
-    } else if(h.startsWith("#s=")){                // 구형 링크 호환
+    if(h.startsWith("#s=")){                       // 1세대(JSON) 링크 호환
       const b=h.slice(3).replace(/-/g,"+").replace(/_/g,"/");
       const payload=JSON.parse(decodeURIComponent(escape(atob(b))));
       resetP();
@@ -739,12 +769,31 @@ function loadShared(){
       if(payload.p!=null) P.pitch=payload.p;
       if(payload.r!=null) P.rhythm=payload.r;
       P.abs=payload.a||0;
-    } else return false;
+    } else if(h.startsWith("#r=")){                // 2세대(글자 단위) 링크 호환
+      const s=h.slice(3); let i=0;
+      const d1=ch=>B64.indexOf(ch);
+      resetP();
+      Q.forEach(q=>{
+        if(q.type) return;
+        const ch=s[i++]; if(ch===undefined||ch===".") return;
+        if(q.multi){ const lo=s[i++]; applyPick(q, maskToArr((d1(ch)<<6)|d1(lo))); }
+        else applyPick(q, d1(ch));
+      });
+      const p=s[i++], rr=s[i++], a=s[i++];
+      P.pitch = (p===undefined||p===".") ? null : d1(p)*2;
+      P.rhythm= (rr===undefined||rr===".") ? null : d1(rr)*2;
+      P.abs   = (a===undefined||a===".") ? 0 : d1(a);
+    } else {                                        // 3세대(비트 단위) 링크
+      unpackAnswers(h.slice(1));
+    }
     showResult(true);
     return true;
   }catch(e){ return false; }
 }
-function maskToArr(m){ const a=[]; for(let i=0;i<12;i++) if(m&(1<<i)) a.push(i); return a; }
+// /r/<악기>#데이터 로 들어왔을 때 처음부터 다시 하면 주소를 루트로 되돌린다
+function toRoot(){
+  try{ if(location.hash || /^\/r\//.test(location.pathname)) history.replaceState(null,"", location.pathname.replace(/^\/r\/[^/]*\/?$/,"/")); }catch(e){}
+}
 function copyLink(){
   const url=resultLink();
   navigator.clipboard.writeText(url).then(()=>alert("결과 링크 복사 완료! 친구가 누르면 이 결과가 그대로 열려요 🔗"))
@@ -1259,51 +1308,106 @@ function resCardHtml(r, cls, rankTxt, crown){
     <p class="small center" style="margin:6px 0 0">유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요</p>
   </div>`;
 }
-async function shareCard(){
-  const R=APP._R; if(!R||!R.top1) return;
-  try{ await document.fonts.load("60px Jua"); await document.fonts.load("30px 'Gowun Dodum'"); }catch(e){}
-  const c=document.createElement("canvas"); c.width=1080; c.height=1350;
+function wrapText(x, text, cx, y, maxW, lh, maxLines){
+  const words=String(text).split(/\s+/); const lines=[]; let cur="";
+  words.forEach(w=>{ const t=cur?cur+" "+w:w; if(x.measureText(t).width>maxW && cur){ lines.push(cur); cur=w; } else cur=t; });
+  if(cur) lines.push(cur);
+  const use=lines.slice(0,maxLines);
+  if(lines.length>maxLines) use[maxLines-1]=use[maxLines-1].replace(/[.,·]?$/,"…");
+  use.forEach((l,i)=>x.fillText(l, cx, y+i*lh));
+  return y+use.length*lh;
+}
+// 인스타 스토리 규격(1080×1920) 결과 카드
+async function buildCard(){
+  const R=APP._R; if(!R||!R.top1) return null;
+  try{ await document.fonts.load("70px Jua"); await document.fonts.load("34px 'Gowun Dodum'"); await document.fonts.ready; }catch(e){}
+  const W=1080,H=1920;
+  const c=document.createElement("canvas"); c.width=W; c.height=H;
   const x=c.getContext("2d");
   const rr=(x0,y0,w,h,r)=>{x.beginPath();x.moveTo(x0+r,y0);x.arcTo(x0+w,y0,x0+w,y0+h,r);x.arcTo(x0+w,y0+h,x0,y0+h,r);x.arcTo(x0,y0+h,x0,y0,r);x.arcTo(x0,y0,x0+w,y0,r);x.closePath();};
-  x.fillStyle="#FFF6EA"; x.fillRect(0,0,1080,1350);
-  x.fillStyle="#4A3B32"; x.textAlign="center";
-  x.font="44px Jua"; x.fillText("살면서 악기 하나쯤은 다룰 줄 알아야지", 540, 96);
+  // 배경 + 파스텔 방울
+  x.fillStyle="#FFF6EA"; x.fillRect(0,0,W,H);
+  const dots=["#FF7E67","#5FC7AE","#A78BFA","#FFC94D","#FF9EB5"];
+  for(let i=0;i<26;i++){
+    x.globalAlpha=.13; x.fillStyle=dots[i%dots.length];
+    const rx=(i*137)%W, ry=(i*271)%H, sz=34+((i*53)%78);
+    x.beginPath(); x.arc(rx,ry,sz,0,Math.PI*2); x.fill();
+  }
+  x.globalAlpha=1; x.textAlign="center";
+  x.fillStyle="#8A7A6E"; x.font="38px Jua"; x.fillText("살면서 악기 하나쯤은 다룰 줄 알아야지", W/2, 128);
+  // 메인 카드
+  x.fillStyle="#fff"; rr(60,190,960,1340,56); x.fill();
+  x.lineWidth=7; x.strokeStyle="#FF7E67"; rr(60,190,960,1340,56); x.stroke();
+  // 페르소나
   const per=personaOf();
-  // 카드 프레임
-  x.fillStyle="#fff"; rr(70,150,940,940,48); x.fill();
-  x.lineWidth=6; x.strokeStyle="#FF7E67"; rr(70,150,940,940,48); x.stroke();
-  // 페르소나 태그
-  x.fillStyle="#F0EAFE"; rr(320,200,440,64,32); x.fill();
-  x.fillStyle="#7C5CE0"; x.font="34px Jua"; x.fillText("🧬 "+per[0], 540, 244);
+  x.font="36px Jua";
+  const pw=Math.min(880, x.measureText("🧬 "+per[0]).width+80);
+  x.fillStyle="#F0EAFE"; rr(W/2-pw/2, 246, pw, 74, 37); x.fill();
+  x.fillStyle="#7C5CE0"; x.fillText("🧬 "+per[0], W/2, 296);
   // 악기 그림
-  const svg=ART[R.top1.slot.inst.id];
+  const inst=R.top1.slot.inst, svg=ART[inst.id];
   if(svg){
-    const s2=svg.replace("<svg ", '<svg width="430" height="430" ');
+    const s2=svg.replace("<svg ", '<svg width="560" height="560" ');
     const url=URL.createObjectURL(new Blob([s2],{type:"image/svg+xml"}));
     const img=new Image();
-    await new Promise((res)=>{ img.onload=res; img.onerror=res; img.src=url; });
-    x.drawImage(img, 325, 290, 430, 430);
+    await new Promise(res=>{ img.onload=res; img.onerror=res; img.src=url; });
+    try{ x.drawImage(img, W/2-280, 350, 560, 560); }catch(e){}
     URL.revokeObjectURL(url);
   }
-  x.fillStyle="#8A7A6E"; x.font="30px Jua"; x.fillText("나의 운명의 악기", 540, 790);
-  x.fillStyle="#4A3B32"; x.font="64px Jua";
-  const nm=R.top1.slot.dispName; x.fillText(nm.length>14?nm.slice(0,14)+"…":nm, 540, 866);
-  // 점수 줄
-  x.font="32px Jua"; x.fillStyle="#E85F47";
-  const scoreLine = (P.pitch!=null?`👂 청음 ${P.pitch}  ·  🥁 리듬 ${P.rhythm}`:"")+(P.abs>=6?"  ·  🏅 절대음감":"");
-  if(scoreLine) x.fillText(scoreLine, 540, 940);
+  // 악기 이름 (스타일 트랙은 아래 칩으로 분리해 이름이 잘리지 않게)
+  const parts=R.top1.slot.dispName.split(" — ");
+  const base=parts[0], track=parts.slice(1).join(" · ");
+  x.fillStyle="#8A7A6E"; x.font="34px Jua"; x.fillText("내 악기는 🎵", W/2, 968);
+  x.fillStyle="#4A3B32"; x.font=(base.length>11?"64px Jua":"82px Jua");
+  x.fillText(base.length>17?base.slice(0,17)+"…":base, W/2, 1052);
+  let ny=1052;
+  if(track){
+    x.font="32px Jua";
+    const tw=Math.min(880, x.measureText(track).width+56);
+    x.fillStyle="#E5F7F1"; rr(W/2-tw/2, ny+26, tw, 62, 31); x.fill();
+    x.fillStyle="#3EA98F"; x.fillText(track.length>22?track.slice(0,22)+"…":track, W/2, ny+68);
+    ny+=88;
+  }
+  // 한 줄 소개
+  x.fillStyle="#8A7A6E"; x.font="34px 'Gowun Dodum'";
+  ny=wrapText(x, (g(inst,"sound.toneDesc","")||"").replace(/^"|"$/g,""), W/2, ny+70, 820, 48, track?2:3);
+  // 점수 배지
+  ny+=42;
+  if(P.pitch!=null){
+    x.font="36px Jua";
+    const line=`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":"");
+    const bw=Math.min(900, x.measureText(line).width+70);
+    x.fillStyle="#FFF0EA"; rr(W/2-bw/2, ny-46, bw, 72, 36); x.fill();
+    x.fillStyle="#E85F47"; x.fillText(line, W/2, ny);
+    ny+=92;
+  }
   // 희귀도
-  const rp=RAR_TABLE[R.top1.slot.inst.id];
-  x.fillStyle="#B8860B"; x.font="30px Jua";
-  x.fillText(rp==null?"🦄 시뮬레이션에도 거의 안 나오는 유니콘급":`🌟 이 결과를 받는 사람은 약 ${rp}%`, 540, 1010);
-  x.fillStyle="#8A7A6E"; x.font="26px 'Gowun Dodum'"; x.fillText("당신의 악기는 뭘까요?", 540, 1180);
-  x.fillStyle="#4A3B32"; x.font="30px Jua"; x.fillText("instrument-quiz.hspatrick.workers.dev", 540, 1225);
-  const dataUrl=c.toDataURL("image/png");
+  const rp=RAR_TABLE[inst.id];
+  x.font="36px Jua";
+  const rtxt = rp==null ? "🦄 아무도 못 받아본 유니콘 결과" : (rp<=1.5?`💎 상위 ${rp}%만 나오는 결과`:(rp<=4?`🌟 흔치 않은 결과 (약 ${rp}%)`:`🍀 같은 결과 약 ${rp}%`));
+  const rw=Math.min(900, x.measureText(rtxt).width+70);
+  x.fillStyle="#FFF4D6"; rr(W/2-rw/2, ny-46, rw, 72, 36); x.fill();
+  x.fillStyle="#B8860B"; x.fillText(rtxt, W/2, ny);
+  // 하단 CTA + 워터마크
+  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum'"; x.fillText("당신에게 맞는 악기는 뭘까요?", W/2, 1642);
+  x.fillStyle="#FF7E67"; rr(W/2-330, 1686, 660, 96, 48); x.fill();
+  x.fillStyle="#fff"; x.font="44px Jua"; x.fillText("instrumentquiz.org", W/2, 1749);
+  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum'"; x.fillText("3분 테스트 · 악기 189종", W/2, 1826);
+  return c.toDataURL("image/png");
+}
+async function shareCard(){
+  const btn=document.getElementById("shareBtn");
+  const label=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="🎨 카드 만드는 중…"; }
+  let dataUrl=null;
+  try{ dataUrl=await buildCard(); }catch(e){}
+  if(btn){ btn.disabled=false; btn.textContent=label; }
+  if(!dataUrl) return;
   try{
     const blob=await (await fetch(dataUrl)).blob();
     const file=new File([blob], "my-instrument.png", {type:"image/png"});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:"나의 운명의 악기", text:"내 결과 보기: "+resultLink()});
+      await navigator.share({files:[file], title:"나의 운명의 악기", text:"나한테 맞는 악기 찾았어요 🎵 "+resultLink()});
       return;
     }
   }catch(e){ /* 공유 취소·미지원 → 모달 폴백 */ }
@@ -1335,7 +1439,11 @@ function showResult(shared){
     </div>`:"";
   const per=personaOf();
   render(`
-    ${shared?`<div class="card" style="background:#F0EAFE; text-align:center"><p style="margin:0"><b>👀 친구가 공유한 결과예요!</b></p><p class="small" style="margin:4px 0 0">아래는 친구의 운명의 악기. 당신 것도 궁금하지 않나요?</p></div>`:""}
+    ${shared?`<div class="card" style="background:#F0EAFE; text-align:center">
+      <p style="margin:0 0 2px"><b>👀 친구가 공유한 결과예요!</b></p>
+      <p class="small" style="margin:0 0 12px">아래는 친구의 운명의 악기. 당신 것도 궁금하지 않나요?</p>
+      <button class="btn big" onclick="APP.start()">🎵 나도 테스트 해보기<br><span style="font-size:.8rem;opacity:.9">3분이면 끝나요</span></button>
+    </div>`:""}
     <div class="center" style="margin-bottom:10px">
       <h1 style="font-size:1.5rem; margin:10px 0 4px">🔮 운명의 악기가 정해졌습니다</h1>
       <div>${pitchTag}${rhyTag}${absBadge}</div>
@@ -1355,12 +1463,21 @@ function showResult(shared){
     ${wildHtml}
     ${pityHtml}
     ${shared?`
-    <button class="btn" onclick="APP.start()">나도 내 악기 찾아보기 🚀</button>
+    <div class="card" style="background:#FFF0EA; text-align:center">
+      <p style="margin:0 0 4px"><b>🤔 나한테 맞는 악기는 뭘까?</b></p>
+      <p class="small" style="margin:0 0 12px">귀 테스트 + 취향 문답으로 악기 189종 중에서 찾아드려요</p>
+      <button class="btn big" onclick="APP.start()">🎵 나도 테스트 해보기<br><span style="font-size:.8rem;opacity:.9">3분이면 끝나요 · 무료</span></button>
+    </div>
     `:`
-    <button class="btn" onclick="APP.copyLink()">🔗 결과 링크 복사 (누르면 이 결과가 열려요)</button>
-    <button class="btn mint" onclick="APP.shareCard()">📸 결과 카드 이미지로 공유</button>
+    <div class="card" style="background:#FFF0EA; text-align:center; padding-bottom:16px">
+      <p style="margin:0 0 2px"><b>이 결과, 혼자 보기 아깝지 않나요? 😎</b></p>
+      <p class="small" style="margin:0 0 12px">스토리에 올리면 친구들이 "나는 뭐 나와?" 하고 물어봐요</p>
+      <button class="btn big" id="shareBtn" onclick="APP.shareCard()">📸 인스타 스토리에 자랑하기</button>
+      <button class="btn mint" style="margin-top:10px" onclick="APP.copyLink()">🔗 친구에게 내 악기 공유하기</button>
+      <p class="small" style="margin:8px 0 0">링크를 누르면 친구도 바로 이 결과를 볼 수 있어요</p>
+    </div>
     <button class="btn ghost" onclick="APP.share()">결과 텍스트 복사 📋</button>
-    <button class="btn ghost" onclick="APP.restart()">처음부터 다시 하기</button>`}
+    <button class="btn ghost" onclick="APP.restart()">🔄 다시 테스트하기</button>`}
   `);
   APP._R=R;
 }
@@ -1401,9 +1518,9 @@ function share(){
 
 /* ============ 공개 API ============ */
 window.APP={
-  start(){ if(location.hash) history.replaceState(null,"",location.pathname); resetP(); hist=[]; stepIdx=0; showQ(); },
-  restart(){ if(location.hash) history.replaceState(null,"",location.pathname); showIntro(); },
-  back:goBack, copyLink, _link:resultLink, _loadShared:loadShared,
+  start(){ toRoot(); resetP(); hist=[]; stepIdx=0; showQ(); },
+  restart(){ toRoot(); showIntro(); },
+  back:goBack, copyLink, _link:resultLink, _loadShared:loadShared, _buildCard:buildCard,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
   share, shareCard,
@@ -1431,7 +1548,7 @@ window.APP={
 };
 resetP();
 if(!loadShared()) showIntro();
-window.addEventListener("hashchange", ()=>{ if(/^#[rs]=/.test(location.hash)) loadShared(); });
+window.addEventListener("hashchange", ()=>{ if(location.hash.length>1) loadShared(); });
 })();
 </script>
 </body>
