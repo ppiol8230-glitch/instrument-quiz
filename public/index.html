@@ -68,6 +68,10 @@ h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; lette
   display:flex; align-items:center; justify-content:center; font-family:'Jua'; font-size:1.4rem; cursor:pointer;
   touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none}
 #tapzone:active{transform:translateY(5px); box-shadow:0 3px 0 #E0A92F}
+/* 리듬 테스트 — 마디 안내 + 메트로놈에 맞춰 세는 4·3·2·1 */
+#rphase{font-family:'Jua'; font-size:1.05rem; min-height:28px; margin-top:6px}
+#rcount{font-family:'Jua'; font-size:2.6rem; line-height:1.1; min-height:46px; color:var(--sub)}
+#rcount.q{color:var(--lav)} #rcount.set{color:var(--mint-d)} #rcount.go{color:var(--coral-d)}
 .resCard{border:3px solid var(--coral); position:relative}
 .resCard.second{border-color:var(--mint)}
 .resCard.third{border-color:var(--lav)}
@@ -962,44 +966,71 @@ const RBEAT=667; // 90bpm
 function runRhythm(){ const ts=testState; ts.rTrial=0; ts.rScore=0; ts.lastPct=null; runRhythmTrial(); }
 function runRhythmTrial(){
   const ts=testState;
+  clearRVis();                                   // 이전 마디 카운트가 새 화면에 남아 뛰지 않도록
   if(ts.rTrial>=RPATTERNS.length){ return finishTests(); }
   const pat=RPATTERNS[ts.rTrial];
   render(`
     <div class="center">
       <span class="tag">귀 테스트 5/5 · 리듬 따라치기</span>
-      ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">한 번도 안 치셨네요! ▶️를 누르고 <b>메트로놈이 도는 동안</b> 따라 쳐보세요.</p>`
+      ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">한 번도 안 치셨네요! ▶️를 누르고 <b>「지금! 따라 치세요」가 뜨는 마디</b>에 쳐보세요.</p>`
         :(ts.lastPct!=null?`<p class="small">방금 리듬: <b>${ts.lastPct}% 일치</b> ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
       <h2 class="qtitle">${ts.rTrial+1}단계 — ${pat.name}</h2>
       <p class="flavor">${pat.hint}<br>
-      <b>딱-딱-</b> 메트로놈이 계속 울려요. 그 위에 <b>둥- 둥-</b> 낮은 북소리로 리듬이 한 번 나옵니다.<br>
-      바로 <b>다음 마디</b>에 메트로놈에 맞춰 똑같이 따라 치세요.<br>
+      <b>딱-딱-</b> 메트로놈이 처음부터 끝까지 울립니다. 4마디로 진행돼요.<br>
+      ① <b>준비</b> → ② <b>문제</b>(둥- 둥- 낮은 북소리) → ③ <b>터치 준비</b> → ④ <b>따라 치기</b><br>
+      마디마다 <b>4·3·2·1</b>을 세어주니, 1 다음에 새 마디가 시작돼요.<br>
       <span class="small">▶️는 몇 번이든 다시 들을 수 있어요 (다시 들으면 친 것은 초기화)</span></p>
       <button class="testbtn" onclick="APP._playRhythm()">▶️ 듣고 시작하기</button>
+      <div id="rphase">▶️를 누르면 시작해요</div>
+      <div id="rcount">·</div>
       <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">먼저 들어보세요</div>
       <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">다 쳤어요 ✓</button>
     </div>`);
 }
-// 카운트인 1마디 → 문제 리듬 1마디 → 따라치기 1마디. 메트로놈은 처음부터 끝까지 계속 울린다.
-const RCOUNTIN=4, RBARS=4;
+// 4마디 구조: ①준비 → ②문제 리듬 → ③터치 준비 → ④따라치기.
+// 메트로놈은 처음부터 끝까지 울리고, 마디마다 4·3·2·1을 세어줘서 다음 마디를 미리 대비할 수 있다.
+const RBPB=4;                        // 한 마디 4박
+const RBAR_Q=1, RBAR_TAP=3;          // 문제 마디 / 따라치기 마디 (0부터)
+const RTAP_START=RBAR_TAP*RBPB;      // 12박째부터 따라치기
+const RTOTAL=(RBAR_TAP+1)*RBPB;      // 총 16박 + 여유 2박
+const RPHASE=[
+  {t:"① 준비 — 박자를 느껴보세요", c:""},
+  {t:"② 문제 — 잘 들어보세요 🥁",  c:"q"},
+  {t:"③ 터치 준비 — 곧 칩니다",    c:"set"},
+  {t:"④ 지금! 따라 치세요 👏",     c:"go"},
+];
+function clearRVis(){ const ts=testState; if(!ts) return; (ts.rVis||[]).forEach(clearTimeout); ts.rVis=[]; }
+function _rbeat(i){
+  const bar=Math.floor(i/RBPB), ph=RPHASE[bar];
+  const p=document.getElementById("rphase"), cd=document.getElementById("rcount");
+  if(ph){
+    if(p) p.textContent=ph.t;
+    if(cd){ cd.textContent=String(RBPB-(i%RBPB)); cd.className=ph.c; }   // 4·3·2·1
+  }else{                                                                  // 여유 박 — 조금 늦어도 받아준다
+    if(p) p.textContent="아직 받고 있어요";
+    if(cd){ cd.textContent="·"; cd.className="go"; }
+  }
+}
 function _playRhythm(){
   const ts=testState, pat=RPATTERNS[ts.rTrial];
   ts.retry=false; ts.rTaps=[]; ts.rReady=false;
-  clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer);
+  clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer); clearRVis();
   stopScheduled();
   const B=RBEAT/1000;
   withAudio(()=>{
-    for(let i=0;i<RCOUNTIN+RBARS*2+2;i++) metroTick(i*B, i%4===0);   // 기준 박
-    pat.beats.forEach(b=>patTick((RCOUNTIN+b)*B));                    // 문제 리듬(다른 음색)
+    for(let i=0;i<RTOTAL+2;i++) metroTick(i*B, i%RBPB===0);          // 기준 박(마디 첫 박 강세)
+    pat.beats.forEach(b=>patTick((RBAR_Q*RBPB+b)*B));                // 문제 리듬 = 2번째 마디
   });
   const z=document.getElementById("tapzone");
-  if(z){ z.style.opacity=".45"; z.textContent="잘 들어보세요"; }
+  if(z){ z.style.opacity=".45"; z.textContent="아직이에요"; }
   const d=document.getElementById("rdoneBtn"); if(d) d.style.display="none";
+  for(let i=0;i<RTOTAL+2;i++) ts.rVis.push(setTimeout(()=>_rbeat(i), i*RBEAT));   // 박마다 안내·카운트
   ts.rReadyTimer=setTimeout(()=>{
     ts.rReady=true; ts.rTaps=[]; ts.rStart=performance.now();
     const z2=document.getElementById("tapzone"); if(z2){ z2.style.opacity=1; z2.textContent="지금! 따라 치세요"; }
     const d2=document.getElementById("rdoneBtn"); if(d2) d2.style.display="block";
-    ts.rTimer=setTimeout(()=>_rdone(), (RBARS+2)*RBEAT);
-  }, (RCOUNTIN+RBARS)*RBEAT);
+    ts.rTimer=setTimeout(()=>_rdone(), (RBPB+2)*RBEAT);
+  }, RTAP_START*RBEAT);
 }
 function _rtap(ev){
   if(ev&&ev.preventDefault) ev.preventDefault();
@@ -1022,7 +1053,7 @@ function evalRhythmTaps(taps, trialIdx){
   return acc*cnt;
 }
 function _rdone(){
-  const ts=testState; clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer);
+  const ts=testState; clearTimeout(ts.rTimer); clearTimeout(ts.rReadyTimer); clearRVis();
   if(!ts.rReady) return;
   ts.rReady=false;                       // 다음 화면에서 미리 눌리는 것 방지
   stopScheduled();
