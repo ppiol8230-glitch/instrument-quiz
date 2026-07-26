@@ -155,35 +155,35 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
   <div id="app"></div>
 </div>
 
-<script src="data/genres.js"></script>
-<script src="data/inst_keyboard_freereed.js"></script>
-<script src="data/inst_bowed.js"></script>
-<script src="data/inst_folk_strings.js"></script>
-<script src="data/inst_guitar_mandolin.js"></script>
-<script src="data/inst_harp_lute.js"></script>
-<script src="data/inst_woodwind_western.js"></script>
-<script src="data/inst_woodwind_folk.js"></script>
-<script src="data/inst_brass_mallet.js"></script>
-<script src="data/inst_perc_healing_electronic.js"></script>
-<script src="art/art_keyboard_freereed.js"></script>
-<script src="art/art_bowed.js"></script>
-<script src="art/art_folk_strings.js"></script>
-<script src="art/art_guitar_mandolin.js"></script>
-<script src="art/art_harp_lute.js"></script>
-<script src="art/art_woodwind_western.js"></script>
-<script src="art/art_woodwind_folk.js"></script>
-<script src="art/art_brass_mallet.js"></script>
-<script src="art/art_perc_healing_electronic.js"></script>
-<script src="data/rarity.js"></script>
-<script src="guide/guide_keyboard_freereed.js"></script>
-<script src="guide/guide_bowed.js"></script>
-<script src="guide/guide_folk_strings.js"></script>
-<script src="guide/guide_guitar_mandolin.js"></script>
-<script src="guide/guide_harp_lute.js"></script>
-<script src="guide/guide_woodwind_western.js"></script>
-<script src="guide/guide_woodwind_folk.js"></script>
-<script src="guide/guide_brass_mallet.js"></script>
-<script src="guide/guide_perc_healing_electronic.js"></script>
+<script src="/data/genres.js"></script>
+<script src="/data/inst_keyboard_freereed.js"></script>
+<script src="/data/inst_bowed.js"></script>
+<script src="/data/inst_folk_strings.js"></script>
+<script src="/data/inst_guitar_mandolin.js"></script>
+<script src="/data/inst_harp_lute.js"></script>
+<script src="/data/inst_woodwind_western.js"></script>
+<script src="/data/inst_woodwind_folk.js"></script>
+<script src="/data/inst_brass_mallet.js"></script>
+<script src="/data/inst_perc_healing_electronic.js"></script>
+<script src="/art/art_keyboard_freereed.js"></script>
+<script src="/art/art_bowed.js"></script>
+<script src="/art/art_folk_strings.js"></script>
+<script src="/art/art_guitar_mandolin.js"></script>
+<script src="/art/art_harp_lute.js"></script>
+<script src="/art/art_woodwind_western.js"></script>
+<script src="/art/art_woodwind_folk.js"></script>
+<script src="/art/art_brass_mallet.js"></script>
+<script src="/art/art_perc_healing_electronic.js"></script>
+<script src="/data/rarity.js"></script>
+<script src="/guide/guide_keyboard_freereed.js"></script>
+<script src="/guide/guide_bowed.js"></script>
+<script src="/guide/guide_folk_strings.js"></script>
+<script src="/guide/guide_guitar_mandolin.js"></script>
+<script src="/guide/guide_harp_lute.js"></script>
+<script src="/guide/guide_woodwind_western.js"></script>
+<script src="/guide/guide_woodwind_folk.js"></script>
+<script src="/guide/guide_brass_mallet.js"></script>
+<script src="/guide/guide_perc_healing_electronic.js"></script>
 <script>
 (function(){
 "use strict";
@@ -725,8 +725,8 @@ function packAnswers(){
   const picks={}; (P.trail||[]).forEach(([id,v])=>{ picks[id]=v; });
   const keep=P, pitch=P.pitch, rhythm=P.rhythm, abs=P.abs||0;
   const w=new BitW();
-  w.put(pitch==null?0:1,1); if(pitch!=null) w.put(Math.round(pitch/2),6);
-  w.put(rhythm==null?0:1,1); if(rhythm!=null) w.put(Math.round(rhythm/2),6);
+  w.put(pitch==null?0:1,1); if(pitch!=null) w.put(Math.max(0,Math.min(100,Math.round(pitch))),7);
+  w.put(rhythm==null?0:1,1); if(rhythm!=null) w.put(Math.max(0,Math.min(100,Math.round(rhythm))),7);
   w.put(abs,4);
   resetP(); P.pitch=pitch; P.rhythm=rhythm; P.abs=abs;
   walkQs((q,opts)=>{
@@ -745,8 +745,8 @@ function packAnswers(){
 function unpackAnswers(s){
   const r=new BitR(s);
   resetP();
-  P.pitch  = r.get(1) ? r.get(6)*2 : null;
-  P.rhythm = r.get(1) ? r.get(6)*2 : null;
+  P.pitch  = r.get(1) ? r.get(7) : null;
+  P.rhythm = r.get(1) ? r.get(7) : null;
   P.abs    = r.get(4);
   walkQs((q,opts)=>{
     if(q.multi) applyPick(q, maskToArr(r.get(opts.length)));
