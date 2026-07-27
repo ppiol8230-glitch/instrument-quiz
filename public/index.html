@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>살면서 악기 하나쯤은 다룰 줄 알아야지</title>
 <meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.">
 <meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
@@ -24,8 +24,9 @@
   --lav:#A78BFA; --sun:#FFC94D; --pink:#FF9EB5; --line:rgba(74,59,50,.14);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-/* 연타 시 더블탭 확대 방지 (iOS Safari) */
-button,.opt,.pill,.testbtn,#tapzone,a.btn{touch-action:manipulation}
+/* 연타·두 손가락 확대 방지 — 페이지 전체(빈 여백을 두 번 쳐도 확대되지 않게) */
+html{touch-action:pan-y; -webkit-text-size-adjust:100%; text-size-adjust:100%}
+body,button,.opt,.pill,.testbtn,#tapzone,a.btn{touch-action:pan-y}
 html,body{margin:0;padding:0}
 body{background:var(--bg); color:var(--ink); font-family:'Gowun Dodum',system-ui,sans-serif; line-height:1.6; min-height:100vh}
 h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; letter-spacing:-.01em}
@@ -115,6 +116,33 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 .langbtn:active{transform:scale(.96)}
 @media(min-width:700px){ #wrap{max-width:640px; padding-top:36px} .qtitle{font-size:1.45rem} }
 </style>
+<script>
+/* 확대 차단 — 인앱 브라우저(카카오톡·인스타·위챗)와 iOS는 user-scalable=no 를 무시하므로
+   제스처 자체를 잡아야 한다. 리듬 테스트에서 손가락으로 연타·두 손가락 교대 타격을 하면
+   더블탭 확대나 핀치로 오인되던 문제를 막는다. (스크롤은 그대로 살려둔다) */
+(function(){
+  var stop = function(e){ e.preventDefault(); };
+  // iOS Safari/WKWebView 핀치 확대
+  document.addEventListener("gesturestart",  stop, {passive:false});
+  document.addEventListener("gesturechange", stop, {passive:false});
+  document.addEventListener("gestureend",    stop, {passive:false});
+  // 더블탭 확대(합성 dblclick)
+  document.addEventListener("dblclick", stop, {passive:false});
+  // 손가락 2개 이상으로 벌리는 동작 = 확대 시도
+  document.addEventListener("touchmove", function(e){ if(e.touches.length>1) stop(e); }, {passive:false});
+  // 구형 iOS 인앱 브라우저는 touch-action 을 무시한다 → 같은 자리 빠른 연타를 직접 막는다.
+  // 단 리듬 테스트 화면(#tapzone 존재)에서만 적용 — 설문 카드를 빠르게 넘기는 정상 조작을
+  // 삼키지 않도록. 타격 자체는 pointerdown 으로 받으므로 여기서 막아도 점수엔 영향 없다.
+  var lastT=0, lastX=0, lastY=0;
+  document.addEventListener("touchend", function(e){
+    var t=e.changedTouches&&e.changedTouches[0], now=Date.now();
+    var x=t?t.clientX:0, y=t?t.clientY:0;
+    if(document.getElementById("tapzone") &&
+       now-lastT<400 && Math.abs(x-lastX)<48 && Math.abs(y-lastY)<48) stop(e);
+    lastT=now; lastX=x; lastY=y;
+  }, {passive:false});
+})();
+</script>
 </head>
 <body>
 <!-- 배경 낙서: 귀여운 악기 캐리커처 -->
