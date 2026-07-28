@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# AI 답변엔진 허용
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://instrumentquiz.org/sitemap.xml
