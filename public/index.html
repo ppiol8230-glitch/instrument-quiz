@@ -1208,7 +1208,11 @@ function scoreSlot(slot){
       "🏫 You don't buy this one to start — you learn on an instrument that belongs to a school, a church, a rehearsal room or an ensemble."); }
     else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about ₩${(C.entryKRW[0]).toLocaleString("en-US")})`);
   }
-  if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1) gate=L("동네에서 레슨을 못 구하는 악기","you won't find a teacher for it nearby");
+  // 레슨이 없어도 독학 자료가 충분한 악기는 탈락시키지 않고 감점 + 안내만 (핑거드럼·오토하프·텅드럼 등)
+  if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1){
+    if((PR.selfLearn||3)>=4){ s-=6; warn.push(L("레슨 선생님은 거의 없지만, 독학 자료(유튜브·교재)가 아주 많은 악기예요","Teachers are scarce, but this one has plenty of self-teaching material (YouTube, books)")); }
+    else gate=L("동네에서 레슨을 못 구하는 악기","you won't find a teacher for it nearby");
+  }
   if(!gate && P.noiseEnv===1 && noiseV>=4){
     if(hasQuietVariant && P.elec>=1){ variantNote=L("🔇 소음 문제는 전자·약음 버전으로 해결하는 조건!","🔇 On the condition that you solve the noise with an electric or muted version!"); s-=3; }
     else gate=L("야간 아파트에서 불가능한 소음","far too loud for an apartment at night");
@@ -1224,7 +1228,17 @@ function scoreSlot(slot){
   s+=pAdd;
   if(pf==="F3"&&band===2) why.push({t:L(`청음 ${ps}점 — 프렛도 건반도 없는 곳에서 음정을 스스로 만들 수 있는 귀예요`,`Pitch score ${ps} — an ear that can find the notes itself, with no frets and no keys to help`), p:pAdd});
   if(pf==="F0"&&band===0) why.push({t:L(`음정을 악기가 잡아줘요. 청음 점수 부담 제로!`,`The instrument holds the pitch for you — your ear score doesn't have to carry anything.`), p:pAdd});
-  if(pf==="P"&&band===0&&(P.rhythm||0)>=60){ s+=18; why.push({t:L("음정 걱정 없이 리듬으로 승부하는 포지션 — 당신의 리듬 점수가 아깝지 않게","No pitch to worry about — this is a position you win on rhythm, which is exactly where your score is"), p:18}); }
+  // 무율(타악)은 음정을 맞출 일이 없다 — 청음 대신 리듬이 그 자리를 대신하도록 배점
+  if(pf==="P"){
+    const rh = P.rhythm==null?50:P.rhythm;
+    const pp = (band===0?10:band===1?4:0) + (rh>=70?14:rh>=55?9:rh>=40?4:0);
+    if(pp){
+      s+=pp;
+      why.push({t: band===0
+        ? L(`음정 걱정이 없는 악기 — 청음 점수가 낮아도 전혀 불리하지 않고, 리듬 ${rh}점이 그대로 실력이 돼요`,`No pitch to worry about — a low ear score costs you nothing here, and your rhythm ${rh} is the skill that counts`)
+        : L(`음정을 맞출 필요가 없어서, 리듬 ${rh}점이 곧바로 실력이 되는 악기예요`,`Nothing to tune by ear — your rhythm ${rh} translates straight into skill here`), p:pp});
+    }
+  }
   if(P.abs>=6 && (pf==="F3"||/테레민|뮤지컬 쏘|톱|팀파니/.test(inst.name))){ s+=10; why.push({t:L(`절대음감 ${P.abs}/8점 — 이 악기에선 초능력입니다`,`Perfect pitch ${P.abs}/8 — on this instrument that's close to a superpower`), p:10}); }
 
   // ---- 리듬 ----
