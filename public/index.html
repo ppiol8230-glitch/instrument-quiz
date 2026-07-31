@@ -571,9 +571,9 @@ const Q = [
 {id:"D3", icon:"💸", title:"시작 예산은? (악기 + 첫 몇 달)", titleEn:"Your starting budget? (instrument plus the first few months)",
  flavor:"현실적인 이야기를 잠깐 하겠습니다.", flavorEn:"Let's be practical for a second.",
  opts:[
-  {t:"10만 원대 (가성비 최우선)", en:"Around ₩100,000 — value first", fx:()=>{P.budget=1}},
-  {t:"50만 원 안팎", en:"Roughly ₩500,000", fx:()=>{P.budget=2}},
-  {t:"100~300만 원", en:"₩1M–3M", fx:()=>{P.budget=3}},
+  {t:"10만 원대 (가성비 최우선)", en:"Around $70 — value first", zh:"¥450左右(性价比优先)", fx:()=>{P.budget=1}},
+  {t:"50만 원 안팎", en:"Roughly $350", zh:"¥2,300上下", fx:()=>{P.budget=2}},
+  {t:"100~300만 원", en:"$700–2,000", zh:"¥4,500~13,500", fx:()=>{P.budget=3}},
   {t:"그 이상도 가능 (지갑 각오 완료)", en:"More than that, if it's worth it", fx:()=>{P.budget=4}},
  ]},
 {id:"E3", icon:"🛋️", title:"가장 쉬고 싶은 공간은?", titleEn:"Where would you most like to rest?",
@@ -1311,7 +1311,7 @@ function scoreSlot(slot){
   if(!gate && (C.entryKRW&&C.entryKRW[0]||0) > BUDGET_CAP[P.budget]){
     if(INSTITUTIONAL.has(inst.id)){ variantNote = variantNote || L("🏫 이 악기는 처음부터 사는 게 아니에요 — 학원·교회·연습실·합주단의 악기로 배우기 시작하면 됩니다",
       "🏫 You don't buy this one to start — you learn on an instrument that belongs to a school, a church, a rehearsal room or an ensemble."); }
-    else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about ₩${(C.entryKRW[0]).toLocaleString("en-US")})`,`入门价格超出预算(约${Math.round((C.entryKRW[0])/10000)}万韩元起)`);
+    else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about $${fmtMoney(usd(C.entryKRW[0]))})`,`入门价格超出预算(约¥${fmtMoney(cny(C.entryKRW[0]))}起)`);
   }
   // 레슨이 없어도 독학 자료가 충분한 악기는 탈락시키지 않고 감점 + 안내만 (핑거드럼·오토하프·텅드럼 등)
   if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1){
@@ -1555,19 +1555,42 @@ function vidUrl(slot){
     ? "https://www.xiaohongshu.com/search_result?keyword="+encodeURIComponent(zhVidQuery(slot))
     : "https://www.youtube.com/results?search_query="+encodeURIComponent(ytQuery(slot));
 }
+/* zh 전용: 小红书는 앱 스킴(xhsdiscover://)으로 먼저 열어본다 — iOS가 "小红书에서 열까요?"를 띄운다.
+   앱이 없으면(페이지가 그대로 보이면) 웹 검색으로 폴백. 위챗 안에서는 스킴·외부 링크가 차단되므로
+   "우상단 ··· → 브라우저에서 열기" 안내 오버레이를 띄운다. */
+function vidOpen(encKw){
+  if(!isZH()) return true;                                  // ko/en은 <a> 기본 동작(유튜브)
+  const ua=navigator.userAgent||"";
+  if(/MicroMessenger/i.test(ua)){ showWxTip(); return false; }
+  try{
+    location.href="xhsdiscover://search/result?keyword="+encKw;
+    setTimeout(()=>{ if(!document.hidden) location.href="https://www.xiaohongshu.com/search_result?keyword="+encKw; }, 1600);
+  }catch(e){ location.href="https://www.xiaohongshu.com/search_result?keyword="+encKw; }
+  return false;
+}
+function showWxTip(){
+  const old=document.getElementById("wxtip"); if(old){ old.remove(); return; }
+  const d=document.createElement("div"); d.id="wxtip";
+  d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99;color:#fff;text-align:right;padding:24px 26px;font-size:1.05rem;line-height:1.7";
+  d.innerHTML=`<div style="font-size:2rem">⤴️</div>
+    <p style="text-align:center;margin-top:28vh;font-family:Jua, 'Noto Sans SC', sans-serif">
+    微信内无法直接打开小红书<br><b>点右上角「···」→ 在浏览器中打开</b><br>
+    <span style="font-size:.85rem;opacity:.8">打开后再点这个按钮,就会跳转小红书App</span></p>
+    <p style="text-align:center;margin-top:20px"><button onclick="document.getElementById('wxtip').remove()" style="background:#fff;color:#333;border:none;border-radius:99px;padding:10px 26px;font-size:1rem">知道了</button></p>`;
+  d.addEventListener("click",e=>{ if(e.target===d) d.remove(); });
+  document.body.appendChild(d);
+}
+/* 통화 환산 — 데이터는 한국 시장 원화(entryKRW), 표시만 언어별 통화로 (환율 2026-07 기준 고정)
+   1 USD = 1,460 KRW · 1 CNY = 220 KRW. 값은 대략치이므로 보기 좋게 반올림한다. */
+const KRW_PER_USD=1460, KRW_PER_CNY=220;
+function usd(n){ const v=n/KRW_PER_USD; return v>=1000?Math.round(v/50)*50:(v>=100?Math.round(v/10)*10:Math.max(5,Math.round(v/5)*5)); }
+function cny(n){ const v=n/KRW_PER_CNY; return v>=10000?Math.round(v/500)*500:(v>=1000?Math.round(v/100)*100:(v>=100?Math.round(v/10)*10:Math.max(5,Math.round(v/5)*5))); }
+const fmtMoney=n=>n.toLocaleString("en-US");
 function fmtCost(c){
   if(!c||!c.entryKRW) return "";
   const [a,b]=c.entryKRW;
-  if(isZH()){
-    // 한국 시장 실구매가 — 통화는 원화 그대로, 표기만 중국어 자릿수(万)로
-    const z=n=>n>=100000000?(n/100000000).toFixed(1)+"亿":(n>=10000?Math.round(n/10000)+"万":String(n));
-    return `入门约${z(a)}~${z(b)}韩元`;
-  }
-  if(isEN()){
-    // 한국 시장 실구매가라 통화는 원 그대로 두고, 자릿수만 영어권이 읽기 쉬운 K/M로 바꾼다
-    const e=n=>n>=1000000?(n/1000000).toFixed(n%1000000?1:0).replace(/\.0$/,"")+"M":(n>=1000?Math.round(n/1000)+"K":String(n));
-    return `Starter ≈ ₩${e(a)}–${e(b)}`;
-  }
+  if(isZH()) return `入门约¥${fmtMoney(cny(a))}~¥${fmtMoney(cny(b))}`;
+  if(isEN()) return `Starter ≈ $${fmtMoney(usd(a))}–$${fmtMoney(usd(b))}`;
   const f=n=>n>=10000000?(n/100000000).toFixed(1)+"억":n>=10000?Math.round(n/10000)+"만":n;
   return `입문가 약 ${f(a)}~${f(b)}원`;
 }
@@ -1581,8 +1604,8 @@ function accessInfo(inst){
   if(lesson>=4) bits.push(L("동네 학원·레슨이 흔하고","teachers are easy to find"));
   else if(lesson>=3) bits.push(L("레슨 구하기 어렵지 않고","lessons aren't hard to come by"));
   else if(self>=4) bits.push(L("독학 자료가 넘치고","there's no shortage of self-teaching material"));
-  if(price>0) bits.push(price<100000 ? L("입문 악기가 10만원 안쪽","a starter costs under ₩100,000")
-                                     : L(`입문 악기가 ${Math.round(price/10000)}만원대부터`,`starters begin around ₩${price.toLocaleString("en-US")}`,`入门乐器约${Math.round(price/10000)}万韩元起`));
+  if(price>0) bits.push(price<100000 ? L("입문 악기가 10만원 안쪽","a starter costs under $70","入门乐器¥450以内")
+                                     : L(`입문 악기가 ${Math.round(price/10000)}만원대부터`,`starters begin around $${fmtMoney(usd(price))}`,`入门乐器约¥${fmtMoney(cny(price))}起`));
   if(bar<=2) bits.push(L("첫 소리도 금방 나요","and you'll get a real sound out of it quickly"));
   return {ok, reason: bits.join(", ")};
 }
@@ -1655,7 +1678,7 @@ function resCardHtml(r, cls, rankTxt, crown, note){
     ${cavs.length?`<p class="small">${L("😈 각오할 것: ","😈 Go in knowing: ")}${cavs.join(" / ")}</p>`:""}
     ${r.slot.track&&iTrackNote(inst,r.slot.track)?`<p class="small">${L("🎯 추천 트랙: ","🎯 Suggested path: ")}${iTrackNote(inst,r.slot.track)}</p>`:""}
     ${guideHtml(inst.id)}
-    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="${vidUrl(r.slot)}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube","▶️ 去小红书看演奏")}</a>
+    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="${vidUrl(r.slot)}" target="_blank" rel="noopener"${isZH()?` onclick="return APP.vidOpen('${encodeURIComponent(zhVidQuery(r.slot))}')"`:""}>${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube","▶️ 去小红书看演奏")}</a>
     <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`,`在小红书搜索 <b>${zhVidQuery(r.slot)}</b>,就能看到相关演奏内容`)}</p>
   </div>`;
 }
@@ -1893,7 +1916,7 @@ window.APP={
   _rhythm:runRhythm, _ts:()=>testState, _sched:()=>SCHED.length, _pat:()=>RPATTERNS,
   pick, next, startTests, skipTests,
   _playPair, _t1, _t2, _t3, _playMel, _playAbs, _abs, _playRhythm, _rtap, _rdone, _evalRhythm:evalRhythmTaps,
-  share, shareCard, setLang, _lang:()=>LANG,
+  share, shareCard, setLang, vidOpen, _lang:()=>LANG,
   // 시뮬레이션: 랜덤 프로필 n명을 엔진에 통과시켜 1위 악기 분포 집계 (희귀도 테이블용)
   _mc(n){
     const cnt={};
