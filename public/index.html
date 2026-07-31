@@ -1529,16 +1529,30 @@ function ytQuery(slot){
   if(slot.track){ const l=slot.track.label||""; for(const [k,v] of TRACK_YT){ if(l.includes(k)){ tk=v; break; } } }
   return ((tk?tk+" ":"")+base+" performance").replace(/\s+/g," ").trim();
 }
-// 중국판 영상 검색 — 유튜브는 본토에서 안 열리므로 B站(bilibili) 검색으로 보낸다
+// 중국판 영상 검색 — 유튜브는 본토에서 안 열리므로 小红书 검색으로 보낸다.
+// 검색어 = 실제 중국어권 통용 명칭(웹 검증) 우선, 통용 중문명이 없는 악기는 원어(영어).
+// 기본 규칙: zh 표시명에서 괄호·부제(· 뒷부분)를 떼어낸 것. 예외만 ZH_VID에 등록.
+const ZH_VID = {
+  autoharp:"Autoharp", mountain_dulcimer:"Mountain Dulcimer", cittern_modern:"西特琴", renaissance_cittern:"文艺复兴西特琴",
+  orpharion:"Orpharion", bandora:"Bandora", gallichon:"Gallichon", psaltery:"萨泰里琴", lirone:"Lirone",
+  nyckelharpa:"尼古赫帕", hardanger_fiddle:"哈丹格尔小提琴", lap_steel:"夏威夷吉他", pedal_steel:"踏板钢吉他",
+  cavaquinho:"Cavaquinho", bandolim:"Bandolim", mandobass:"Mandobass", chalumeau:"Chalumeau", dulcian:"Dulcian",
+  musette_de_cour:"Musette de cour", serpent:"蛇号", sackbut:"Sackbut", tin_whistle:"爱尔兰哨笛", low_whistle:"低音哨笛",
+  koshi_chime:"Koshi风铃", ondes_martenot:"Ondes Martenot", sample_pad:"采样垫", finger_drum:"手指鼓", ney:"纳伊笛",
+  cba_c_system:"巴扬手风琴", diatonic_button_accordion:"Melodeon", pandeiro:"Pandeiro", darbuka:"中东鼓",
+  cimbalom:"匈牙利扬琴", hammered_dulcimer:"Hammered Dulcimer",
+};
 function zhVidQuery(slot){
-  const zo=ZH_INST[slot.inst.id];
-  const nm=((zo&&zo.name)||slot.inst.name).replace(/[（(].*?[)）]/g,"").trim();
+  const id=slot.inst.id;
+  if(ZH_VID[id]) return ZH_VID[id]+" 演奏";
+  const zo=ZH_INST[id];
+  const nm=((zo&&zo.name)||slot.inst.name).replace(/[（(].*?[)）]/g,"").split("·")[0].trim();
   return nm+" 演奏";
 }
 function vidQuery(slot){ return isZH() ? zhVidQuery(slot) : ytQuery(slot); }
 function vidUrl(slot){
   return isZH()
-    ? "https://search.bilibili.com/all?keyword="+encodeURIComponent(zhVidQuery(slot))
+    ? "https://www.xiaohongshu.com/search_result?keyword="+encodeURIComponent(zhVidQuery(slot))
     : "https://www.youtube.com/results?search_query="+encodeURIComponent(ytQuery(slot));
 }
 function fmtCost(c){
@@ -1641,8 +1655,8 @@ function resCardHtml(r, cls, rankTxt, crown, note){
     ${cavs.length?`<p class="small">${L("😈 각오할 것: ","😈 Go in knowing: ")}${cavs.join(" / ")}</p>`:""}
     ${r.slot.track&&iTrackNote(inst,r.slot.track)?`<p class="small">${L("🎯 추천 트랙: ","🎯 Suggested path: ")}${iTrackNote(inst,r.slot.track)}</p>`:""}
     ${guideHtml(inst.id)}
-    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="${vidUrl(r.slot)}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube","▶️ 去B站看演奏视频")}</a>
-    <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`,`在B站搜索 <b>${zhVidQuery(r.slot)}</b>,就能看到代表性的演奏视频`)}</p>
+    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="${vidUrl(r.slot)}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube","▶️ 去小红书看演奏")}</a>
+    <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`,`在小红书搜索 <b>${zhVidQuery(r.slot)}</b>,就能看到相关演奏内容`)}</p>
   </div>`;
 }
 function wrapText(x, text, cx, y, maxW, lh, maxLines){
