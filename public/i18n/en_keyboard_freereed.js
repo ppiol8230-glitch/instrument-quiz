@@ -267,6 +267,21 @@ const EN_INST_KEYBOARD_FREEREED = {
       "Lessons come mostly from gugak majors and a few active players, private and Seoul-centered. Self-study books barely exist.",
       "It belongs to a refined court-music culture, so it fits ensembles and orchestras more than improvising in a band."
     ]
+  },
+
+  sheng: {
+    name: "Sheng",
+    family: "Free reed · Chinese wind",
+    toneDesc: "A glassy, transparent block of harmony. A shade brighter and more crisply spoken than the Korean saenghwang, it carries the chords and rhythmic staccato in Chinese folk ensembles.",
+    caveats: [
+      "Extremely temperature-sensitive. A cold instrument fogs its reeds and will not speak, so warming it up before playing is basic technique.",
+      "Tuning and repair infrastructure in Korea is effectively zero - aftercare is even more blocked than for the saenghwang, stacked on top of the tuning lottery of direct-import instruments.",
+      "With effectively no lessons in Korea, you depend on Chinese-language online courses - an instrument that asks for self-study resolve."
+    ],
+    tracks: {
+      trad: { label: "Traditional 17-pipe", note: "The original sheng with the round wind chamber. The standard for traditional ensemble and solo work." },
+      keyed: { label: "Keyed large sheng", note: "The keyed 24- and 36-pipe upgrade. The harmony section of the Chinese folk orchestra." }
+    }
   }
 
 };
@@ -411,6 +426,13 @@ const EN_GUIDE_KEYBOARD_FREEREED = {
     lesson: "Lessons essential. Fingering, breathing and instrument care all have to be learned from a person. Ask around for private lessons with gugak majors or one of the few active players, mostly in Seoul.",
     buy: "Imported 17-pipe instruments carried by gugak-sa (traditional instrument shops) run ₩600,000-2M. The market is small, so visiting a shop for advice beats hunting the lowest online price - tuning condition varies wildly at the same price. The landmine is importing a Chinese sheng from an overseas shop. They are sibling instruments, but the tuning systems differ and almost nowhere in Korea can tune or repair one, so aftercare hits a wall.",
     firstGoal: "Within a month, hold three basic chords steadily in both directions, inhaling and exhaling. That is the first phrase of the phoenix's cry."
+  },
+
+  sheng: {
+    how: "This course goes straight to the sheng, the Chinese original behind the saenghwang. Start with the harmonica-style habit of sounding on both the inhale and the exhale, learn the covered-hole logic (a pipe speaks when its hole is closed), then move on to traditional chords of three or four stacked notes. Warming the instrument against your chest before playing is basic technique, exactly as with the saenghwang - a cold one fogs its reeds and will not speak.",
+    lesson: "Even if you want lessons, Korea has effectively no dedicated sheng teachers - either borrow the basics from a saenghwang player, or accept the self-study route through Chinese-language online courses (books and videos are plentiful). Harmonica experience makes the inhaled notes come much faster.",
+    buy: "A student 17-pipe from AliExpress or Taobao runs ₩250,000-600,000 (with margin for shipping and duties). The biggest trap isn't the price but the aftercare - almost nowhere in Korea can tune or repair a sheng, so if yours arrives out of tune, sending it back is the only remedy. Checking reviews and the return policy matters more than choosing the model, and if what you actually want to learn is the Korean saenghwang, a gugak-sa (traditional instrument shop) consultation is the right answer - it's a separate market.",
+    firstGoal: "Within a month, hold three chords seamlessly in both directions, inhaling and exhaling - that pipe-organ-in-your-arms sound is the first reward."
   }
 
 };

@@ -313,6 +313,20 @@ const EN_INST_PERC_HEALING_ELECTRONIC = {
     ],
   },
 
+  muyu: {
+    name: "Muyu (wooden fish)",
+    family: "Meditation · sound healing",
+    toneDesc: "Tok, tok — a low, round strike from a hollowed block of wood. String a few hits together and the room settles down all by itself.",
+    caveats: [
+      "Not an instrument where 'playing skill' grows — a resonance-management tool in the same vein as the singing bowl",
+      "It's a Buddhist ritual object, so context deserves respect — some people are uncomfortable with playful use",
+      "Effectively nowhere teaches it as an instrument (it's passed down inside temple culture) — then again, there isn't much to learn",
+    ],
+    variants: {
+      emuyu: { label: "Electronic muyu (e-wooden fish)", note: "Apps and toys that stack 'merit +1' with every tap. A meme, but as a stress-relief tool it's completely sincere." },
+    },
+  },
+
 };
 
 const EN_GUIDE_PERC_HEALING_ELECTRONIC = {
@@ -531,6 +545,13 @@ const EN_GUIDE_PERC_HEALING_ELECTRONIC = {
     lesson: "Self-study is fine — the metronome and a recorder are your teachers. Record your own shaker and listen back, and humility and skill grow at the same time. A few YouTube 'shaker technique' videos and the curriculum is done.",
     buy: "Egg shakers a few thousand won, tambourines ₩10,000–50,000, and even collecting the whole LP and Meinl small-percussion range stays under ₩100,000 — the small-joys corner of instrument shopping. The landmine is the jingle sound on a Daiso-grade tambourine (Daiso is Korea's discount variety chain): a rattle instead of a shimmer. For playing with others, branded props have a completely different density of sound.",
     firstGoal: "Record shaker sixteenths against a metronome and check them against the grid. Pass that and you become the 'rhythm-seasoning artisan' welcome at any rehearsal, gathering or recording session.",
+  },
+
+  muyu: {
+    how: "Tap the body with the beater — tok — and that's the whole technique; the skill barrier is effectively zero. It's an instrument of use rather than performance: start by keeping an even tempo, then lay a pulse under breathing meditation, or use it instead of a timer as the signal that opens and closes your day. For fast repeated strokes (sutra-chanting tempo), the one knack is relaxing your wrist snap.",
+    lesson: "Self-study is fine — a 'muyu lesson' market simply doesn't exist. The real tradition lives inside temple ritual culture, so if you're curious about proper use, watching over shoulders at a temple stay is the most orthodox course. For hobby use, a few YouTube videos are plenty.",
+    buy: "At a neighborhood Buddhist-supplies shop or an online Buddhist-goods store, a handheld muyu with beater runs ₩10,000–30,000, and a jujube-wood or handmade mid-size about ₩50,000 — among the cheapest entries of any instrument here. When choosing, just remember that size is pitch (bigger means a lower, rounder sound). It's a kind market with barely a landmine, though tourist-souvenir minis sound closer to 'clack' than 'tok'.",
+    firstGoal: "Three minutes before bed: build a steady-tempo muyu meditation routine. Once you start stacking the e-muyu app's 'merit +1' in the physical world, you're done.",
   },
 
 };

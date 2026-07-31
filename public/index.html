@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>살면서 악기 하나쯤은 다룰 줄 알아야지</title>
-<meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.">
+<meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 200종의 악기가 기다리고 있습니다.">
 <link rel="canonical" href="https://instrumentquiz.org/">
 <meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
-<meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 189종)">
+<meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 200종)">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://instrumentquiz.org/">
 <meta property="og:image" content="https://instrumentquiz.org/og.png">
@@ -31,6 +31,9 @@ body,button,.opt,.pill,.testbtn,#tapzone,a.btn{touch-action:pan-y}
 html,body{margin:0;padding:0}
 body{background:var(--bg); color:var(--ink); font-family:'Gowun Dodum',system-ui,sans-serif; line-height:1.6; min-height:100vh}
 h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; letter-spacing:-.01em}
+/* 중국어 표시 — Jua/고운돋움엔 한자가 없어 시스템 중문 폰트로 폴백시킨다 */
+html[lang="zh-CN"] body{font-family:'Gowun Dodum','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif}
+html[lang="zh-CN"] h1,html[lang="zh-CN"] h2,html[lang="zh-CN"] h3,html[lang="zh-CN"] .jua{font-family:'Jua','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif}
 #doodles{position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0}
 .doodle{position:absolute; opacity:.09; color:var(--ink)}
 #wrap{position:relative; z-index:1; max-width:600px; margin:0 auto; padding:20px 16px 60px}
@@ -190,7 +193,7 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <div id="doodles"></div>
 
 <div id="wrap">
-  <div id="langbar"><button id="lang-ko" class="langbtn" onclick="APP.setLang('ko')">한국어</button><button id="lang-en" class="langbtn" onclick="APP.setLang('en')">English</button></div>
+  <div id="langbar"><button id="lang-ko" class="langbtn" onclick="APP.setLang('ko')">한국어</button><button id="lang-en" class="langbtn" onclick="APP.setLang('en')">English</button><button id="lang-zh" class="langbtn" onclick="APP.setLang('zh')">中文</button></div>
   <div id="bar" style="display:none"><div id="barfill"></div><div id="barnote">🎵</div></div>
   <div id="app"></div>
 
@@ -206,7 +209,7 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
       중간에는 소리로 하는 귀 테스트가 있습니다. 음 높낮이 구분, 미세 음정, 멜로디 기억,
       절대음감(미니 건반), 그리고 메트로놈에 맞춰 두드리는 리듬 따라치기까지 — 재미로 해 보는
       간단한 청음·리듬 적성 검사입니다. 테스트가 끝나면 피아노·기타·바이올린·드럼 같은 익숙한
-      악기부터 핸드팬·칼림바·해금·비올라 다 감바 같은 낯선 악기까지, <strong>189종의 악기</strong> 중에서
+      악기부터 핸드팬·칼림바·해금·비올라 다 감바 같은 낯선 악기까지, <strong>200종의 악기</strong> 중에서
       나와 가장 어울리는 악기를 추천해 드립니다.
     </p>
     <p style="margin:0">
@@ -257,6 +260,18 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <script src="/i18n/en_brass_mallet.js"></script>
 <script src="/i18n/en_perc_healing_electronic.js"></script>
 <script src="/i18n/en_misc.js"></script>
+<!-- 중국어 오버레이: 영어와 같은 원리 — 표시 문자열만 담고 엔진 값은 건드리지 않는다. -->
+<script src="/i18n/zh_keyboard_freereed.js"></script>
+<script src="/i18n/zh_bowed.js"></script>
+<script src="/i18n/zh_folk_strings.js"></script>
+<script src="/i18n/zh_guitar_mandolin.js"></script>
+<script src="/i18n/zh_harp_lute.js"></script>
+<script src="/i18n/zh_woodwind_western.js"></script>
+<script src="/i18n/zh_woodwind_folk.js"></script>
+<script src="/i18n/zh_brass_mallet.js"></script>
+<script src="/i18n/zh_perc_healing_electronic.js"></script>
+<script src="/i18n/zh_misc.js"></script>
+<script src="/i18n/zh_ui.js"></script>
 <script>
 (function(){
 "use strict";
@@ -288,9 +303,10 @@ const RAR_TABLE = typeof RARITY!=="undefined" ? RARITY : {};
 const GDESC = {}; GENRES.forEach(g=>GDESC[g.name]=g.desc);
 const ETHNIC_GENRES = ["켈틱·아이리시","북유럽 민속","발칸·클레즈머·집시","국악·사물놀이","동아시아 전통","인도·중동","아프리카 리듬","라틴","탱고","플라멩코·스페인"];
 
-/* ============ 언어 (ko / en) ============
+/* ============ 언어 (ko / en / zh) ============
    원칙: 스코어링 엔진은 언제나 한국어 원본 필드만 읽는다(family·name·roles·tone·genres 정규식이 전부 한국어).
-   영어는 '표시 직전'에만 덧씌우므로, 같은 답변이면 두 언어의 추천 결과가 바이트 단위로 같다. */
+   영어·중국어는 '표시 직전'에만 덧씌우므로, 같은 답변이면 세 언어의 추천 결과가 바이트 단위로 같다.
+   중국어 UI 문자열은 ZH_UI 사전(한국어 원문 → 中文)으로 해결하고, 보간이 든 문장만 L()의 3번째 인자로 준다. */
 let LANG = "ko";
 const G_ = o => (typeof o!=="undefined" ? o : {});
 const EN_INST = Object.assign({},
@@ -317,11 +333,46 @@ const EN_GENRE = G_(typeof EN_GENRE_MAP!=="undefined"?EN_GENRE_MAP:undefined);
 const EN_GDESC = G_(typeof EN_GENRE_DESC!=="undefined"?EN_GENRE_DESC:undefined);
 const EN_TONE  = G_(typeof EN_TONE_MAP!=="undefined"?EN_TONE_MAP:undefined);
 const EN_ROLE  = G_(typeof EN_ROLE_MAP!=="undefined"?EN_ROLE_MAP:undefined);
+const ZH_INST = Object.assign({},
+  G_(typeof ZH_INST_KEYBOARD_FREEREED!=="undefined"?ZH_INST_KEYBOARD_FREEREED:undefined),
+  G_(typeof ZH_INST_BOWED!=="undefined"?ZH_INST_BOWED:undefined),
+  G_(typeof ZH_INST_FOLK_STRINGS!=="undefined"?ZH_INST_FOLK_STRINGS:undefined),
+  G_(typeof ZH_INST_GUITAR_MANDOLIN!=="undefined"?ZH_INST_GUITAR_MANDOLIN:undefined),
+  G_(typeof ZH_INST_HARP_LUTE!=="undefined"?ZH_INST_HARP_LUTE:undefined),
+  G_(typeof ZH_INST_WOODWIND_WESTERN!=="undefined"?ZH_INST_WOODWIND_WESTERN:undefined),
+  G_(typeof ZH_INST_WOODWIND_FOLK!=="undefined"?ZH_INST_WOODWIND_FOLK:undefined),
+  G_(typeof ZH_INST_BRASS_MALLET!=="undefined"?ZH_INST_BRASS_MALLET:undefined),
+  G_(typeof ZH_INST_PERC_HEALING_ELECTRONIC!=="undefined"?ZH_INST_PERC_HEALING_ELECTRONIC:undefined));
+const ZH_GUIDE = Object.assign({},
+  G_(typeof ZH_GUIDE_KEYBOARD_FREEREED!=="undefined"?ZH_GUIDE_KEYBOARD_FREEREED:undefined),
+  G_(typeof ZH_GUIDE_BOWED!=="undefined"?ZH_GUIDE_BOWED:undefined),
+  G_(typeof ZH_GUIDE_FOLK_STRINGS!=="undefined"?ZH_GUIDE_FOLK_STRINGS:undefined),
+  G_(typeof ZH_GUIDE_GUITAR_MANDOLIN!=="undefined"?ZH_GUIDE_GUITAR_MANDOLIN:undefined),
+  G_(typeof ZH_GUIDE_HARP_LUTE!=="undefined"?ZH_GUIDE_HARP_LUTE:undefined),
+  G_(typeof ZH_GUIDE_WOODWIND_WESTERN!=="undefined"?ZH_GUIDE_WOODWIND_WESTERN:undefined),
+  G_(typeof ZH_GUIDE_WOODWIND_FOLK!=="undefined"?ZH_GUIDE_WOODWIND_FOLK:undefined),
+  G_(typeof ZH_GUIDE_BRASS_MALLET!=="undefined"?ZH_GUIDE_BRASS_MALLET:undefined),
+  G_(typeof ZH_GUIDE_PERC_HEALING_ELECTRONIC!=="undefined"?ZH_GUIDE_PERC_HEALING_ELECTRONIC:undefined));
+const ZH_GENRE = G_(typeof ZH_GENRE_MAP!=="undefined"?ZH_GENRE_MAP:undefined);
+const ZH_GDESC = G_(typeof ZH_GENRE_DESC!=="undefined"?ZH_GENRE_DESC:undefined);
+const ZH_TONE  = G_(typeof ZH_TONE_MAP!=="undefined"?ZH_TONE_MAP:undefined);
+const ZH_ROLE  = G_(typeof ZH_ROLE_MAP!=="undefined"?ZH_ROLE_MAP:undefined);
+// ZH_UI 사전은 공백 정규화 키로 조회한다 — 여러 줄 템플릿 리터럴의 들여쓰기가 키를 어긋나게 하지 않도록
+const ZHN = s => String(s).replace(/\s+/g," ").trim();
+const ZH_UI_N = (()=>{ const src=G_(typeof ZH_UI!=="undefined"?ZH_UI:undefined), m={}; Object.keys(src).forEach(k=>{ m[ZHN(k)]=src[k]; }); return m; })();
 
 const isEN = () => LANG==="en";
-function L(ko,en){ return (isEN() && en!==undefined && en!==null) ? en : ko; }
+const isZH = () => LANG==="zh";
+function L(ko,en,zh){
+  if(isZH()){
+    if(zh!==undefined && zh!==null) return zh;
+    const v=ZH_UI_N[ZHN(ko)];
+    return v!==undefined ? v : ko;
+  }
+  return (isEN() && en!==undefined && en!==null) ? en : ko;
+}
 // 악기 표시 접근자 — 오버레이가 없으면 한국어로 자연 폴백
-function eo(inst){ return isEN() ? EN_INST[inst.id] : null; }
+function eo(inst){ return isEN() ? EN_INST[inst.id] : (isZH() ? ZH_INST[inst.id] : null); }
 function iName(inst){ const e=eo(inst); return (e&&e.name) || inst.name; }
 function iFam(inst){ const e=eo(inst); return (e&&e.family) || inst.family || ""; }
 function iToneDesc(inst){ const e=eo(inst); return (e&&e.toneDesc) || (inst.sound&&inst.sound.toneDesc) || ""; }
@@ -329,13 +380,13 @@ function iCaveats(inst){ const e=eo(inst); return (e&&e.caveats) || inst.caveats
 function iTrackLabel(inst,t){ const e=eo(inst); return (e&&e.tracks&&e.tracks[t.id]&&e.tracks[t.id].label) || t.label; }
 function iTrackNote(inst,t){ const e=eo(inst); return (e&&e.tracks&&e.tracks[t.id]&&e.tracks[t.id].note) || t.note; }
 function iVarNote(inst,vid){ const e=eo(inst); return (e&&e.variants&&e.variants[vid]&&e.variants[vid].note) || null; }
-function iGuide(id){ return (isEN() && EN_GUIDE[id]) || GUIDE[id]; }
+function iGuide(id){ return (isEN() && EN_GUIDE[id]) || (isZH() && ZH_GUIDE[id]) || GUIDE[id]; }
 function dName(slot){ return iName(slot.inst) + (slot.track ? " — " + iTrackLabel(slot.inst, slot.track) : ""); }
-// 장르·음색·역할 이름은 매칭 키라서 내부는 한국어 고정 — 화면에 쓸 때만 영어로 바꾼다
-function gLabel(n){ return (isEN() && EN_GENRE[n]) || n; }
-function gDesc(n){ return (isEN() && EN_GDESC[n]) || GDESC[n]; }
-function toneLabel(n){ return (isEN() && EN_TONE[n]) || n; }
-function roleLabel(n){ return (isEN() && EN_ROLE[n]) || n; }
+// 장르·음색·역할 이름은 매칭 키라서 내부는 한국어 고정 — 화면에 쓸 때만 영어·중국어로 바꾼다
+function gLabel(n){ return (isEN() && EN_GENRE[n]) || (isZH() && ZH_GENRE[n]) || n; }
+function gDesc(n){ return (isEN() && EN_GDESC[n]) || (isZH() && ZH_GDESC[n]) || GDESC[n]; }
+function toneLabel(n){ return (isEN() && EN_TONE[n]) || (isZH() && ZH_TONE[n]) || n; }
+function roleLabel(n){ return (isEN() && EN_ROLE[n]) || (isZH() && ZH_ROLE[n]) || n; }
 
 function famEmoji(f){
   f = f||"";
@@ -404,7 +455,7 @@ const FAM_OPTS = [
 ];
 const FAM_MATCH = {keys:/건반|피아노|아코디언|신디/, bow:/바이올린|비올라|첼로|베이스|활|해금|얼후|피들/, pluck:/기타|우쿨|만돌|류트|하프|밴조|가야금|발현/, wind:/플루트|리코더|클라리넷|색소폰|트럼펫|관|휘슬|오카리나|하모니카/, perc:/드럼|타악|마림바|퍼커션|장구|카혼/, gugak:/국악|가야금|해금|대금|장구|거문고|피리/, daw:/신디|미디|론치|전자/};
 
-const gOpt = g => ({t:g, en:(EN_GENRE[g]||g), sub:GDESC[g], subEn:EN_GDESC[g], fx:()=>addG(g,2)});
+const gOpt = g => ({t:g, en:(EN_GENRE[g]||g), zh:(ZH_GENRE[g]||g), sub:GDESC[g], subEn:EN_GDESC[g], subZh:ZH_GDESC[g], fx:()=>addG(g,2)});
 const Q = [
 {id:"A1", icon:"🎒", title:"악기를 배워본 적 있나요?", titleEn:"Have you ever learned an instrument?",
  flavor:"초등학교 리코더 시간도 어엿한 경력입니다.", flavorEn:"Recorder class in primary school absolutely counts.",
@@ -640,7 +691,7 @@ function withAudio(fn){
 }
 function flashPlaying(){
   const b=document.querySelector(".testbtn"); if(!b) return;
-  const old=b.textContent; b.textContent="🔊 재생 중…"; b.disabled=true;
+  const old=b.textContent; b.textContent=L("🔊 재생 중…","🔊 Playing…","🔊 播放中…"); b.disabled=true;
   setTimeout(()=>{ b.textContent=old; b.disabled=false; }, 900);
 }
 function tone(freq, t0, dur, vol){
@@ -700,41 +751,73 @@ function render(html){ $app.innerHTML = `<div class="fade">${html}</div>`; windo
    VIEW는 "지금 그려져 있는 화면"을 다시 그리는 함수. 언어를 바꾸면 그 화면만 즉시 다시 그린다.
    답변(P)은 건드리지 않으므로 진행 중에 바꿔도 결과가 달라지지 않는다. */
 let VIEW = showIntro;
+let ABOUT_KO = null; // 하단 소개 섹션의 한국어 원문(크롤러용 정적 HTML)을 부팅 때 보관해뒀다가 언어 전환 시 복원
+function setAbout(){
+  const el=document.getElementById("about"); if(!el) return;
+  if(ABOUT_KO===null) ABOUT_KO=el.innerHTML;
+  if(LANG==="ko"){ el.innerHTML=ABOUT_KO; return; }
+  if(isZH()){
+    el.innerHTML = `<h2 style="font-size:1rem; margin:0 0 10px">「这辈子总得会一样乐器」是什么测试?</h2>
+    <p style="margin:0 0 12px">免费的乐器推荐测试,帮你找到适合自己的乐器。吹管乐器容易积口水能不能接受、指尖磨茧能不能忍、
+    住公寓练琴音量合不合适 — 从这些现实条件,到喜欢的音乐风格和性格倾向,大约30个问题逐一确认。</p>
+    <p style="margin:0 0 12px">中间还有用声音进行的听力测试:音高对比、微小音差、旋律记忆、绝对音感(迷你键盘),
+    以及跟着节拍器敲击的节奏模仿 — 一套轻松有趣的听力·节奏小测验。测试结束后,从钢琴、吉他、小提琴、架子鼓这些熟悉的乐器,
+    到手碟、卡林巴、二胡、维奥尔琴这些小众乐器,我们会在<strong>200种乐器</strong>中为你推荐最合适的那一件。</p>
+    <p style="margin:0">结果附带每件乐器的音色介绍和入门指南(课程·自学·第一件乐器怎么买)、你的音乐倾向雷达图,
+    还有可以和朋友比较的分享链接。无需注册,大约5分钟就够了。</p>`;
+    return;
+  }
+  el.innerHTML = `<h2 style="font-size:1rem; margin:0 0 10px">What is this quiz?</h2>
+  <p style="margin:0 0 12px">A free instrument-matching test. From real-life conditions — whether you can stand spit pooling in a wind instrument,
+  fingertip calluses, or apartment-friendly volume — to the music you love and your temperament, about 30 questions figure out what fits.</p>
+  <p style="margin:0 0 12px">In the middle there's an ear test with real sound: high-or-low, fine pitch, melody memory, perfect pitch on a mini keyboard,
+  and tapping rhythms along with a metronome. When it's done, we match you against <strong>200 instruments</strong> — from piano, guitar, violin and drums
+  to handpan, kalimba, erhu and viola da gamba.</p>
+  <p style="margin:0">Results come with tone descriptions, starter guides (lessons, self-teaching, what to buy), a radar chart of your musical profile,
+  and a share link to compare with friends. No sign-up, about 5 minutes.</p>`;
+}
 function setStaticTexts(){
-  document.documentElement.lang = isEN() ? "en" : "ko";
-  document.title = L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should be able to play one instrument");
+  document.documentElement.lang = isEN() ? "en" : (isZH() ? "zh-CN" : "ko");
+  document.title = L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should be able to play one instrument","这辈子总得会一样乐器");
   const md=document.querySelector('meta[name="description"]');
-  if(md) md.setAttribute("content", L("간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 189종의 악기가 기다리고 있습니다.",
-    "A short test to uncover the musical talent you never knew you had. 189 instruments are waiting."));
-  const ko=document.getElementById("lang-ko"), en=document.getElementById("lang-en");
-  if(ko) ko.className = "langbtn"+(isEN()?"":" on");
+  if(md) md.setAttribute("content", L("간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 200종의 악기가 기다리고 있습니다.",
+    "A short test to uncover the musical talent you never knew you had. 200 instruments are waiting.",
+    "一个简单的测试,唤醒你自己都不知道的乐器天赋。200种乐器等着你。"));
+  const ko=document.getElementById("lang-ko"), en=document.getElementById("lang-en"), zh=document.getElementById("lang-zh");
+  if(ko) ko.className = "langbtn"+(LANG==="ko"?" on":"");
   if(en) en.className = "langbtn"+(isEN()?" on":"");
+  if(zh) zh.className = "langbtn"+(isZH()?" on":"");
+  setAbout();
 }
 function setLang(l){
   if(l===LANG) return;
-  LANG = (l==="en") ? "en" : "ko";
+  LANG = (l==="en"||l==="zh") ? l : "ko";
   try{ localStorage.setItem("iq_lang", LANG); }catch(e){}
   stopScheduled();                 // 테스트 도중이면 예약된 소리를 끊고 그 화면을 다시 그린다
   setStaticTexts();
   try{ VIEW(); }catch(e){ showIntro(); }
 }
-// 첫 진입 언어: 저장된 선택 > 링크의 ?l= > 접속 국가(KR만 한국어) > 브라우저 설정
+// 첫 진입 언어: 저장된 선택 > 링크의 ?l= > 접속 국가(KR=한국어·중화권=중국어·그 외=영어) > 브라우저 설정
 function bootLang(){
   let l=null;
   try{ l=localStorage.getItem("iq_lang"); }catch(e){}
   if(!l){
     const q=new URLSearchParams(location.search).get("l");
-    if(q==="en"||q==="ko") l=q;
+    if(q==="en"||q==="ko"||q==="zh") l=q;
   }
-  if(!l) l = /^ko\b/i.test(navigator.language||"") ? "ko" : "en";
-  LANG = (l==="en") ? "en" : "ko";
+  if(!l){
+    const nl=navigator.language||"";
+    l = /^ko\b/i.test(nl) ? "ko" : (/^zh\b/i.test(nl) ? "zh" : "en");
+  }
+  LANG = (l==="en"||l==="zh") ? l : "ko";
   setStaticTexts();
   if(!(()=>{ try{ return !!localStorage.getItem("iq_lang"); }catch(e){ return false; } })()
      && !new URLSearchParams(location.search).get("l")){
     // 브라우저 언어는 추정일 뿐 — Cloudflare 엣지에서 실제 접속 국가를 받아 한 번만 정정한다(사용자가 진행하기 전에만)
     fetch("/cdn-cgi/trace").then(r=>r.text()).then(txt=>{
       const m=/^loc=([A-Z]{2})$/m.exec(txt); if(!m) return;
-      const want = m[1]==="KR" ? "ko" : "en";
+      const cc=m[1];
+      const want = cc==="KR" ? "ko" : ((cc==="CN"||cc==="HK"||cc==="MO"||cc==="TW"||cc==="SG") ? "zh" : "en");
       if(want!==LANG && stepIdx<0){ LANG=want; setStaticTexts(); try{ VIEW(); }catch(e){} }
     }).catch(()=>{});
   }
@@ -773,9 +856,9 @@ function showIntro(){
     A short test to wake up the <b>musical talent<br>you never knew you had</b>.`)}</p>
     <div class="card" style="text-align:left">
       <span class="tag">${L("⏱ 약 4분","⏱ About 4 min")}</span><span class="tag mint">${L("🎧 이어폰 추천","🎧 Headphones help")}</span><span class="tag lav">${L("🔍 숨은 재능 찾기","🔍 Find your hidden knack")}</span>
-      <p class="small" style="margin:10px 0 0">${L(`친숙한 악기부터 세상 구석의 낯선 악기까지 <b>189종</b>이 후보예요.
+      <p class="small" style="margin:10px 0 0">${L(`친숙한 악기부터 세상 구석의 낯선 악기까지 <b>200종</b>이 후보예요.
       침 흘리기 싫은 사람, 손끝 아픈 게 싫은 사람, 아파트 사는 사람의 사정까지 다 헤아려서 골라드립니다.`,
-      `<b>189 instruments</b> are in the running, from the familiar ones to the ones you've never heard of.
+      `<b>200 instruments</b> are in the running, from the familiar ones to the ones you've never heard of.
       We take your real life into account too — the spit, the sore fingertips, the neighbours through the wall.`)}</p>
     </div>
     <button class="btn" onclick="APP.start()">${L("내 악기 찾으러 가기 🚀","Find my instrument 🚀")}</button>
@@ -790,7 +873,7 @@ function showQ(){
   progress();
   const opts = q.dynOpts ? q.dynOpts() : q.opts;
   const sel = new Set();
-  const optHtml = opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="APP.pick(${i})">${L(o.t,o.en)}${o.sub?`<small>${L(o.sub,o.subEn)}</small>`:""}</button>`).join("");
+  const optHtml = opts.map((o,i)=>`<button class="opt" data-i="${i}" onclick="APP.pick(${i})">${L(o.t,o.en,o.zh)}${o.sub?`<small>${L(o.sub,o.subEn,o.subZh)}</small>`:""}</button>`).join("");
   render(`
     <div class="qicon">${q.icon||"🎵"}</div>
     <h2 class="qtitle">${L(q.title,q.titleEn)}</h2>
@@ -898,7 +981,7 @@ function resultLink(){
   const R=APP._R, id=R&&R.top1?R.top1.slot.inst.id:"";
   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐. "4." = 질문은행 v4 표식.
   // ?l= 은 서버(워커)가 미리보기 언어를 고르는 데 쓴다 — #뒤 데이터는 서버로 전송되지 않기 때문.
-  return location.origin+"/r/"+id+(isEN()?"?l=en":"")+"#4."+packAnswers();
+  return location.origin+"/r/"+id+(isEN()?"?l=en":(isZH()?"?l=zh":""))+"#4."+packAnswers();
 }
 function loadShared(){
   const h=location.hash;
@@ -1039,7 +1122,7 @@ function runAbs(){
   const ts=testState; VIEW=runAbs;
   if(ts.trial>=4){ ts.phase="rhythm"; return runRhythm(); }
   ts.absNote=Math.floor(Math.random()*12); // C4=60 기준
-  const kb = (isEN()?NOTE_NAMES_EN:NOTE_NAMES).map((n,i)=>`<button class="${n.includes("#")?"black":""}" onclick="APP._abs(${i})">${n}</button>`).join("");
+  const kb = (isEN()||isZH()?NOTE_NAMES_EN:NOTE_NAMES).map((n,i)=>`<button class="${n.includes("#")?"black":""}" onclick="APP._abs(${i})">${n}</button>`).join("");
   render(`
     <div class="center">
       <span class="tag sun">${L("귀 테스트 4/5 · 절대음감","Ear test 4/5 · Perfect pitch")}</span>
@@ -1074,8 +1157,8 @@ function runRhythmTrial(){
     <div class="center">
       <span class="tag">${L("귀 테스트 5/5 · 리듬 따라치기","Ear test 5/5 · Tap the rhythm")}</span>
       ${ts.retry?`<p class="small" style="background:#FFF4D6;border-radius:14px;padding:8px 12px">${L(`한 번도 안 치셨네요! ▶️를 누르고 <b>「지금! 따라 치세요」가 뜨는 마디</b>에 쳐보세요.`,`You didn't tap at all! Hit ▶️ and tap during the bar that says <b>'Now! Tap along'</b>.`)}</p>`
-        :(ts.lastPct!=null?`<p class="small">${L(`방금 리듬: <b>${ts.lastPct}% 일치</b>`,`That last one: <b>${ts.lastPct}% match</b>`)} ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
-      <h2 class="qtitle">${L(`${ts.rTrial+1}단계 — ${pat.name}`,`Level ${ts.rTrial+1} — ${pat.nameEn}`)}</h2>
+        :(ts.lastPct!=null?`<p class="small">${L(`방금 리듬: <b>${ts.lastPct}% 일치</b>`,`That last one: <b>${ts.lastPct}% match</b>`,`刚才的节奏:<b>${ts.lastPct}% 吻合</b>`)} ${ts.lastPct>=80?"🎯":ts.lastPct>=50?"👍":"🙈"}</p>`:"")}
+      <h2 class="qtitle">${L(`${ts.rTrial+1}단계 — ${pat.name}`,`Level ${ts.rTrial+1} — ${pat.nameEn}`,`第${ts.rTrial+1}关 — ${L(pat.name,pat.nameEn)}`)}</h2>
       <p class="flavor">${L(pat.hint,pat.hintEn)}<br>
       ${L(`<b>딱-딱-</b> 메트로놈이 처음부터 끝까지 울립니다. 4마디로 진행돼요.<br>
       ① <b>준비</b> → ② <b>문제</b>(둥- 둥- 낮은 북소리) → ③ <b>터치 준비</b> → ④ <b>따라 치기</b><br>
@@ -1183,9 +1266,9 @@ function finishTests(){
       <div class="big-emoji">📊</div>
       <h2 class="qtitle">${L("귀 테스트 결과","Your ear test results")}</h2>
       <div class="card" style="text-align:left">
-        <p>🎯 <b>${L(`청음 점수: ${P.pitch}점`,`Pitch score: ${P.pitch}`)}</b> / 100 ${P.pitch>=65?L("— 음정을 스스로 만드는 악기도 노려볼 귀!","— good enough to aim at instruments where you make the pitch yourself!"):P.pitch>=35?L("— 평균적인 좋은 귀입니다","— a solidly good ear"):L("— 음정을 잡아주는 악기와 찰떡궁합","— a perfect fit for instruments that hold the pitch for you")}</p>
-        <p>🥁 <b>${L(`리듬 점수: ${P.rhythm}점`,`Rhythm score: ${P.rhythm}`)}</b> / 100 ${P.rhythm>=70?L("— 몸에 메트로놈 내장하셨네요","— you've got a metronome built in"):""}</p>
-        <p>🏅 ${L(`절대음감 테스트: ${ts.abs}점 / 8 — `,`Perfect pitch test: ${ts.abs} / 8 — `)}${absMsg}</p>
+        <p>🎯 <b>${L(`청음 점수: ${P.pitch}점`,`Pitch score: ${P.pitch}`,`听音得分:${P.pitch}分`)}</b> / 100 ${P.pitch>=65?L("— 음정을 스스로 만드는 악기도 노려볼 귀!","— good enough to aim at instruments where you make the pitch yourself!"):P.pitch>=35?L("— 평균적인 좋은 귀입니다","— a solidly good ear"):L("— 음정을 잡아주는 악기와 찰떡궁합","— a perfect fit for instruments that hold the pitch for you")}</p>
+        <p>🥁 <b>${L(`리듬 점수: ${P.rhythm}점`,`Rhythm score: ${P.rhythm}`,`节奏得分:${P.rhythm}分`)}</b> / 100 ${P.rhythm>=70?L("— 몸에 메트로놈 내장하셨네요","— you've got a metronome built in"):""}</p>
+        <p>🏅 ${L(`절대음감 테스트: ${ts.abs}점 / 8 — `,`Perfect pitch test: ${ts.abs} / 8 — `,`绝对音感测试:${ts.abs}分 / 8 — `)}${absMsg}</p>
       </div>
       <p class="small">${L("🎉 여기까지가 전체의 절반! 이제 취향 문답만 남았어요.","🎉 That's the halfway mark! Only the taste questions left.")}</p>
       <button class="btn" onclick="APP.next()">${L("계속 →","Continue →")}</button>
@@ -1228,7 +1311,7 @@ function scoreSlot(slot){
   if(!gate && (C.entryKRW&&C.entryKRW[0]||0) > BUDGET_CAP[P.budget]){
     if(INSTITUTIONAL.has(inst.id)){ variantNote = variantNote || L("🏫 이 악기는 처음부터 사는 게 아니에요 — 학원·교회·연습실·합주단의 악기로 배우기 시작하면 됩니다",
       "🏫 You don't buy this one to start — you learn on an instrument that belongs to a school, a church, a rehearsal room or an ensemble."); }
-    else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about ₩${(C.entryKRW[0]).toLocaleString("en-US")})`);
+    else gate=L(`입문 가격이 예산 초과 (약 ${Math.round((C.entryKRW[0])/10000)}만원~)`,`the entry price is over your budget (from about ₩${(C.entryKRW[0]).toLocaleString("en-US")})`,`入门价格超出预算(约${Math.round((C.entryKRW[0])/10000)}万韩元起)`);
   }
   // 레슨이 없어도 독학 자료가 충분한 악기는 탈락시키지 않고 감점 + 안내만 (핑거드럼·오토하프·텅드럼 등)
   if(!gate && P.learn==="lesson" && P.lessonEnv<=2 && (PR.lessonKR||3)<=1){
@@ -1248,7 +1331,7 @@ function scoreSlot(slot){
   const pitchTable = { F0:[15,10,2], F1:[2,10,8], F2:[-10,6,15], F3:[-28,-4,25], P:[0,0,0] };
   const pAdd = (pitchTable[pf]||pitchTable.F1)[band];
   s+=pAdd;
-  if(pf==="F3"&&band===2) why.push({t:L(`청음 ${ps}점 — 프렛도 건반도 없는 곳에서 음정을 스스로 만들 수 있는 귀예요`,`Pitch score ${ps} — an ear that can find the notes itself, with no frets and no keys to help`), p:pAdd});
+  if(pf==="F3"&&band===2) why.push({t:L(`청음 ${ps}점 — 프렛도 건반도 없는 곳에서 음정을 스스로 만들 수 있는 귀예요`,`Pitch score ${ps} — an ear that can find the notes itself, with no frets and no keys to help`,`听音${ps}分 — 在没有品也没有琴键的地方,也能自己找准音高的耳朵`), p:pAdd});
   if(pf==="F0"&&band===0) why.push({t:L(`음정을 악기가 잡아줘요. 청음 점수 부담 제로!`,`The instrument holds the pitch for you — your ear score doesn't have to carry anything.`), p:pAdd});
   // 무율(타악)은 음정을 맞출 일이 없다 — 청음 대신 리듬이 그 자리를 대신하도록 배점
   if(pf==="P"){
@@ -1257,15 +1340,15 @@ function scoreSlot(slot){
     if(pp){
       s+=pp;
       why.push({t: band===0
-        ? L(`음정 걱정이 없는 악기 — 청음 점수가 낮아도 전혀 불리하지 않고, 리듬 ${rh}점이 그대로 실력이 돼요`,`No pitch to worry about — a low ear score costs you nothing here, and your rhythm ${rh} is the skill that counts`)
-        : L(`음정을 맞출 필요가 없어서, 리듬 ${rh}점이 곧바로 실력이 되는 악기예요`,`Nothing to tune by ear — your rhythm ${rh} translates straight into skill here`), p:pp});
+        ? L(`음정 걱정이 없는 악기 — 청음 점수가 낮아도 전혀 불리하지 않고, 리듬 ${rh}점이 그대로 실력이 돼요`,`No pitch to worry about — a low ear score costs you nothing here, and your rhythm ${rh} is the skill that counts`,`不用担心音准的乐器 — 听音分数低也毫不吃亏,节奏${rh}分直接就是实力`)
+        : L(`음정을 맞출 필요가 없어서, 리듬 ${rh}점이 곧바로 실력이 되는 악기예요`,`Nothing to tune by ear — your rhythm ${rh} translates straight into skill here`,`不需要对音准,节奏${rh}分立刻变成实力的乐器`), p:pp});
     }
   }
-  if(P.abs>=6 && (pf==="F3"||/테레민|뮤지컬 쏘|톱|팀파니/.test(inst.name))){ s+=10; why.push({t:L(`절대음감 ${P.abs}/8점 — 이 악기에선 초능력입니다`,`Perfect pitch ${P.abs}/8 — on this instrument that's close to a superpower`), p:10}); }
+  if(P.abs>=6 && (pf==="F3"||/테레민|뮤지컬 쏘|톱|팀파니/.test(inst.name))){ s+=10; why.push({t:L(`절대음감 ${P.abs}/8점 — 이 악기에선 초능력입니다`,`Perfect pitch ${P.abs}/8 — on this instrument that's close to a superpower`,`绝对音感${P.abs}/8分 — 在这件乐器上就是超能力`), p:10}); }
 
   // ---- 리듬 ----
   const roles=(PL.roles||[]).join(" ");
-  if((P.rhythm||50)>=70 && /리듬|베이스/.test(roles)){ s+=14; why.push({t:L(`리듬 ${P.rhythm}점 — 박자를 책임지는 역할에 딱`,`Rhythm score ${P.rhythm} — perfect for a part that carries the beat`), p:14}); }
+  if((P.rhythm||50)>=70 && /리듬|베이스/.test(roles)){ s+=14; why.push({t:L(`리듬 ${P.rhythm}점 — 박자를 책임지는 역할에 딱`,`Rhythm score ${P.rhythm} — perfect for a part that carries the beat`,`节奏${P.rhythm}分 — 正适合掌管节拍的角色`), p:14}); }
   if((P.rhythm||50)<35 && /리듬/.test(roles)) s-=10;
   if((P.rhythm||50)>=70 && (PL.fastPlay||3)>=4) s+=4;
 
@@ -1274,21 +1357,21 @@ function scoreSlot(slot){
   slot.genres.main.forEach(gn=>{ if(P.genres[gn]){ gpts+=P.genres[gn]*7; gm.push(gn); } });
   slot.genres.sub.forEach(gn=>{ if(P.genres[gn]){ gpts+=P.genres[gn]*3.5; } });
   gpts=Math.min(gpts,45); s+=gpts;
-  if(gm.length) why.push({t:L(`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`,`Lands right on the music you picked (${gm.map(gLabel).join(", ")})`), p:gpts});
+  if(gm.length) why.push({t:L(`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`,`Lands right on the music you picked (${gm.map(gLabel).join(", ")})`,`和你选的音乐口味(${gm.map(gLabel).join("、")})正面重合`), p:gpts});
 
   // ---- 역할 ----
   if(P.roles && P.roles.length){
     const roleMap={"멜로디":/멜로디/,"화음":/화음|반주/,"리듬":/리듬/,"베이스":/베이스/,"올라운드":/올라운드/};
     const hit=P.roles.filter(rl=>roleMap[rl] && roleMap[rl].test(roles));
-    if(hit.length){ const rp=Math.min(12+(hit.length-1)*4, 20); s+=rp; why.push({t:L(`"${hit.join("·")}" 역할 지망과 일치`,`Matches the role you wanted: ${hit.map(roleLabel).join(", ")}`), p:rp}); }
+    if(hit.length){ const rp=Math.min(12+(hit.length-1)*4, 20); s+=rp; why.push({t:L(`"${hit.join("·")}" 역할 지망과 일치`,`Matches the role you wanted: ${hit.map(roleLabel).join(", ")}`,`与你想要的角色“${hit.map(roleLabel).join("、")}”一致`), p:rp}); }
   }
   // ---- 음색 ----
   const toneMatch=(g(inst,"sound.tone",[])).filter(t=>P.tones.includes(t));
-  if(toneMatch.length){ const tp=Math.min(toneMatch.length*6,18); s+=tp; why.push({t:L(`끌린다고 한 소리(${toneMatch.slice(0,2).join("·")})가 이 악기의 목소리`,`The sound you said you liked (${toneMatch.slice(0,2).map(toneLabel).join(", ")}) is exactly this instrument's voice`), p:tp}); }
+  if(toneMatch.length){ const tp=Math.min(toneMatch.length*6,18); s+=tp; why.push({t:L(`끌린다고 한 소리(${toneMatch.slice(0,2).join("·")})가 이 악기의 목소리`,`The sound you said you liked (${toneMatch.slice(0,2).map(toneLabel).join(", ")}) is exactly this instrument's voice`,`你说心动的声音(${toneMatch.slice(0,2).map(toneLabel).join("、")})正是这件乐器的嗓音`), p:tp}); }
 
   // ---- 희귀도·유행 ----
   const rar=V.rarityKR||3;
-  if(P.rarityPref>=3){ const rp=(rar-2)*7; s+=rp; if(rar>=4) why.push({t:L(`희귀도 ${rar}/5 — "나만 쓰는 악기"의 희열 보장`,`Rarity ${rar}/5 — guaranteed 'nobody else I know plays this' satisfaction`), p:rp}); }
+  if(P.rarityPref>=3){ const rp=(rar-2)*7; s+=rp; if(rar>=4) why.push({t:L(`희귀도 ${rar}/5 — "나만 쓰는 악기"의 희열 보장`,`Rarity ${rar}/5 — guaranteed 'nobody else I know plays this' satisfaction`,`稀有度${rar}/5 — 保证“只有我在玩”的快感`), p:rp}); }
   else if(P.rarityPref<=1){ s+=(3-rar)*5; if(rar>=4){ s-=8; } }
   if(P.trendPref===1 && (V.trendy||3)<=2){ s+=6; }
   if(P.trendPref===3 && (V.trendy||3)>=4){ s+=6; }
@@ -1418,12 +1501,13 @@ function rarityHtml(id){
   let txt;
   if(p==null){ txt=L(`🦄 <b>측정 불가급 유니콘</b> — 시뮬레이션 수천 번에도 거의 안 나온 결과예요`,
                      `🦄 <b>Off-the-charts unicorn</b> — thousands of simulated quiz-takers, and almost none landed here.`); }
-  else if(p<=0.5) txt=L(`🦄 <b>유니콘급</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🦄 <b>Unicorn tier</b> — only about <b>${p}%</b> of people get this result.`);
-  else if(p<=1.5) txt=L(`💎 <b>초희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `💎 <b>Ultra rare</b> — only about <b>${p}%</b> of people get this result.`);
-  else if(p<=4)   txt=L(`🌟 <b>희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🌟 <b>Rare</b> — about <b>${p}%</b> of people get this result.`);
-  else if(p<=10)  txt=L(`✨ <b>흔치 않음</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `✨ <b>Uncommon</b> — about <b>${p}%</b> of people get this result.`);
+  else if(p<=0.5) txt=L(`🦄 <b>유니콘급</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🦄 <b>Unicorn tier</b> — only about <b>${p}%</b> of people get this result.`, `🦄 <b>独角兽级</b> — 只有约<b>${p}%</b>的人得到这个结果`);
+  else if(p<=1.5) txt=L(`💎 <b>초희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `💎 <b>Ultra rare</b> — only about <b>${p}%</b> of people get this result.`, `💎 <b>超稀有</b> — 只有约<b>${p}%</b>的人得到这个结果`);
+  else if(p<=4)   txt=L(`🌟 <b>희귀</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `🌟 <b>Rare</b> — about <b>${p}%</b> of people get this result.`, `🌟 <b>稀有</b> — 约<b>${p}%</b>的人得到这个结果`);
+  else if(p<=10)  txt=L(`✨ <b>흔치 않음</b> — 이 결과를 받는 사람은 약 <b>${p}%</b>`, `✨ <b>Uncommon</b> — about <b>${p}%</b> of people get this result.`, `✨ <b>少见</b> — 约<b>${p}%</b>的人得到这个结果`);
   else txt=L(`🍀 국민 악기 당첨 — 약 <b>${p}%</b>가 같은 결과. 그만큼 검증된 길이에요`,
-             `🍀 A crowd favorite — about <b>${p}%</b> land here too. That's a well-worn, well-supported path.`);
+             `🍀 A crowd favorite — about <b>${p}%</b> land here too. That's a well-worn, well-supported path.`,
+             `🍀 国民乐器中奖 — 约<b>${p}%</b>的人和你结果相同。说明这是条被验证过的路`);
   return `<p class="rar">${txt}</p>`;
 }
 function guideHtml(id){
@@ -1445,9 +1529,26 @@ function ytQuery(slot){
   if(slot.track){ const l=slot.track.label||""; for(const [k,v] of TRACK_YT){ if(l.includes(k)){ tk=v; break; } } }
   return ((tk?tk+" ":"")+base+" performance").replace(/\s+/g," ").trim();
 }
+// 중국판 영상 검색 — 유튜브는 본토에서 안 열리므로 B站(bilibili) 검색으로 보낸다
+function zhVidQuery(slot){
+  const zo=ZH_INST[slot.inst.id];
+  const nm=((zo&&zo.name)||slot.inst.name).replace(/[（(].*?[)）]/g,"").trim();
+  return nm+" 演奏";
+}
+function vidQuery(slot){ return isZH() ? zhVidQuery(slot) : ytQuery(slot); }
+function vidUrl(slot){
+  return isZH()
+    ? "https://search.bilibili.com/all?keyword="+encodeURIComponent(zhVidQuery(slot))
+    : "https://www.youtube.com/results?search_query="+encodeURIComponent(ytQuery(slot));
+}
 function fmtCost(c){
   if(!c||!c.entryKRW) return "";
   const [a,b]=c.entryKRW;
+  if(isZH()){
+    // 한국 시장 실구매가 — 통화는 원화 그대로, 표기만 중국어 자릿수(万)로
+    const z=n=>n>=100000000?(n/100000000).toFixed(1)+"亿":(n>=10000?Math.round(n/10000)+"万":String(n));
+    return `入门约${z(a)}~${z(b)}韩元`;
+  }
   if(isEN()){
     // 한국 시장 실구매가라 통화는 원 그대로 두고, 자릿수만 영어권이 읽기 쉬운 K/M로 바꾼다
     const e=n=>n>=1000000?(n/1000000).toFixed(n%1000000?1:0).replace(/\.0$/,"")+"M":(n>=1000?Math.round(n/1000)+"K":String(n));
@@ -1467,7 +1568,7 @@ function accessInfo(inst){
   else if(lesson>=3) bits.push(L("레슨 구하기 어렵지 않고","lessons aren't hard to come by"));
   else if(self>=4) bits.push(L("독학 자료가 넘치고","there's no shortage of self-teaching material"));
   if(price>0) bits.push(price<100000 ? L("입문 악기가 10만원 안쪽","a starter costs under ₩100,000")
-                                     : L(`입문 악기가 ${Math.round(price/10000)}만원대부터`,`starters begin around ₩${price.toLocaleString("en-US")}`));
+                                     : L(`입문 악기가 ${Math.round(price/10000)}만원대부터`,`starters begin around ₩${price.toLocaleString("en-US")}`,`入门乐器约${Math.round(price/10000)}万韩元起`));
   if(bar<=2) bits.push(L("첫 소리도 금방 나요","and you'll get a real sound out of it quickly"));
   return {ok, reason: bits.join(", ")};
 }
@@ -1511,7 +1612,7 @@ function buildResult(){
 function easyNote(r){
   const a=accessInfo(r.slot.inst);
   return a.ok
-    ? L(`1순위 악기가 부담스럽다면 여기부터. ${a.reason}.`, `If your top match feels like a lot, start here instead — ${a.reason}.`)
+    ? L(`1순위 악기가 부담스럽다면 여기부터. ${a.reason}.`, `If your top match feels like a lot, start here instead — ${a.reason}.`, `如果第一名让你有压力,就从这里开始。${a.reason}。`)
     : L("1순위가 부담스럽다면 이쪽도 고려해보세요.", "If your top match feels like a lot, this one's worth a look too.");
 }
 function resCardHtml(r, cls, rankTxt, crown, note){
@@ -1540,8 +1641,8 @@ function resCardHtml(r, cls, rankTxt, crown, note){
     ${cavs.length?`<p class="small">${L("😈 각오할 것: ","😈 Go in knowing: ")}${cavs.join(" / ")}</p>`:""}
     ${r.slot.track&&iTrackNote(inst,r.slot.track)?`<p class="small">${L("🎯 추천 트랙: ","🎯 Suggested path: ")}${iTrackNote(inst,r.slot.track)}</p>`:""}
     ${guideHtml(inst.id)}
-    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery(r.slot))}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube")}</a>
-    <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`)}</p>
+    <a class="btn mint" style="font-size:1rem; margin-top:10px" href="${vidUrl(r.slot)}" target="_blank" rel="noopener">${L("▶️ 유튜브에서 연주 보기","▶️ Watch it played on YouTube","▶️ 去B站看演奏视频")}</a>
+    <p class="small center" style="margin:6px 0 0">${L(`유튜브에 <b>${ytQuery(r.slot)}</b> 라고 검색하면 대표 연주들이 나와요`,`Search YouTube for <b>${ytQuery(r.slot)}</b> and you'll find the performances that made it famous.`,`在B站搜索 <b>${zhVidQuery(r.slot)}</b>,就能看到代表性的演奏视频`)}</p>
   </div>`;
 }
 function wrapText(x, text, cx, y, maxW, lh, maxLines){
@@ -1556,7 +1657,7 @@ function wrapText(x, text, cx, y, maxW, lh, maxLines){
 // 인스타 스토리 규격(1080×1920) 결과 카드
 async function buildCard(){
   const R=APP._R; if(!R||!R.top1) return null;
-  try{ await document.fonts.load("70px Jua"); await document.fonts.load("34px 'Gowun Dodum'"); await document.fonts.ready; }catch(e){}
+  try{ await document.fonts.load("70px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"); await document.fonts.load("34px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"); await document.fonts.ready; }catch(e){}
   const W=1080,H=1920;
   const c=document.createElement("canvas"); c.width=W; c.height=H;
   const x=c.getContext("2d");
@@ -1570,13 +1671,13 @@ async function buildCard(){
     x.beginPath(); x.arc(rx,ry,sz,0,Math.PI*2); x.fill();
   }
   x.globalAlpha=1; x.textAlign="center";
-  x.fillStyle="#8A7A6E"; x.font="38px Jua"; x.fillText(L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should play one instrument"), W/2, 128);
+  x.fillStyle="#8A7A6E"; x.font="38px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should play one instrument"), W/2, 128);
   // 메인 카드
   x.fillStyle="#fff"; rr(60,190,960,1340,56); x.fill();
   x.lineWidth=7; x.strokeStyle="#FF7E67"; rr(60,190,960,1340,56); x.stroke();
   // 페르소나
   const per=personaOf();
-  x.font="36px Jua";
+  x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
   const pw=Math.min(880, x.measureText("🧬 "+per[0]).width+80);
   x.fillStyle="#F0EAFE"; rr(W/2-pw/2, 246, pw, 74, 37); x.fill();
   x.fillStyle="#7C5CE0"; x.fillText("🧬 "+per[0], W/2, 296);
@@ -1593,26 +1694,27 @@ async function buildCard(){
   // 악기 이름 (스타일 트랙은 아래 칩으로 분리해 이름이 잘리지 않게)
   const parts=dName(R.top1.slot).split(" — ");
   const base=parts[0], track=parts.slice(1).join(" · ");
-  x.fillStyle="#8A7A6E"; x.font="34px Jua"; x.fillText(L("내 악기는 🎵","My instrument is 🎵"), W/2, 968);
-  x.fillStyle="#4A3B32"; x.font=(base.length>11?"64px Jua":"82px Jua");
+  x.fillStyle="#8A7A6E"; x.font="34px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("내 악기는 🎵","My instrument is 🎵"), W/2, 968);
+  x.fillStyle="#4A3B32"; x.font=(base.length>11?"64px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif":"82px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif");
   x.fillText(base.length>17?base.slice(0,17)+"…":base, W/2, 1052);
   let ny=1052;
   if(track){
-    x.font="32px Jua";
+    x.font="32px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
     const tw=Math.min(880, x.measureText(track).width+56);
     x.fillStyle="#E5F7F1"; rr(W/2-tw/2, ny+26, tw, 62, 31); x.fill();
     x.fillStyle="#3EA98F"; x.fillText(track.length>22?track.slice(0,22)+"…":track, W/2, ny+68);
     ny+=88;
   }
   // 한 줄 소개
-  x.fillStyle="#8A7A6E"; x.font="34px 'Gowun Dodum'";
+  x.fillStyle="#8A7A6E"; x.font="34px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
   ny=wrapText(x, (iToneDesc(inst)||"").replace(/^"|"$/g,""), W/2, ny+70, 820, 48, track?2:3);
   // 점수 배지
   ny+=42;
   if(P.pitch!=null){
-    x.font="36px Jua";
+    x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
     const line=L(`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":""),
-                 `👂 Pitch ${P.pitch}   🥁 Rhythm ${P.rhythm}`+(P.abs>=6?"   🏅 Perfect pitch":""));
+                 `👂 Pitch ${P.pitch}   🥁 Rhythm ${P.rhythm}`+(P.abs>=6?"   🏅 Perfect pitch":""),
+                 `👂 听音 ${P.pitch}   🥁 节奏 ${P.rhythm}`+(P.abs>=6?"   🏅 绝对音感":""));
     const bw=Math.min(900, x.measureText(line).width+70);
     x.fillStyle="#FFF0EA"; rr(W/2-bw/2, ny-46, bw, 72, 36); x.fill();
     x.fillStyle="#E85F47"; x.fillText(line, W/2, ny);
@@ -1620,19 +1722,19 @@ async function buildCard(){
   }
   // 희귀도
   const rp=RAR_TABLE[inst.id];
-  x.font="36px Jua";
+  x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
   const rtxt = rp==null ? L("🦄 아무도 못 받아본 유니콘 결과","🦄 A unicorn result almost nobody gets")
-             : (rp<=1.5? L(`💎 상위 ${rp}%만 나오는 결과`,`💎 Only ${rp}% of people get this`)
-             : (rp<=4?   L(`🌟 흔치 않은 결과 (약 ${rp}%)`,`🌟 An uncommon result (about ${rp}%)`)
-             :           L(`🍀 같은 결과 약 ${rp}%`,`🍀 About ${rp}% share this result`)));
+             : (rp<=1.5? L(`💎 상위 ${rp}%만 나오는 결과`,`💎 Only ${rp}% of people get this`,`💎 只有${rp}%的人抽到的结果`)
+             : (rp<=4?   L(`🌟 흔치 않은 결과 (약 ${rp}%)`,`🌟 An uncommon result (about ${rp}%)`,`🌟 少见的结果(约${rp}%)`)
+             :           L(`🍀 같은 결과 약 ${rp}%`,`🍀 About ${rp}% share this result`,`🍀 约${rp}%的人结果相同`)));
   const rw=Math.min(900, x.measureText(rtxt).width+70);
   x.fillStyle="#FFF4D6"; rr(W/2-rw/2, ny-46, rw, 72, 36); x.fill();
   x.fillStyle="#B8860B"; x.fillText(rtxt, W/2, ny);
   // 하단 CTA + 워터마크
-  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum'"; x.fillText(L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), W/2, 1642);
+  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), W/2, 1642);
   x.fillStyle="#FF7E67"; rr(W/2-330, 1686, 660, 96, 48); x.fill();
-  x.fillStyle="#fff"; x.font="44px Jua"; x.fillText("instrumentquiz.org", W/2, 1749);
-  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum'"; x.fillText(L("3분 테스트 · 악기 189종","3-minute quiz · 189 instruments"), W/2, 1826);
+  x.fillStyle="#fff"; x.font="44px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText("instrumentquiz.org", W/2, 1749);
+  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("3분 테스트 · 악기 200종","3-minute quiz · 200 instruments"), W/2, 1826);
   return c.toDataURL("image/png");
 }
 async function shareCard(){
@@ -1660,27 +1762,31 @@ function showResult(shared){
   const R=buildResult();
   if(!R.top1){ render(`<div class="center card"><h2>${L("이럴 수가...","Well, this is awkward...")}</h2><p>${L("모든 악기가 걸러졌습니다. 조건을 조금 느슨하게 다시 해볼까요?","Every single instrument got filtered out. Want to try again with slightly looser conditions?")}</p><button class="btn" onclick="APP.restart()">${L("다시 하기","Start over")}</button></div>`); return; }
   const absBadge = P.abs>=6 ? `<span class="tag sun">${L("🏅 절대음감 가능성","🏅 Possible perfect pitch")}</span>` : "";
-  const pitchTag = P.pitch!=null ? `<span class="tag">${L(`👂 청음 ${P.pitch}점`,`👂 Pitch ${P.pitch}`)}</span>` : "";
-  const rhyTag = P.rhythm!=null ? `<span class="tag mint">${L(`🥁 리듬 ${P.rhythm}점`,`🥁 Rhythm ${P.rhythm}`)}</span>` : "";
+  const pitchTag = P.pitch!=null ? `<span class="tag">${L(`👂 청음 ${P.pitch}점`,`👂 Pitch ${P.pitch}`,`👂 听音 ${P.pitch}分`)}</span>` : "";
+  const rhyTag = P.rhythm!=null ? `<span class="tag mint">${L(`🥁 리듬 ${P.rhythm}점`,`🥁 Rhythm ${P.rhythm}`,`🥁 节奏 ${P.rhythm}分`)}</span>` : "";
   const mateHtml = R.mate ? `
     <div class="card">
       <h3 class="jua" style="margin:0 0 6px">${L("💘 당신과 잘 맞는 연주자","💘 Your musical soulmate")}</h3>
       <p>${L(`<b>${dName(R.mate.slot)}</b> 하는 사람 — 당신이 나설 때 묵묵히 받쳐주고, 당신이 지칠 때 멜로디를 넘겨받는 사이. 같이 합주하면 케미 터집니다.`,
-             `Someone who plays the <b>${dName(R.mate.slot)}</b> — they'll hold everything together while you step forward, and take the melody when you run out of breath. Put you two in a room and it just works.`)}</p>
+             `Someone who plays the <b>${dName(R.mate.slot)}</b> — they'll hold everything together while you step forward, and take the melody when you run out of breath. Put you two in a room and it just works.`,
+             `玩<b>${dName(R.mate.slot)}</b>的人 — 你上场时默默托住你,你累了就替你接过主旋律。一起合奏,化学反应爆棚。`)}</p>
       ${R.rival?`<p class="small">${L(`⚡ 부딪힐 수 있는 사람: <b>${dName(R.rival.slot)}</b> 하는 사람 — 서로 주인공을 하겠다고 싸울 확률 높음. (그래도 미워하진 마세요)`,
-             `⚡ Who you'd butt heads with: someone on the <b>${dName(R.rival.slot)}</b> — you'd both want the spotlight. (Be nice to them anyway.)`)}</p>`:""}
+             `⚡ Who you'd butt heads with: someone on the <b>${dName(R.rival.slot)}</b> — you'd both want the spotlight. (Be nice to them anyway.)`,
+             `⚡ 可能会较劲的人:玩<b>${dName(R.rival.slot)}</b>的人 — 大概率会为“谁当主角”争起来。(不过别讨厌人家)`)}</p>`:""}
     </div>`:"";
   const wildHtml = R.wild ? `
     <div class="card" style="border-style:dashed">
       <h3 class="jua" style="margin:0 0 6px">${L("🃏 와일드카드","🃏 Wild card")}</h3>
       <p>${L(`<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — 점수가 꽤 나왔는데 아무도 안 하는 악기입니다. "그게 뭐예요?"라는 질문을 평생 듣고 싶다면.`,
-             `<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — it scored surprisingly well for you, and almost nobody plays it. Pick this if you want to hear 'wait, what is that?' for the rest of your life.`)}</p>
+             `<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — it scored surprisingly well for you, and almost nobody plays it. Pick this if you want to hear 'wait, what is that?' for the rest of your life.`,
+             `<b>${dName(R.wild.slot)}</b> ${nameEmoji(R.wild.slot.inst.name,R.wild.slot.inst.family)} — 分数相当高,却几乎没人玩的乐器。想一辈子被人问“那是什么?”,就选它。`)}</p>
     </div>`:"";
   const pityHtml = R.pity && R.pity.score>=70 ? `
     <div class="card" style="background:#FFF4F0">
       <h3 class="jua" style="margin:0 0 6px">${L("🥲 아차상","🥲 So close")}</h3>
       <p>${L(`<b>${dName(R.pity.slot)}</b> — 사실 점수는 최상위권이었는데, <b>"${R.pity.gate}"</b> 때문에 눈물을 머금고 탈락했습니다. 마음이 바뀌면 다시 오세요.`,
-             `<b>${dName(R.pity.slot)}</b> — it actually scored near the very top, but we had to rule it out over one thing: <b>${R.pity.gate}</b>. If you ever change your mind about that, come back.`)}</p>
+             `<b>${dName(R.pity.slot)}</b> — it actually scored near the very top, but we had to rule it out over one thing: <b>${R.pity.gate}</b>. If you ever change your mind about that, come back.`,
+             `<b>${dName(R.pity.slot)}</b> — 其实分数在最前列,却因为<b>“${R.pity.gate}”</b>含泪出局。哪天想法变了,记得回来。`)}</p>
     </div>`:"";
   const per=personaOf();
   render(`
@@ -1695,12 +1801,13 @@ function showResult(shared){
     </div>
     <div class="card">
       <div class="center">
-        <span class="tag lav" style="font-size:1rem">${L(`🧬 당신은 「${per[0]}」`,`🧬 You are: ${per[0]}`)}</span>
+        <span class="tag lav" style="font-size:1rem">${L(`🧬 당신은 「${per[0]}」`,`🧬 You are: ${per[0]}`,`🧬 你是「${per[0]}」`)}</span>
         <p class="small" style="margin:6px 0 0">${per[1]}</p>
       </div>
       <div class="radarwrap">${radarSVG()}</div>
-      <p class="small center" style="margin:2px 0 0">${L(`악기 <b>189종</b> 중 당신의 조건(몸·환경·예산)을 통과한 건 <b>${R.aliveN}종</b>.<br>그 안에서 적성·취향 점수를 합산해 아래 순위가 나왔어요.`,
-        `Of <b>189 instruments</b>, <b>${R.aliveN}</b> made it past your body, living situation and budget.<br>We then ranked those by aptitude and taste to get the results below.`)}</p>
+      <p class="small center" style="margin:2px 0 0">${L(`악기 <b>200종</b> 중 당신의 조건(몸·환경·예산)을 통과한 건 <b>${R.aliveN}종</b>.<br>그 안에서 적성·취향 점수를 합산해 아래 순위가 나왔어요.`,
+        `Of <b>200 instruments</b>, <b>${R.aliveN}</b> made it past your body, living situation and budget.<br>We then ranked those by aptitude and taste to get the results below.`,
+        `在<b>200种</b>乐器中,通过你的条件(身体·环境·预算)的有<b>${R.aliveN}种</b>。<br>再按适性·口味加分排序,得到下面的名次。`)}</p>
     </div>
     ${resCardHtml(R.top1, "", L("가장 어울리는 악기","Your best match"), true)}
     ${R.cands[0]?resCardHtml(R.cands[0], "second", L("🌱 좀 더 쉽게 시작하고 싶다면","🌱 If you'd rather start easy"), false, easyNote(R.cands[0])):""}
@@ -1711,7 +1818,7 @@ function showResult(shared){
     ${shared?`
     <div class="card" style="background:#FFF0EA; text-align:center">
       <p style="margin:0 0 4px"><b>${L("🤔 나한테 맞는 악기는 뭘까?","🤔 So what's YOUR instrument?")}</b></p>
-      <p class="small" style="margin:0 0 12px">${L("귀 테스트 + 취향 문답으로 악기 189종 중에서 찾아드려요","An ear test plus a few questions about you, matched against 189 instruments")}</p>
+      <p class="small" style="margin:0 0 12px">${L("귀 테스트 + 취향 문답으로 악기 200종 중에서 찾아드려요","An ear test plus a few questions about you, matched against 200 instruments")}</p>
       <button class="btn big" onclick="APP.start()">${L("🎵 나도 테스트 해보기","🎵 Take the quiz myself")}<br><span style="font-size:.8rem;opacity:.9">${L("3분이면 끝나요 · 무료","About 3 minutes · free")}</span></button>
     </div>
     `:`
@@ -1732,10 +1839,11 @@ function share(){
   const R=APP._R; if(!R)return;
   const lines=[
     L("🎵 살면서 악기 하나쯤은 다룰 줄 알아야지 — 내 결과","🎵 Everyone should play one instrument — here's mine"),
-    L(`👑 운명의 악기: ${dName(R.top1.slot)}`,`👑 My instrument: ${dName(R.top1.slot)}`),
-    ...(R.cands.map((c,i)=>L(`${i+2}위: ${dName(c.slot)}`,`#${i+2}: ${dName(c.slot)}`))),
+    L(`👑 운명의 악기: ${dName(R.top1.slot)}`,`👑 My instrument: ${dName(R.top1.slot)}`,`👑 命中注定的乐器:${dName(R.top1.slot)}`),
+    ...(R.cands.map((c,i)=>L(`${i+2}위: ${dName(c.slot)}`,`#${i+2}: ${dName(c.slot)}`,`第${i+2}名:${dName(c.slot)}`))),
     P.pitch!=null?L(`👂 청음 ${P.pitch}점 / 🥁 리듬 ${P.rhythm}점${P.abs>=6?" / 🏅 절대음감 가능성":""}`,
-                    `👂 Pitch ${P.pitch} / 🥁 Rhythm ${P.rhythm}${P.abs>=6?" / 🏅 possible perfect pitch":""}`):"",
+                    `👂 Pitch ${P.pitch} / 🥁 Rhythm ${P.rhythm}${P.abs>=6?" / 🏅 possible perfect pitch":""}`,
+                    `👂 听音 ${P.pitch}分 / 🥁 节奏 ${P.rhythm}分${P.abs>=6?" / 🏅 可能有绝对音感":""}`):"",
     L("내 결과 그대로 보기: ","See my full result: ")+resultLink()
   ].filter(Boolean);
   navigator.clipboard.writeText(lines.join("\n")).then(()=>alert(L("복사 완료! 어디든 붙여넣어 자랑하세요 🎉","Copied! Paste it anywhere and show off 🎉")));

@@ -1,6 +1,6 @@
-// 악기 일러스트 SVG — [건반 + 프리리드] 배치 (20종)
+// 악기 일러스트 SVG — [건반 + 프리리드] 배치 (21종)
 // 스타일: viewBox 0 0 100 100, 라인 #4A3B32(3~4px round), 팔레트 고정.
-// 키 = inst_keyboard_freereed.js 의 최상위 id 20개.
+// 키 = inst_keyboard_freereed.js 의 최상위 id 21개.
 
 const ART_KEYBOARD_FREEREED = {
 
@@ -63,5 +63,8 @@ const ART_KEYBOARD_FREEREED = {
 
   // 생황: 둥근 바가지(공명통)+옆 취구관+높이 다른 대나무 관 다발(마디·지공)
   "saenghwang": '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="#4A3B32" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><rect x="35" y="30" width="6" height="34" fill="#F6C98F"/><rect x="43" y="14" width="6" height="50" fill="#F6C98F"/><rect x="51" y="8" width="6" height="56" fill="#F6C98F"/><rect x="59" y="20" width="6" height="44" fill="#F6C98F"/><rect x="67" y="34" width="6" height="30" fill="#F6C98F"/><path d="M35 42 h6 M43 28 h6 M51 22 h6 M59 32 h6 M67 44 h6" stroke-width="2"/><path d="M38 54l.1 0M46 50l.1 0M54 46l.1 0M62 50l.1 0M68 54l.1 0" stroke-width="3.5"/><circle cx="53" cy="73" r="16" fill="#E0A96B"/><path d="M38 78 L14 86" stroke-width="8"/><path d="M38 78 L15 85.6" stroke="#E0A96B" stroke-width="4"/></g></svg>',
+
+  // 셩(중국 생황): 금속빛 둥근 바람통(금색 밴드)+길이 들쭉날쭉한 관 6개 다발+짧고 굵은 취구관
+  "sheng": '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="#4A3B32" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><rect x="27" y="32" width="6" height="32" fill="#F6C98F"/><rect x="35" y="16" width="6" height="48" fill="#F6C98F"/><rect x="43" y="6" width="6" height="58" fill="#F6C98F"/><rect x="51" y="11" width="6" height="53" fill="#F6C98F"/><rect x="59" y="22" width="6" height="42" fill="#F6C98F"/><rect x="67" y="36" width="6" height="28" fill="#F6C98F"/><path d="M27 42h6M35 28h6M43 16h6M51 21h6M59 34h6M67 46h6" stroke-width="2"/><path d="M30 54l.1 0M38 50l.1 0M46 44l.1 0M54 46l.1 0M62 50l.1 0M70 54l.1 0" stroke-width="3.5"/><ellipse cx="50" cy="70" rx="19" ry="6" fill="#E8E8E8"/><path d="M31 70c0 10 8 16 19 16s19-6 19-16" fill="#E8E8E8"/><path d="M36 81h28" stroke="#FFD166" stroke-width="2.5" fill="none"/><path d="M33 76 L11 84" stroke-width="8"/><path d="M33 76 L12 83.6" stroke="#E8E8E8" stroke-width="4"/></g></svg>',
 
 };

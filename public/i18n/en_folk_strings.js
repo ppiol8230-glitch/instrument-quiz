@@ -288,6 +288,74 @@ const EN_INST_FOLK_STRINGS = {
     },
   },
 
+  // ═══════════════ Chinese traditional strings, additional (6) ═══════════════
+
+  yangqin: {
+    name: "Yangqin",
+    family: "Struck strings · dulcimer (China)",
+    toneDesc: "A clear striking tone like silver beads spilling out. Tremolo shimmers on like ripples, and the bass register rings with surprising grandeur.",
+    caveats: [
+      "Tuning 140-odd strings is daily life — a tuning hammer and a tuner app are lifelong companions",
+      "Lessons and distribution in Korea are rare, so you depend on direct import and Chinese-language courses",
+      "It is furniture-sized, so decide where it will live before you buy",
+    ],
+  },
+
+  zhongruan: {
+    name: "Zhongruan (ruan)",
+    family: "Plucked · lute (China)",
+    toneDesc: "A round, cozy mid-range reminiscent of classical guitar. Less a showy soloist than a moonlight sound that wraps the whole ensemble from below.",
+    caveats: [
+      "Essentially no lessons in Korea — you rely on Chinese-language video courses",
+      "It looks like a guitar but is tuned differently, so chord shapes must be learned fresh",
+      "Budget units can have uneven fret placement, so verify you are getting a genuine brand",
+    ],
+  },
+
+  liuqin: {
+    name: "Liuqin",
+    family: "Plucked · lute (China)",
+    toneDesc: "A bright, punchy treble reminiscent of mandolin. It sparkles and cuts through at the very top of the ensemble — like shards of glass catching sunlight.",
+    caveats: [
+      "Hard to see one in person in Korea, so direct import is the default",
+      "The solo repertoire and teaching materials are a smaller pool than pipa's",
+      "Steel strings under high tension — budget for early left-hand soreness",
+    ],
+  },
+
+  sanxian: {
+    name: "Sanxian",
+    family: "Plucked · lute (China)",
+    toneDesc: "A dry, short-ringing 'tang tang'. The snakeskin gives it a percussive attack that drives rhythm and melody together underneath a singing voice.",
+    caveats: [
+      "A long neck with no frets and no position markers — pitch is purely ear and muscle memory",
+      "Essentially no lessons in Korea; you depend on Chinese-language material",
+      "Snakeskin customs issues (CITES) are the same as for erhu — check for export papers when importing",
+    ],
+  },
+
+  konghou: {
+    name: "Konghou (Chinese harp)",
+    family: "Plucked · harp (China)",
+    toneDesc: "Harp clarity with guzheng-style pitch bends layered on top. A familiar harp sound that suddenly starts speaking with an Eastern inflection — genuinely uncanny.",
+    caveats: [
+      "Players, teachers and instruments are all rare — even in China only a small number specialize",
+      "The price floor is harp-level, so securing a budget comes before the decision to start",
+      "The ancient konghou's tradition died out; the modern instrument is a revival redesigned in the 1970s-80s",
+    ],
+  },
+
+  jinghu: {
+    name: "Jinghu",
+    family: "Bowed strings · huqin fiddle",
+    toneDesc: "A piercing, ear-drilling treble. Snakeskin over a bamboo tube makes a taut sound that cuts clearly through even a Peking-opera singer's voice.",
+    caveats: [
+      "It is genuinely loud — without soundproofing at home, plan for a mute and a practice room first",
+      "Its native grammar is following Peking opera vocal lines, so self-study material is far scarcer than for erhu",
+      "Even erhu players need to readjust to the short scale and high string tension",
+    ],
+  },
+
 };
 
 const EN_GUIDE_FOLK_STRINGS = {
@@ -462,6 +530,50 @@ const EN_GUIDE_FOLK_STRINGS = {
     lesson: "Self-teachable (lessons are the rare thing) — YouTube number-notation videos are all you need, and Korea's cover-video culture is strong enough that the material is infinite. Culture centers occasionally run hobby classes, but they are not remotely necessary. This is the poster child of the zero-won lesson budget.",
     buy: "Entry ₩15,000-60,000 — available anywhere in Korea (open marketplaces, discount variety stores, music shops). For the standard 17-key C major model, ₩30,000-odd already sounds plenty good. Chinese specialists like Gecko and Hluru, plus domestic names such as Minor Sound, are the usual first buys. Landmine: some of the cheapest have sharp tine edges or buzzing, so read the reviews. Hollow-body (acoustic) and flat-board models sound different, so watch demo videos before you choose!",
     firstGoal: "One-week goal (not three months — one week, really): play 'Canon' or 'Auld Lang Syne' all the way through. By month three you can run two-hand chords plus melody at the same time and film ASMR-YouTuber-grade videos.",
+  },
+
+  // ═══════════════ Chinese traditional strings, additional (6) ═══════════════
+
+  yangqin: {
+    how: "You strike 140-odd strings with two slender bamboo beaters. Your fingertips never press a string, so calluses are zero, and everything you hit sounds pretty — the early payoff is excellent. The real study is wrist snap (learning to unclench) and memorizing the string map: with several rows of bridges it feels like a maze at first, but once memorized, scales roll along like piano. And fair warning: part of this hobby is tuning.",
+    lesson: "Self-teachable to lessons-recommended — assume there are effectively no lessons in Korea (Seoul's Chinese-instrument schools open a class now and then). Chinese-language courses and YouTube material are plentiful, though, so if you have played hammered dulcimer or piano, the online self-study route is realistically open. If you have played the Korean yanggeum, your beater feel transfers directly.",
+    buy: "Entry ₩400,000-1.2M — Korean distribution is rare, so direct import from Taobao is the default. The beginner standard is the 402 model, and big brands such as Dunhuang and Lehai are the safe picks. Landmine: it is furniture-sized, so international freight can approach the price of the instrument — compare totals. Check that a tuning hammer, spare strings and practice beaters are included! With 140-odd strings, a tuner app is a lifelong companion.",
+    firstGoal: "Three-month goal: memorize the string map and play one Chinese folk tune with alternating hands, a little tremolo on top. The moment that silver-bead tremolo keeps rolling, your living room becomes a Chinese teahouse.",
+  },
+
+  zhongruan: {
+    how: "You cradle the full-moon body like a guitar and play with a pick. Frets mean no pitch worries, string tension is gentle, and guitar or ukulele players have melodies rolling within the first week. The tone is a round, cozy mid-range close to classical guitar — less a flashy lead than a moonlight accompanist that flatters anything you put over it. The tuning differs from guitar, so only the chord shapes need relearning.",
+    lesson: "Self-teachable — there are essentially no lessons in Korea, but Chinese-language courses are plentiful (many with subtitles) and the instrument is simple enough to suit self-study. Guitarists can make progress from YouTube fingering videos alone. An online lesson with a ruan major adds the traditional techniques like tremolo and rolls.",
+    buy: "Entry ₩150,000-500,000 — direct from Taobao, with a beginner model around 1,000 yuan (about ₩200,000) as the standard. Big factory brands like Xinghai and Dunhuang are the no-fail choices. Landmine: rock-bottom no-name units can have uneven fret placement and play out of tune, so check seller reviews and real playing footage. Put picks and spare strings in the same cart!",
+    firstGoal: "Three-month goal: play one Chinese folk tune as melody and one song you know as chord accompaniment. The moment you feel the round body making a round sound, you are a fan of this instrument.",
+  },
+
+  liuqin: {
+    how: "You hold the little willow-leaf body and play with a pick. The position feel is startlingly close to mandolin, so mandolin and ukulele players adapt immediately. The frets are tall, which feels odd to the left hand at first, but pitch is never a worry. As the instrument in charge of the ensemble's top register, its bright sound cuts through beautifully, and the moment tremolo kicks in its presence lights up. Early left-hand blisters are the steel-string rite of passage.",
+    lesson: "Self-teachable to lessons-recommended — there are essentially no lessons in Korea. Chinese-language courses and YouTube are the route, and pipa schools occasionally teach liuqin too, so in Seoul it is worth asking the Chinese-instrument schools. Using mandolin books to build picking basics is a detour that genuinely works.",
+    buy: "Entry ₩150,000-450,000 — direct from Taobao. Beginner models from big brands such as Dunhuang and Xinghai are the safe picks, and seeing one in person in Korea is difficult. Landmine: budget units vary in fret alignment and nut finish, so verify a genuine brand and read the reviews. Order picks (liuqin picks are thick) and spare strings at the same time to save on shipping.",
+    firstGoal: "Three-month goal: build basic tremolo and play one Chinese folk tune in that ringing treble. Play along over an ensemble recording and you get the top-line thrill of realizing, ah, I am the highest voice here.",
+  },
+
+  sanxian: {
+    how: "It seems like the dry 'tang tang' of the snakeskin body is all there is — until that sound settles under a singing voice and the spell begins. The long neck has no frets and no markers, so pitch is purely ear and muscle memory — start with position stickers (like shamisen, everyone does). True to being the shamisen's ancestor, rhythm and melody come out of one hand together, and the heart of the instrument is the storytelling-song tradition where you sing and accompany yourself.",
+    lesson: "Lessons recommended — except they are essentially nonexistent in Korea. Chinese-language courses and YouTube are the realistic route, and the material pool is smaller than for pipa or guzheng. If you have played shamisen, the feel transfers almost wholesale, so using shamisen books as a detour curriculum is a practical move.",
+    buy: "Entry ₩200,000-600,000 — direct from Taobao, with beginner models (small and medium sanxian) from big brands like Xinghai starting in the ₩200,000s. Landmine: snakeskin quality varies a lot, so pick a high-volume seller with good reviews, and as with erhu, confirm CITES export papers are included. Sizes split into large and small sanxian — the easier-to-handle small one is the sensible entry.",
+    firstGoal: "Three-month goal: settle your position feel and sing one Chinese folk song while accompanying yourself. The moment that dry 'tang' locks in with your own voice, the grammar of a thousand-year-old storyteller is in your hands.",
+  },
+
+  konghou: {
+    how: "You hold it like a harp and pluck with bare fingers, but the strings hang in pairs on both faces, so you can press one to bend the pitch. Harp shimmer with guzheng bends on top — there is no other instrument like it. It sounds pretty the moment you pluck, so the early payoff is harp-grade. The real gate is not playing but acquisition: instruments and teachers are rare even inside China, so starting at all makes you a pioneer.",
+    lesson: "Lessons recommended — except there are essentially none in Korea. Online lessons with Chinese konghou majors or Chinese-language courses are the realistic route. If you have played harp, your finger technique transfers directly, so building basics on a lever harp first is a reasonable detour. Guzheng players will find their left-hand bending feel welcomes them first.",
+    buy: "Entry ₩1.5M-4M — import basis; that is the floor for smaller beginner models, and standard models run into the several-millions, so plan a harp-class budget. Landmine: distribution is so scarce that you should only proceed with model recommendations from konghou workshops and the specialist community. Budget separately for large-cargo international freight too. If the price stings, starting on a lever harp to build fundamentals is the honest alternative.",
+    firstGoal: "Three-month goal: play one Chinese-style miniature, adding a single left-hand bend to a harp-style arpeggio. The moment the harp sound suddenly bends with an Eastern inflection, choosing this instrument pays off.",
+  },
+
+  jinghu: {
+    how: "It is an erhu shrunk by half, in bamboo — with twice the sound. The bow threaded between two strings and the fingerboard-less left hand work like erhu, but the scale is short and the tension high, so the pitch tolerances are tighter. And its real job is not solos but shadowing a Peking-opera singer's vocal line — come prepared to fall in love with opera recordings, and to solve soundproofing, in equal measure.",
+    lesson: "Lessons recommended — Korea has essentially none, and Chinese-language courses and YouTube are the realistic route (a much smaller pool than erhu's). Building your base on erhu and then crossing over is the standard path even in China, so if this would be your first bowed instrument, consider starting on erhu. Ear-copying opera recordings is half the study.",
+    buy: "Entry ₩50,000-250,000 — direct from Taobao, among the cheapest of the huqin family. The rock-bottom tens-of-thousands units vary wildly though, so aim above ₩100,000 with a major brand or a well-reviewed workshop. Landmine: CITES snakeskin paperwork checks are the same as for erhu, and a mute is essential equipment rather than optional (it really is loud). Specs split into xipi and erhuang types, so start with a general-purpose one.",
+    firstGoal: "Three-month goal: with the mute on, steady your pitch and lay one Peking-opera vocal phrase over a recording. The moment that ringing tone overlaps the singer's voice, the thrill of the front row arrives in your room.",
   },
 
 };

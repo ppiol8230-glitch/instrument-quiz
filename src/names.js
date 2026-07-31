@@ -189,5 +189,15 @@ export default {
   "crumhorn": "크룸호른",
   "cornetto": "코르네토",
   "musette_de_cour": "뮈제트 드 쿠르",
+  "yangqin": "양친 (중국 양금)",
+  "zhongruan": "중롼 (롼)",
+  "liuqin": "류친",
+  "sanxian": "싼시엔 (삼현)",
+  "konghou": "콩허우 (공후)",
+  "jinghu": "징후 (경호)",
+  "suona": "쑤오나",
+  "bawu": "바우",
+  "xun": "쉰",
+  "sheng": "셩",
+  "muyu": "목탁",
 };
-

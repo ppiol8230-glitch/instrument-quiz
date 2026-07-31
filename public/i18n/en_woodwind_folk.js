@@ -247,6 +247,43 @@ const EN_INST_WOODWIND_FOLK = {
     ],
   },
 
+  suona: {
+    name: "Suona",
+    family: "Folk woodwind · double reed (shawm family, China)",
+    toneDesc: "A searing, metal-edged blaze of sound. The proverbial voice that buries every other instrument the moment it speaks - swinging between festival ecstasy and funeral wailing within a single tune.",
+    caveats: [
+      "Noise trouble sits at the very top of the whole database alongside taepyeongso and Highland pipes - securing a practice space comes before skill",
+      "Double-reed pressure plus big breath means months while your lip and cheek muscles get built",
+      "Lesson and retail infrastructure in Korea is effectively zero - a self-study adventure running on direct imports and Chinese-language online courses",
+    ],
+    tracks: {
+      folk: { label: "Folk & traditional", note: "Wedding and festival music, plus the flashy traditional showpiece of birdsong mimicry (Hundred Birds Saluting the Phoenix)." },
+      keyed: { label: "Keyed modern", note: "The keyed, upgraded suona. The chromatic, concerto-ready track of the Chinese folk orchestra." },
+    },
+  },
+
+  bawu: {
+    name: "Bawu",
+    family: "Folk woodwind · free reed (Yunnan, China)",
+    toneDesc: "A sleek low register that glides the moment you lay breath on it. A shade darker than the hulusi and closer to a human voice - hence the nickname 'the talking instrument.'",
+    caveats: [
+      "The range is barely over an octave - tied with the hulusi for narrowest here, so the ceiling on repertoire is real",
+      "The free-reed rule applies: blow hard and the pitch collapses, so keeping a gentle breath is the whole knack",
+      "The reed is fixed inside the tube, so if you buy a mistuned one there's nothing you can do (check reviews first)",
+    ],
+  },
+
+  xun: {
+    name: "Xun",
+    family: "Folk woodwind · vessel flute (China)",
+    toneDesc: "A dark, ancient sound that seems to rise out of the earth. The tone the old poets likened to the autumn wind - it wins on afterglow, not brilliance.",
+    caveats: [
+      "It looks like an ocarina but has no recorder-style mouthpiece - there's a first-sound gate (days to two weeks) of angling your breath as if blowing across a bottle",
+      "The range is narrow and the repertoire leans slow and dark - if you want upbeat tunes, this points the other way",
+      "It's ceramic, so one drop and it goes straight back to being an artifact (in pieces)",
+    ],
+  },
+
 };
 
 const EN_GUIDE_WOODWIND_FOLK = {
@@ -389,6 +426,27 @@ const EN_GUIDE_WOODWIND_FOLK = {
     lesson: "Lessons recommended - with essentially none in Korea, Spanish-language online courses are the main route, and if you get serious there's the romantic option of a Galician summer school (a short course on location).",
     buy: "With effectively no Korean distribution, assume a direct order from a Galician workshop - a student set runs ₩800,000-2.5M (budget generously for exchange rates and duties). Korean information on makers barely exists, so check recent reviews in overseas gaita communities before proceeding. The landmines are no-name cheap sets, and the genre mix-up of 'it's Spanish so it must be flamenco' (it's Celtic).",
     firstGoal: "Play one muineira on the chanter with its rhythm alive. The day the drones come in on top, your living room becomes a Galician festival square.",
+  },
+
+  suona: {
+    how: "As the taepyeongso's Chinese cousin, the order of business is the same - the first task isn't practice but a practice space (the volume rules out indoors). Once you've secured outdoors or a soundproofed room, the sequence runs: take the shaozi (the double reed) in your lips and settle your breath pressure, then stabilize the tone, then move on to tongue and finger technique. The few months while your lip and cheek muscles get built are the groundwork - after that, the flashy world of birdsong mimicry opens up.",
+    lesson: "Lessons recommended, but Korea has effectively no dedicated suona teachers - the realistic route is a hybrid: borrow the basics of reed breathing from a taepyeongso or piri player, then take the main course through Chinese-language online lessons. Even leaning on subtitles, you can follow along fine.",
+    buy: "AliExpress direct order is the standard route - a student set (body, bell and a few reeds) runs ₩30,000-80,000, and a decent playable rosewood one ₩100,000-150,000. Adding a stack of spare shaozi (reeds) to the order is a required ritual - they're consumables and you can't restock them in Korea. The landmines are decorative souvenir suonas, and buying before you've solved the practice-space problem - the first thing to ring out will be your relationship with the neighbors.",
+    firstGoal: "A stable long tone, then one line of a folk melody on top. The day will come when you prove the meme in person: when the suona sounds, no other instrument can be heard.",
+  },
+
+  bawu: {
+    how: "If you know the hulusi, this is its sibling - the same reed set into a single tube. The reed is built in, so you get a sound on day one. The knack is to cover the reed hole generously with your lips and keep your breath as gentle as stroking silk (blow hard and the pitch collapses). Once the transverse hold feels natural, the fingering is recorder-level, so you'll have tunes in the first week.",
+    lesson: "Self-teaching is fine - there are effectively no lessons in Korea, and little need for them. Chinese-language online courses plus a fingering chart are enough, and the breathing tips in hulusi materials transfer almost unchanged.",
+    buy: "₩20,000-50,000 on AliExpress gets you a resin or bamboo starter (in G or F). The landmine is the rock-bottom no-brand: if the built-in reed is out of tune there's nothing you can do, so pick a mid-priced listing from a seller with plenty of reviews. There are transverse and vertical versions - for starting out, either is fine.",
+    firstGoal: "In your first week, draw one phrase of a slow tune out like velvet on the gentlest breath. When someone asks 'that low note came out of a bamboo flute?', you've succeeded.",
+  },
+
+  xun: {
+    how: "It looks like an ocarina, but you actually start with bottle-blowing - there's no recorder-style mouthpiece, so the first sound only comes once you angle your breath across the edge of the blowhole, like skimming air over an empty bottle (days to two weeks). Once it speaks, the fingering is on the gentle side, so the real work is long tones that hold the pitch straight. Slow, spacious tunes are what this instrument is truly about.",
+    lesson: "Self-teaching is fine - lessons in Korea are effectively nonexistent, so Chinese-language online courses are your classroom. It's quiet enough to practice at night, which makes it self-study-friendly, and you can pre-load the first-sound knack by practicing on actual bottles.",
+    buy: "By AliExpress direct order, a beginner 10-hole (pen-grip style) runs ₩20,000-50,000; master-made ceramic pieces start above ₩100,000. For starting out, a medium-sized (plum-to-fist) 10-hole with gentle resistance is the recommendation. The landmine is the tourist-souvenir xun - wonderful as decor, museum-grade as a tuned instrument. And it's ceramic: drop it and it reverts to its pre-excavation state.",
+    firstGoal: "First sound, then one phrase of a slow tune in that dusky long tone. The day a sound built on the same principle as 7,000 years ago comes out of your own breath, your sense of time goes briefly hazy.",
   },
 
 };

@@ -1,4 +1,4 @@
-// 배치: 민속 활 현악(9) + 아시아·중동·아프리카 발현·타현(15) — 총 24종
+// 배치: 민속 활 현악(9) + 아시아·중동·아프리카 발현·타현(15) + 중국 전통 현악 추가(6) — 총 30종
 // 스키마: SCHEMA.md v1 준수. 장르는 data/genres.js canonical 문자열만 사용.
 const INST_FOLK_STRINGS = [
 
@@ -1970,6 +1970,494 @@ const INST_FOLK_STRINGS = [
     funFacts: [
       "원형인 음비라는 짐바브웨에서 조상과 대화하는 의식 악기로 유네스코 유산이에요",
       "유튜브 힐링·ASMR 붐을 타고 국내에서 '악기 입문 선물 1순위'가 됐어요",
+    ],
+  },
+
+  // ═══════════════ 중국 전통 현악 추가 (6) ═══════════════
+
+  {
+    id: "yangqin",
+    name: "양친 (중국 양금)",
+    aka: ["yangqin", "扬琴", "양금"],
+    family: "타현·덜시머류(중국)",
+    desc: "사다리꼴 몸통 위 140여 개의 현을 가느다란 대나무채 두 개로 두드리는 중국의 타현악기. 중국 민악 합주에서 피아노 같은 기둥 역할을 해요. 한국 국악 양금과 뿌리가 같지만 훨씬 크고 음역도 넓어요.",
+
+    sound: {
+      tone: ["반짝임", "맑음", "화려함", "금속성"],
+      toneDesc: "은구슬이 쏟아지는 듯한 맑은 타격음. 트레몰로가 이어지면 물결처럼 반짝이고, 저음부는 의외로 웅장하게 울려요.",
+      volume: 4,
+      sustain: 3,
+    },
+
+    play: {
+      pitchFixed: "F0",
+      fastPlay: 5,
+      chordal: true,
+      melodic: true,
+      singAlong: false,
+      improv: 2,
+      roles: ["멜로디", "화음반주", "올라운드"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 0,
+      callusDesc: "채로 두드리기만 해서 손끝 통증·굳은살이 없어요. 손목 스냅이 관건.",
+      embouchure: 0,
+      breath: 0,
+      weight: 4,
+      weightDesc: "본체 10kg 안팎 + 전용 스탠드. 사실상 옮기지 않는 가구예요.",
+      posture: "의자에 앉아 두드리는 자세라 몸 부담은 적어요",
+      postureRisk: [],
+      handSize: "제약 없음",
+    },
+
+    cost: {
+      entryKRW: [400000, 1200000],
+      entryDesc: "국내 유통이 드물어 타오바오 직구 기준. 입문 표준인 402형(둔황·러하이 등)이 이 범위이고, 부피가 커서 국제 운임이 상당해요.",
+      midKRW: [1500000, 4000000],
+      running: "채(琴竹)·줄 소모품. 140여 줄이라 줄 관리 부담이 있어요",
+    },
+    practical: {
+      portability: 1,
+      noise: 4,
+      apartmentOk: "음량이 커서 시간대 조심. 고무 헤드 연습채로 약음 연습 가능",
+      selfLearn: 3,
+      lessonKR: 1,
+      entryBarrier: 2,
+      quickReward: 4,
+      maintenance: 3,
+    },
+
+    vibe: {
+      tags: ["화려함", "이국적", "우아한", "무대 장악"],
+      trendy: 2,
+      rarityKR: 4,
+      showOff: 4,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["영화·게임 OST", "뉴에이지", "명상·사운드힐링"] },
+
+    kinship: {
+      easyFrom: ["해머드 덜시머", "양금", "산투르", "피아노"],
+      sameTuning: [],
+      leadsTo: ["침발롬", "산투르"],
+    },
+    ensemble: ["중국 민악 합주", "강남 사죽", "솔로"],
+
+    caveats: [
+      "140여 줄 조율이 일상 — 조율 해머와 튜너 앱이 평생 단짝이에요",
+      "국내 레슨·유통이 드물어 직구와 중국어권 인강 의존",
+      "부피가 가구급이라 '어디 둘지'부터 정하고 사야 해요",
+    ],
+    funFacts: [
+      "원래 이름은 '바다 건너온 금'이라는 洋琴이었어요 — 명나라 때 해로로 들어온 외래 악기가 완전히 토착화한 사례예요",
+      "한국 국악 양금도 청나라를 거쳐 들어온 같은 뿌리의 형제 악기예요",
+    ],
+  },
+
+  {
+    id: "zhongruan",
+    name: "중롼 (롼)",
+    aka: ["zhongruan", "中阮", "ruan"],
+    family: "발현·류트류(중국)",
+    desc: "보름달처럼 둥근 울림통에 곧은 넥과 24프렛, 4현을 가진 중국 발현악기. '달의 악기'라는 별명답게 소리도 둥글고 포근해서, 중국 합주에서 기타·비올라 포지션을 맡는 숨은 일꾼이에요.",
+
+    sound: {
+      tone: ["따뜻함", "부드러움", "나무 울림", "소박함"],
+      toneDesc: "클래식 기타를 닮은 둥글고 포근한 중음. 화려하게 나서기보다 합주 전체를 아래에서 감싸는, 달빛 같은 소리예요.",
+      volume: 3,
+      sustain: 2,
+    },
+
+    play: {
+      pitchFixed: "F0",
+      fastPlay: 4,
+      chordal: true,
+      melodic: true,
+      singAlong: true,
+      improv: 2,
+      roles: ["멜로디", "화음반주", "올라운드"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 2,
+      callusDesc: "쇠줄이라 기타 수준의 초반 손끝 적응기가 있어요. 피크 연주라 오른손은 편해요.",
+      embouchure: 0,
+      breath: 0,
+      weight: 2,
+      weightDesc: "2~3kg. 기타처럼 안고 연주해요.",
+      posture: "의자에 앉아 기타처럼 안는 자세. 부담 적음",
+      postureRisk: [],
+      handSize: "넥이 기타보다 도톰하지만 제약은 크지 않아요",
+    },
+
+    cost: {
+      entryKRW: [150000, 500000],
+      entryDesc: "타오바오 직구 기준. 1천위안(약 20만원) 안팎 입문기가 표준이고 싱하이·둔황 등 대형 브랜드가 안전해요.",
+      midKRW: [600000, 2000000],
+      running: "줄값·피크 소액. 유지비 거의 없음",
+    },
+    practical: {
+      portability: 3,
+      noise: 3,
+      apartmentOk: "어쿠스틱 기타급. 낮 연습 무난",
+      selfLearn: 3,
+      lessonKR: 1,
+      entryBarrier: 2,
+      quickReward: 4,
+      maintenance: 1,
+    },
+
+    vibe: {
+      tags: ["소박한", "이국적", "우아한", "고풍스러운"],
+      trendy: 2,
+      rarityKR: 4,
+      showOff: 3,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["영화·게임 OST", "뉴에이지"] },
+
+    kinship: {
+      easyFrom: ["기타", "우쿨렐레", "비파"],
+      sameTuning: [],
+      leadsTo: ["비파", "다롼(대형 롼)"],
+    },
+    ensemble: ["중국 민악 합주", "롼 중주", "솔로"],
+
+    caveats: [
+      "국내 레슨이 사실상 없어 중국어권 인강 의존",
+      "기타와 닮았지만 조율이 달라 코드 폼은 새로 익혀야 해요",
+      "저가품은 프렛 정렬 편차가 있으니 브랜드 정품 여부 확인",
+    ],
+    funFacts: [
+      "이름부터 사람 이름 — 죽림칠현의 완함(阮咸)이 이 악기를 잘 타서 악기 이름이 그대로 '롼(阮)'이 됐어요",
+      "달을 닮은 몸통 때문에 중국에서 '월금 같은 달의 악기'로 통하고, 최근엔 핑거스타일 연주 영상도 늘고 있어요",
+    ],
+  },
+
+  {
+    id: "liuqin",
+    name: "류친",
+    aka: ["liuqin", "柳琴", "유금"],
+    family: "발현·류트류(중국)",
+    desc: "버들잎 모양 몸통의 소형 발현악기. 비파를 축소한 듯한 생김새에 피크로 연주해서, 중국 민악 합주의 최고음역을 만돌린처럼 쨍하게 책임져요.",
+
+    sound: {
+      tone: ["카랑카랑", "반짝임", "맑음"],
+      toneDesc: "만돌린을 닮은 쨍하고 야무진 고음. 합주 맨 위에서 반짝이며 뚫고 나오는, 햇살에 부서지는 유리 조각 같은 소리예요.",
+      volume: 4,
+      sustain: 1,
+    },
+
+    play: {
+      pitchFixed: "F0",
+      fastPlay: 5,
+      chordal: true,
+      melodic: true,
+      singAlong: false,
+      improv: 2,
+      roles: ["멜로디"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 3,
+      callusDesc: "쇠줄+높은 프렛이라 왼손 손끝 물집·굳은살은 통과 의례예요.",
+      embouchure: 0,
+      breath: 0,
+      weight: 1,
+      weightDesc: "1kg 안팎. 비파의 반의반 체감, 휴대 최상급.",
+      posture: "의자에 앉아 비스듬히 안는 자세. 부담 없음",
+      postureRisk: [],
+      handSize: "소형 악기라 손 작아도 유리해요",
+    },
+
+    cost: {
+      entryKRW: [150000, 450000],
+      entryDesc: "타오바오 직구 기준. 둔황·싱하이 등 대형 브랜드 입문기가 이 범위예요.",
+      midKRW: [500000, 1500000],
+      running: "피크·줄 소액. 유지비 거의 없음",
+    },
+    practical: {
+      portability: 5,
+      noise: 3,
+      apartmentOk: "소리가 쨍해서 낮 연습 권장. 음량 자체는 만돌린급",
+      selfLearn: 3,
+      lessonKR: 1,
+      entryBarrier: 2,
+      quickReward: 4,
+      maintenance: 1,
+    },
+
+    vibe: {
+      tags: ["귀여운", "이국적", "고풍스러운"],
+      trendy: 2,
+      rarityKR: 5,
+      showOff: 3,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["영화·게임 OST"] },
+
+    kinship: {
+      easyFrom: ["만돌린", "비파", "우쿨렐레"],
+      sameTuning: [],
+      leadsTo: ["비파", "중롼"],
+    },
+    ensemble: ["중국 민악 합주(최고음 파트)", "솔로"],
+
+    caveats: [
+      "국내에서 실물 보기가 어려워 직구가 기본이에요",
+      "비파보다 독주 레퍼토리·교재 풀이 작아요",
+      "쇠줄 장력이 세서 초반 왼손 통증은 각오",
+    ],
+    funFacts: [
+      "원래 산둥·안후이 지방극 반주 악기였고, '흙비파(土琵琶)'라는 소박한 별명이 있어요",
+      "20세기에 합주용으로 개량되면서 중국 오케스트라의 공식 최고음 발현악기가 됐어요",
+    ],
+  },
+
+  {
+    id: "sanxian",
+    name: "싼시엔 (삼현)",
+    aka: ["sanxian", "三弦", "삼현"],
+    family: "발현·류트류(중국)",
+    desc: "뱀가죽을 씌운 작은 사각 울림통에 프렛 없는 긴 넥, 줄 세 가닥. 샤미센의 조상이 되는 중국 발현악기로, 건조하게 톡톡 튀는 소리로 이야기 노래(설창) 반주의 왕좌를 지켜왔어요.",
+
+    sound: {
+      tone: ["거칢", "타격감", "소박함", "콧소리"],
+      toneDesc: "울림이 짧고 건조한 '탕탕' 소리. 뱀가죽 특유의 퍼커시브한 어택이 있어 노래 밑에서 리듬과 선율을 동시에 밀어줘요.",
+      volume: 3,
+      sustain: 1,
+    },
+
+    play: {
+      pitchFixed: "F3",
+      fastPlay: 4,
+      chordal: false,
+      melodic: true,
+      singAlong: true,
+      improv: 3,
+      roles: ["멜로디", "리듬반주"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 2,
+      callusDesc: "줄이 세 가닥뿐이고 장력도 순한 편. 굳은살은 가볍게 생기는 정도예요.",
+      embouchure: 0,
+      breath: 0,
+      weight: 2,
+      weightDesc: "2kg 안팎. 앉아서 무릎에 올리고 연주해요.",
+      posture: "의자에 앉아 비스듬히 안는 자세. 부담 적음",
+      postureRisk: [],
+      handSize: "넥이 길지만 포지션 이동 위주라 손 크기 제약은 적어요",
+    },
+
+    cost: {
+      entryKRW: [200000, 600000],
+      entryDesc: "타오바오 직구 기준. 싱하이 등 대형 브랜드 입문기가 20만원대부터 있어요. 연주용 등급은 이보다 위.",
+      midKRW: [800000, 2500000],
+      running: "줄값 소액. 뱀가죽 울림통은 습도 관리 필요",
+    },
+    practical: {
+      portability: 4,
+      noise: 3,
+      apartmentOk: "울림이 짧아 어쿠스틱 기타보다 민폐가 덜해요. 낮 연습 무난",
+      selfLearn: 2,
+      lessonKR: 1,
+      entryBarrier: 4,
+      quickReward: 2,
+      maintenance: 2,
+    },
+
+    vibe: {
+      tags: ["이국적", "소박한", "루츠·어쿠스틱", "고풍스러운"],
+      trendy: 1,
+      rarityKR: 5,
+      showOff: 3,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["영화·게임 OST"] },
+
+    kinship: {
+      easyFrom: ["샤미센", "기타", "우드"],
+      sameTuning: [],
+      leadsTo: ["샤미센", "비파"],
+    },
+    ensemble: ["중국 민악 합주", "설창 반주(핑탄 등)", "솔로"],
+
+    caveats: [
+      "프렛도 위치 표시도 없는 긴 넥 — 음정은 순전히 귀와 근육 기억이에요",
+      "국내 레슨 사실상 전무, 중국어권 자료 의존",
+      "뱀가죽 통관(CITES) 이슈는 얼후와 동일 — 직구 시 수출 서류 확인",
+    ],
+    funFacts: [
+      "오키나와로 건너가 산신이 되고, 다시 일본 본토에서 샤미센이 됐어요 — 동아시아 류트 가계도의 큰집이에요",
+      "쑤저우 핑탄(評彈)에서는 연주자가 노래하며 혼자 반주까지 하는 만능 악기예요",
+    ],
+  },
+
+  {
+    id: "konghou",
+    name: "콩허우 (공후)",
+    aka: ["konghou", "箜篌", "공후"],
+    family: "발현·하프류(중국)",
+    desc: "실크로드 벽화 속 고대 하프를 20세기에 되살린 현대 중국 하프. 현이 양면에 쌍으로 걸려 있어 하프인데도 왼손으로 줄을 눌러 음을 꺾을 수 있는, 하프와 고쟁의 하이브리드예요.",
+
+    sound: {
+      tone: ["영롱함", "맑음", "신비", "부드러움"],
+      toneDesc: "하프의 맑은 울림 위에 고쟁처럼 꺾이는 벤딩이 얹혀요. 익숙한 하프 소리가 갑자기 동양의 억양으로 말을 거는 신비한 음색.",
+      volume: 3,
+      sustain: 4,
+    },
+
+    play: {
+      pitchFixed: "F0",
+      fastPlay: 3,
+      chordal: true,
+      melodic: true,
+      singAlong: true,
+      improv: 1,
+      roles: ["멜로디", "화음반주", "올라운드"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 2,
+      callusDesc: "하프처럼 맨손가락으로 뜯어 초반 손끝 적응기가 있어요. 물집 지옥까지는 아님.",
+      embouchure: 0,
+      breath: 0,
+      weight: 5,
+      weightDesc: "키 1.7m 안팎·수십 kg. 콘서트 하프급 가구예요.",
+      posture: "의자에 앉아 몸에 기대는 하프 자세. 자세 자체는 편해요",
+      postureRisk: [],
+      handSize: "제약 거의 없음",
+    },
+
+    cost: {
+      entryKRW: [1500000, 4000000],
+      entryDesc: "직구 기준. 초심자용 소형 모델 하한이 이 정도이고 표준형은 수백만원 — 하프급 예산이 필요해요.",
+      midKRW: [4000000, 12000000],
+      running: "줄값이 하프급으로 비싸요. 조율 관리도 하프급",
+    },
+    practical: {
+      portability: 1,
+      noise: 3,
+      apartmentOk: "하프처럼 부드러운 음색이라 낮 연습은 무난",
+      selfLearn: 1,
+      lessonKR: 1,
+      entryBarrier: 3,
+      quickReward: 4,
+      maintenance: 3,
+    },
+
+    vibe: {
+      tags: ["우아한", "이국적", "고풍스러운", "무대 장악"],
+      trendy: 2,
+      rarityKR: 5,
+      showOff: 5,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["뉴에이지", "명상·사운드힐링", "영화·게임 OST"] },
+
+    kinship: {
+      easyFrom: ["콘서트 하프", "레버 하프 (켈틱 하프)", "고쟁"],
+      sameTuning: [],
+      leadsTo: ["콘서트 하프"],
+    },
+    ensemble: ["중국 민악 합주", "퓨전 앙상블", "솔로"],
+
+    caveats: [
+      "연주 인구·선생님·악기 유통 전부 희귀 — 중국 안에서도 전공자가 소수예요",
+      "가격 하한이 하프급이라 입문 결심보다 예산 확보가 먼저",
+      "고대 공후는 전승이 끊겼고, 현대 콩허우는 1970~80년대에 새로 설계된 부활 악기예요",
+    ],
+    funFacts: [
+      "한나라 화상석과 둔황 벽화에 그려진 실크로드 하프가 원형이에요",
+      "같은 음의 줄이 양면에 쌍으로 걸려 있어, 한쪽을 누르며 다른 쪽을 뜯는 벤딩·비브라토가 되는 하프계 유일 구조예요",
+    ],
+  },
+
+  {
+    id: "jinghu",
+    name: "징후 (경호)",
+    aka: ["jinghu", "京胡", "경호"],
+    family: "활 현악·호궁류",
+    desc: "경극 반주를 이끄는 소형 호궁. 통도 넥도 대나무이고 얼후보다 한참 작지만, 소리는 극장 맨 뒤까지 꽂히는 초고음이에요. 경극 배우의 노래를 그림자처럼 따라가는 것이 본업.",
+
+    sound: {
+      tone: ["카랑카랑", "금속성", "거칢", "콧소리"],
+      toneDesc: "귀를 뚫는 쨍한 고음. 뱀가죽과 대나무 통이 만드는 팽팽한 소리가 배우의 목청 위로도 선명하게 뚫고 나와요.",
+      volume: 5,
+      sustain: 2,
+    },
+
+    play: {
+      pitchFixed: "F3",
+      fastPlay: 4,
+      chordal: false,
+      melodic: true,
+      singAlong: false,
+      improv: 2,
+      roles: ["멜로디"],
+    },
+
+    body: {
+      saliva: 0,
+      callus: 2,
+      callusDesc: "얼후처럼 지판 없이 줄만 짚지만 장력이 세서 손끝이 좀 더 아려요.",
+      embouchure: 0,
+      breath: 0,
+      weight: 1,
+      weightDesc: "500g 안팎. 호궁류 중 가장 작고 가벼워요.",
+      posture: "의자에 앉아 무릎 위. 몸 부담 없음",
+      postureRisk: [],
+      handSize: "스케일이 짧아 손 작아도 유리해요",
+    },
+
+    cost: {
+      entryKRW: [50000, 250000],
+      entryDesc: "타오바오 직구 기준. 몇만원대 입문기부터 있지만 품질 편차가 커서 10만원 이상을 권장해요.",
+      midKRW: [300000, 1000000],
+      running: "활 송진·줄값 소액. 뱀가죽 습도 관리 필요",
+    },
+    practical: {
+      portability: 5,
+      noise: 5,
+      apartmentOk: "음량·음색 모두 관통형이라 아파트 연습은 약음기 필수",
+      selfLearn: 2,
+      lessonKR: 1,
+      entryBarrier: 4,
+      quickReward: 2,
+      maintenance: 2,
+    },
+
+    vibe: {
+      tags: ["이국적", "컬트적", "위압적", "고풍스러운"],
+      trendy: 1,
+      rarityKR: 5,
+      showOff: 4,
+    },
+
+    genres: { main: ["동아시아 전통"], sub: ["영화·게임 OST"] },
+
+    kinship: {
+      easyFrom: ["얼후", "해금", "바이올린"],
+      sameTuning: [],
+      leadsTo: ["얼후"],
+    },
+    ensemble: ["경극 반주", "중국 민악 합주", "솔로"],
+
+    caveats: [
+      "소리가 정말 큽니다 — 방음 없는 집이면 약음기·연습실 계획부터 세우세요",
+      "경극 창강(唱腔)을 따라가는 문법이 본체라 독학 자료가 얼후보다 훨씬 적어요",
+      "얼후 경험자도 짧은 스케일과 센 장력에 재적응이 필요해요",
+    ],
+    funFacts: [
+      "경극단에서 이 악기 주자는 '친스(琴師)'라 불리며 반주단 전체를 이끄는 음악감독 격이에요",
+      "호궁 가족의 막내급 크기인데 음량은 최상위 — 마이크 없던 시절 극장의 스피커였어요",
     ],
   },
 
