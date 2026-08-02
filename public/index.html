@@ -973,8 +973,9 @@ function unpackAnswers(s){
   P.abs    = r.get(4);
   P.skipT  = P.pitch==null;
   walkQs((q,opts)=>{
-    if(q.multi) applyPick(q, maskToArr(r.get(opts.length)));
-    else applyPick(q, r.get(bitsFor(opts.length)));
+    // trail도 재구성 — 복원된 결과에서 packAnswers()를 다시 불러도(재공유·URL 영속화) 같은 코드가 나오게
+    if(q.multi){ const arr=maskToArr(r.get(opts.length)); P.trail.push([q.id, arr]); applyPick(q, arr); }
+    else { const i=r.get(bitsFor(opts.length)); P.trail.push([q.id, i]); applyPick(q, i); }
   });
 }
 function resultLink(){
@@ -992,7 +993,10 @@ function loadShared(){
     } else {                                        // 1~3세대 링크 — 질문 개편(v4)으로 문항·선택지 배치가 달라져 해독 불가(잘못된 결과 방지)
       return false;
     }
-    showResult(true);
+    // 내가 방금 만든 결과인가? (유튜브·小红书에 다녀오다 페이지가 재로드된 경우) → 공유 배너 없이 주인 화면 그대로
+    let own=false;
+    try{ own = sessionStorage.getItem("iq_own")===h.slice(1); }catch(e){}
+    showResult(!own);
     return true;
   }catch(e){ return false; }
 }
@@ -1358,6 +1362,16 @@ function scoreSlot(slot){
   slot.genres.sub.forEach(gn=>{ if(P.genres[gn]){ gpts+=P.genres[gn]*3.5; } });
   gpts=Math.min(gpts,45); s+=gpts;
   if(gm.length) why.push({t:L(`고른 취향(${gm.join("·")})과 정면으로 겹칩니다`,`Lands right on the music you picked (${gm.map(gLabel).join(", ")})`,`和你选的音乐口味(${gm.map(gLabel).join("、")})正面重合`), p:gpts});
+  // 직접 고른 장르(F1~F3, 가중 2)와 하나도 안 겹치면 감점 — "팝·가요만 골랐는데 아프리카 악기" 방지.
+  // 많이 골랐는데도 전부 빗나갔다면 그만큼 취향 밖이라는 뜻이라 감점을 키운다.
+  const directG = Object.keys(P.genres).filter(gn=>P.genres[gn]>=2);
+  const pickedEthnic = directG.some(gn=>ETHNIC_GENRES.includes(gn));
+  if(directG.length && !slot.genres.main.some(gn=>directG.includes(gn)) && !slot.genres.sub.some(gn=>directG.includes(gn))){
+    let mp = Math.min(directG.length,3)*4;
+    // 민속 전용 악기(주 장르가 전부 민속)인데 민속 장르를 하나도 안 골랐다면 추가 감점
+    if(!pickedEthnic && slot.genres.main.every(gn=>ETHNIC_GENRES.includes(gn))) mp+=8;
+    s-=mp;
+  }
 
   // ---- 역할 ----
   if(P.roles && P.roles.length){
@@ -1432,7 +1446,11 @@ function scoreSlot(slot){
 
   // ---- 간접 취향 ----
   if(P.vintage>=1 && (slot.genres.main.includes("바로크·고음악")||(V.tags||[]).some(t=>/고풍|장인/.test(t)))){ const vp=Math.round(P.vintage*5); s+=vp; why.push({t:L("옛것에 끌리는 당신 취향의 정중앙","Dead centre of your pull towards old things"), p:vp}); }
-  if(P.ethnic>=1 && slot.genres.main.some(gn=>ETHNIC_GENRES.includes(gn))){ const ep=P.ethnic*4+(rar>=3?3:0); s+=ep; if(P.ethnic===2) why.push({t:L("낯선 나라 음악 영상을 끝까지 보는 사람의 악기","An instrument for someone who watches the whole video from a country they've never been to"), p:ep}); }
+  // 민속 보너스는 민속 장르를 실제로 골랐을 때만 온전히 — 위장질문(낯선 나라 영상) 하나로 팝·가요 취향을 뒤집지 않게
+  if(slot.genres.main.some(gn=>ETHNIC_GENRES.includes(gn))){
+    if(pickedEthnic && P.ethnic>=1){ const ep=P.ethnic*4+(rar>=3?3:0); s+=ep; if(P.ethnic===2) why.push({t:L("낯선 나라 음악 영상을 끝까지 보는 사람의 악기","An instrument for someone who watches the whole video from a country they've never been to"), p:ep}); }
+    else if(P.ethnic===2 && !directG.length){ s+=4; }   // 장르를 아예 안 골랐다면 호기심 신호만으로 약하게
+  }
   if(P.gear>=1 && /전자|특수/.test(inst.family||"")){ const gp2=Math.round(P.gear*6); s+=gp2; why.push({t:L("장비 만지는 재미까지 세트","Comes with the fun of tinkering with gear"), p:gp2}); }
   if(P.calm>=2 && slot.genres.main.includes("명상·사운드힐링")){ s+=6; }
 
@@ -1562,10 +1580,13 @@ function vidOpen(encKw){
   if(!isZH()) return true;                                  // ko/en은 <a> 기본 동작(유튜브)
   const ua=navigator.userAgent||"";
   if(/MicroMessenger/i.test(ua)){ showWxTip(); return false; }
+  // 웹 폴백은 새 탭으로 — 같은 탭을 떠나면 돌아왔을 때 결과 페이지가 날아간다 (팝업 차단 시에만 같은 탭, 결과는 URL 해시로 복원됨)
+  const web="https://www.xiaohongshu.com/search_result?keyword="+encKw;
+  const toWeb=()=>{ try{ const w=window.open(web,"_blank"); if(!w) location.href=web; }catch(e){ location.href=web; } };
   try{
     location.href="xhsdiscover://search/result?keyword="+encKw;
-    setTimeout(()=>{ if(!document.hidden) location.href="https://www.xiaohongshu.com/search_result?keyword="+encKw; }, 1600);
-  }catch(e){ location.href="https://www.xiaohongshu.com/search_result?keyword="+encKw; }
+    setTimeout(()=>{ if(!document.hidden) toWeb(); }, 1600);
+  }catch(e){ toWeb(); }
   return false;
 }
 function showWxTip(){
@@ -1683,13 +1704,38 @@ function resCardHtml(r, cls, rankTxt, crown, note){
   </div>`;
 }
 function wrapText(x, text, cx, y, maxW, lh, maxLines){
-  const words=String(text).split(/\s+/); const lines=[]; let cur="";
-  words.forEach(w=>{ const t=cur?cur+" "+w:w; if(x.measureText(t).width>maxW && cur){ lines.push(cur); cur=w; } else cur=t; });
+  // 공백 단위로 감싸되, 공백 없는 긴 덩어리(중국어 문장)는 글자 단위로 쪼갠다 — 안 그러면 한 줄이 캔버스를 뚫고 나가 글씨가 잘린다
+  const toks=[];
+  String(text).split(/\s+/).filter(Boolean).forEach(w=>{
+    if(x.measureText(w).width<=maxW){ toks.push({t:w, sp:true}); return; }
+    [...w].forEach((ch,i)=>toks.push({t:ch, sp:i===0}));
+  });
+  const lines=[]; let cur="";
+  toks.forEach(tk=>{
+    const t=cur ? cur+(tk.sp?" ":"")+tk.t : tk.t;
+    if(x.measureText(t).width>maxW && cur){ lines.push(cur); cur=tk.t; } else cur=t;
+  });
   if(cur) lines.push(cur);
   const use=lines.slice(0,maxLines);
-  if(lines.length>maxLines) use[maxLines-1]=use[maxLines-1].replace(/[.,·]?$/,"…");
+  if(lines.length>maxLines){
+    let last=use[maxLines-1].replace(/[.,·、。]?$/,"");
+    while(last.length>1 && x.measureText(last+"…").width>maxW) last=last.slice(0,-1);
+    use[maxLines-1]=last+"…";
+  }
   use.forEach((l,i)=>x.fillText(l, cx, y+i*lh));
   return y+use.length*lh;
+}
+// maxW에 들어올 때까지 글자 크기를 줄이고(최소 minPx), 그래도 넘치면 …로 자른다. 호출 후 폰트는 맞춘 크기로 설정된 상태.
+function fitFont(x, text, basePx, maxW, minPx, fam){
+  fam = fam || "Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
+  let px=basePx, t=String(text);
+  x.font=px+"px "+fam;
+  while(px-2>=minPx && x.measureText(t).width>maxW){ px-=2; x.font=px+"px "+fam; }
+  if(x.measureText(t).width>maxW){
+    while(t.length>1 && x.measureText(t+"…").width>maxW) t=t.slice(0,-1);
+    t+="…";
+  }
+  return t;
 }
 // 인스타 스토리 규격(1080×1920) 결과 카드
 async function buildCard(){
@@ -1708,16 +1754,17 @@ async function buildCard(){
     x.beginPath(); x.arc(rx,ry,sz,0,Math.PI*2); x.fill();
   }
   x.globalAlpha=1; x.textAlign="center";
-  x.fillStyle="#8A7A6E"; x.font="38px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should play one instrument"), W/2, 128);
+  x.fillStyle="#8A7A6E";
+  x.fillText(fitFont(x, L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should play one instrument"), 38, 990, 28), W/2, 128);
   // 메인 카드
   x.fillStyle="#fff"; rr(60,190,960,1340,56); x.fill();
   x.lineWidth=7; x.strokeStyle="#FF7E67"; rr(60,190,960,1340,56); x.stroke();
   // 페르소나
   const per=personaOf();
-  x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
-  const pw=Math.min(880, x.measureText("🧬 "+per[0]).width+80);
+  const perTxt=fitFont(x, "🧬 "+per[0], 36, 800, 26);
+  const pw=Math.min(880, x.measureText(perTxt).width+80);
   x.fillStyle="#F0EAFE"; rr(W/2-pw/2, 246, pw, 74, 37); x.fill();
-  x.fillStyle="#7C5CE0"; x.fillText("🧬 "+per[0], W/2, 296);
+  x.fillStyle="#7C5CE0"; x.fillText(perTxt, W/2, 296);
   // 악기 그림
   const inst=R.top1.slot.inst, svg=ART[inst.id];
   if(svg){
@@ -1731,15 +1778,17 @@ async function buildCard(){
   // 악기 이름 (스타일 트랙은 아래 칩으로 분리해 이름이 잘리지 않게)
   const parts=dName(R.top1.slot).split(" — ");
   const base=parts[0], track=parts.slice(1).join(" · ");
-  x.fillStyle="#8A7A6E"; x.font="34px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("내 악기는 🎵","My instrument is 🎵"), W/2, 968);
-  x.fillStyle="#4A3B32"; x.font=(base.length>11?"64px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif":"82px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif");
-  x.fillText(base.length>17?base.slice(0,17)+"…":base, W/2, 1052);
+  x.fillStyle="#8A7A6E";
+  x.fillText(fitFont(x, L("내 악기는 🎵","My instrument is 🎵"), 34, 800, 26), W/2, 968);
+  x.fillStyle="#4A3B32";
+  // 글자 수로 자르지 않고 폭(930px)에 맞을 때까지 글자 크기를 줄인다 — 긴 이름이 캔버스 밖으로 잘리던 문제
+  x.fillText(fitFont(x, base, 82, 930, 42), W/2, 1052);
   let ny=1052;
   if(track){
-    x.font="32px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
-    const tw=Math.min(880, x.measureText(track).width+56);
+    const tTxt=fitFont(x, track, 32, 800, 24);
+    const tw=Math.min(880, x.measureText(tTxt).width+56);
     x.fillStyle="#E5F7F1"; rr(W/2-tw/2, ny+26, tw, 62, 31); x.fill();
-    x.fillStyle="#3EA98F"; x.fillText(track.length>22?track.slice(0,22)+"…":track, W/2, ny+68);
+    x.fillStyle="#3EA98F"; x.fillText(tTxt, W/2, ny+68);
     ny+=88;
   }
   // 한 줄 소개
@@ -1748,10 +1797,9 @@ async function buildCard(){
   // 점수 배지
   ny+=42;
   if(P.pitch!=null){
-    x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
-    const line=L(`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":""),
+    const line=fitFont(x, L(`👂 청음 ${P.pitch}   🥁 리듬 ${P.rhythm}`+(P.abs>=6?"   🏅 절대음감":""),
                  `👂 Pitch ${P.pitch}   🥁 Rhythm ${P.rhythm}`+(P.abs>=6?"   🏅 Perfect pitch":""),
-                 `👂 听音 ${P.pitch}   🥁 节奏 ${P.rhythm}`+(P.abs>=6?"   🏅 绝对音感":""));
+                 `👂 听音 ${P.pitch}   🥁 节奏 ${P.rhythm}`+(P.abs>=6?"   🏅 绝对音感":"")), 36, 830, 26);
     const bw=Math.min(900, x.measureText(line).width+70);
     x.fillStyle="#FFF0EA"; rr(W/2-bw/2, ny-46, bw, 72, 36); x.fill();
     x.fillStyle="#E85F47"; x.fillText(line, W/2, ny);
@@ -1759,19 +1807,19 @@ async function buildCard(){
   }
   // 희귀도
   const rp=RAR_TABLE[inst.id];
-  x.font="36px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
-  const rtxt = rp==null ? L("🦄 아무도 못 받아본 유니콘 결과","🦄 A unicorn result almost nobody gets")
+  const rtxt = fitFont(x, rp==null ? L("🦄 아무도 못 받아본 유니콘 결과","🦄 A unicorn result almost nobody gets")
              : (rp<=1.5? L(`💎 상위 ${rp}%만 나오는 결과`,`💎 Only ${rp}% of people get this`,`💎 只有${rp}%的人抽到的结果`)
              : (rp<=4?   L(`🌟 흔치 않은 결과 (약 ${rp}%)`,`🌟 An uncommon result (about ${rp}%)`,`🌟 少见的结果(约${rp}%)`)
-             :           L(`🍀 같은 결과 약 ${rp}%`,`🍀 About ${rp}% share this result`,`🍀 约${rp}%的人结果相同`)));
+             :           L(`🍀 같은 결과 약 ${rp}%`,`🍀 About ${rp}% share this result`,`🍀 约${rp}%的人结果相同`))), 36, 830, 26);
   const rw=Math.min(900, x.measureText(rtxt).width+70);
   x.fillStyle="#FFF4D6"; rr(W/2-rw/2, ny-46, rw, 72, 36); x.fill();
   x.fillStyle="#B8860B"; x.fillText(rtxt, W/2, ny);
   // 하단 CTA + 워터마크
-  x.fillStyle="#8A7A6E"; x.font="36px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), W/2, 1642);
+  const GD="'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
+  x.fillStyle="#8A7A6E"; x.fillText(fitFont(x, L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), 36, 960, 26, GD), W/2, 1642);
   x.fillStyle="#FF7E67"; rr(W/2-330, 1686, 660, 96, 48); x.fill();
   x.fillStyle="#fff"; x.font="44px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText("instrumentquiz.org", W/2, 1749);
-  x.fillStyle="#8A7A6E"; x.font="30px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText(L("3분 테스트 · 악기 200종","3-minute quiz · 200 instruments"), W/2, 1826);
+  x.fillStyle="#8A7A6E"; x.fillText(fitFont(x, L("3분 테스트 · 악기 200종","3-minute quiz · 200 instruments"), 30, 960, 22, GD), W/2, 1826);
   return c.toDataURL("image/png");
 }
 async function shareCard(){
@@ -1870,6 +1918,14 @@ function showResult(shared){
     <button class="btn ghost" onclick="APP.restart()">${L("🔄 다시 테스트하기","🔄 Retake the quiz")}</button>`}
   `);
   APP._R=R;
+  // 결과를 URL(#해시)·sessionStorage에 새겨두기 — 유튜브/小红书에 다녀오거나 브라우저가 페이지를 버렸다 다시 열어도 결과가 그대로 복원된다
+  if(!shared && (P.trail||[]).length && R.top1){
+    try{
+      const pk="4."+packAnswers();
+      sessionStorage.setItem("iq_own", pk);
+      history.replaceState(null,"", "/r/"+R.top1.slot.inst.id+(isEN()?"?l=en":(isZH()?"?l=zh":""))+"#"+pk);
+    }catch(e){}
+  }
 }
 
 function share(){
