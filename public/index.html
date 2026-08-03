@@ -797,9 +797,14 @@ function setLang(l){
   setStaticTexts();
   try{ VIEW(); }catch(e){ showIntro(); }
 }
-// 첫 진입 언어: 저장된 선택 > 링크의 ?l= > 접속 국가(KR=한국어·중화권=중국어·그 외=영어) > 브라우저 설정
+// 첫 진입 언어: 주소가 언어를 못박았으면 그것 > 저장된 선택 > 링크의 ?l= > 접속 국가(KR=한국어·중화권=중국어·그 외=영어) > 브라우저 설정
 function bootLang(){
   let l=null;
+  // 워커가 이 주소의 언어를 확정해 심어준 경우(색인용 언어별 주소·크롤러) — 선언한 언어와 화면이 어긋나면 안 되므로 최우선
+  const forced = (typeof window!=="undefined" && window.__IQ_LANG__) || null;
+  if(forced==="en"||forced==="ko"||forced==="zh"){
+    LANG = forced; setStaticTexts(); return;
+  }
   try{ l=localStorage.getItem("iq_lang"); }catch(e){}
   if(!l){
     const q=new URLSearchParams(location.search).get("l");
