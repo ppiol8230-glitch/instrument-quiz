@@ -8,3 +8,10 @@ binding = "ASSETS"
 # ⚠️ 이 목록에 없는 경로는 정적 자산이 먼저 응답해서 워커가 아예 실행되지 않는다.
 # 홈(/)이 빠지면 언어별 title·canonical·hreflang 치환이 통째로 죽는다. 경로를 늘리면 여기도 함께 갱신할 것.
 run_worker_first = ["/", "/index.html", "/r/*"]
+
+# Workers Logs — 대시보드·MCP로 로그 조회 (보존 7일)
+[observability]
+enabled = true
+
+[observability.logs]
+invocation_logs = true
