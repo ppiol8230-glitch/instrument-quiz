@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>악기핏 스토어 이미지 렌더러</title>
+  <style>
+    @font-face{font-family:Jua;src:url('../../public/fonts/Jua-Regular.ttf') format('truetype');font-display:swap}
+    :root{--ink:#493930;--cream:#fff7ec;--coral:#e85f47;--mint:#3fa38c;--lav:#7b61d1;--gold:#e9b949}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--cream)}
+    body{font-family:Jua,'Malgun Gothic',sans-serif;color:var(--ink)}
+    #canvas{position:relative;width:100%;height:100%;overflow:hidden;background:var(--bg,var(--cream))}
+    #canvas::before,#canvas::after{content:"";position:absolute;border-radius:50%;opacity:.25}
+    #canvas::before{width:520px;height:520px;right:-190px;top:-170px;background:var(--accent,var(--coral))}
+    #canvas::after{width:360px;height:360px;left:-150px;bottom:-130px;background:var(--accent2,var(--mint))}
+    .dot{position:absolute;border-radius:50%;opacity:.18;z-index:0}
+    .copy{position:absolute;z-index:2;text-align:center;left:5%;right:5%;top:54px}
+    .kicker{display:inline-block;padding:12px 25px;border-radius:999px;background:#fff;border:2px solid rgba(73,57,48,.08);color:var(--accent,var(--coral));font-size:25px;box-shadow:0 7px 20px rgba(73,57,48,.08)}
+    h1{margin:24px auto 10px;max-width:1000px;font-size:58px;line-height:1.17;letter-spacing:-1px}
+    .sub{margin:0 auto;max-width:920px;font-family:'Malgun Gothic',sans-serif;font-size:27px;line-height:1.45;color:#76665b;font-weight:600}
+    .screen{position:absolute;z-index:2;overflow:hidden;background:#fff;border:5px solid rgba(255,255,255,.95);box-shadow:0 28px 70px rgba(73,57,48,.18);border-radius:42px}
+    .screen img{display:block;width:100%;height:100%;object-fit:cover}
+    .google .screen{width:720px;height:1560px;left:180px;top:315px;border-radius:38px}
+    .google h1{font-size:56px;max-width:950px}
+    .google .sub{font-size:25px}
+    .apple .copy{top:72px}
+    .apple .kicker{font-size:30px;padding:14px 30px}
+    .apple h1{font-size:72px;max-width:1150px;margin-top:28px}
+    .apple .sub{font-size:32px;max-width:1080px}
+    .apple .screen{width:1060px;height:2298px;left:115px;top:420px;border-radius:54px;border-width:7px}
+    .feature{background:#fff7ec}
+    .feature::before,.feature::after{display:none}
+    .feature-art{position:absolute;right:-8px;top:0;width:66%;height:100%;object-fit:cover;object-position:right center}
+    .feature-copy{position:absolute;z-index:2;left:58px;top:74px;width:455px}
+    .feature-brand{display:inline-block;color:var(--coral);font-size:38px;margin-bottom:19px}
+    .feature h1{font-size:64px;line-height:1.1;margin:0 0 18px;max-width:455px;letter-spacing:-1.5px}
+    .feature p{font-family:'Malgun Gothic',sans-serif;font-size:24px;font-weight:700;line-height:1.45;color:#76665b;margin:0;max-width:420px}
+    .feature-pill{display:inline-block;margin-top:25px;padding:11px 20px;border-radius:999px;background:var(--coral);color:#fff;font-size:22px}
+    .icon-page img{display:block;width:100%;height:100%;object-fit:cover}
+  </style>
+</head>
+<body>
+  <div id="canvas"></div>
+  <script>
+    const shots = [
+      {file:'01-intro.png', title:'나도 몰랐던 음악 재능을 악기로', sub:'성향과 현실 조건, 귀와 리듬까지 함께 살펴봐요', bg:'#fff7ec', a:'#e85f47', b:'#3fa38c'},
+      {file:'02-question.png', title:'좋아하는 것과 어려운 것까지 솔직하게', sub:'약 30개 질문으로 나에게 맞는 연주 방식을 찾아가요', bg:'#f4fbf8', a:'#3fa38c', b:'#e9b949'},
+      {file:'03-ear.png', title:'소리로 확인하는 나의 귀', sub:'높낮이·미세 음정·멜로디 기억·절대음감을 가볍게 테스트해요', bg:'#f7f2ff', a:'#7b61d1', b:'#e85f47'},
+      {file:'04-rhythm.png', title:'몸으로 느끼는 리듬 감각', sub:'메트로놈을 듣고 직접 따라 치며 나의 리듬을 확인해요', bg:'#fff8e5', a:'#d69b21', b:'#3fa38c'},
+      {file:'05-result.png', title:'200가지 악기 중 가장 나다운 하나', sub:'몸·환경·예산을 통과한 악기에서 적성과 취향을 함께 계산해요', bg:'#fff1ed', a:'#e85f47', b:'#7b61d1'},
+      {file:'06-guide.png', title:'왜 잘 맞는지, 어떻게 시작할지까지', sub:'추천 근거와 입문가, 주의점, 연주 영상까지 한 번에 확인해요', bg:'#eef9f6', a:'#2c806d', b:'#e9b949'}
+    ];
+    const q = new URLSearchParams(location.search);
+    const kind = q.get('kind') || 'google';
+    const canvas = document.getElementById('canvas');
+    const dimensions = kind === 'apple' ? [1290,2796] : kind === 'google' ? [1080,1920] : kind === 'feature' ? [1024,500] : kind === 'icon' ? [Number(q.get('size'))||1024,Number(q.get('size'))||1024] : [1080,1920];
+    document.documentElement.style.width = document.body.style.width = canvas.style.width = `${dimensions[0]}px`;
+    document.documentElement.style.height = document.body.style.height = canvas.style.height = `${dimensions[1]}px`;
+    if(kind === 'icon'){
+      canvas.className='icon-page';
+      canvas.innerHTML='<img src="icon-master.png" alt="">';
+    }else if(kind === 'feature'){
+      canvas.className='feature';
+      canvas.innerHTML=`<img class="feature-art" src="feature-illustration.png" alt="">
+        <div class="feature-copy"><div class="feature-brand">악기핏</div>
+        <h1>나도 몰랐던<br>음악 재능을<br>악기로</h1>
+        <p>취향과 성향, 생활환경까지 함께 살펴<br>200가지 악기 중 나에게 맞는 하나를 찾아요.</p>
+        <div class="feature-pill">나에게 맞는 악기 찾기</div></div>`;
+    }else{
+      const item=shots[Math.max(0,Math.min(shots.length-1,(Number(q.get('shot'))||1)-1))];
+      canvas.className=kind;
+      canvas.style.setProperty('--bg',item.bg);
+      canvas.style.setProperty('--accent',item.a);
+      canvas.style.setProperty('--accent2',item.b);
+      canvas.innerHTML=`<span class="dot" style="width:92px;height:92px;left:68px;top:250px;background:${item.b}"></span>
+        <span class="dot" style="width:55px;height:55px;right:70px;top:210px;background:${item.a}"></span>
+        <div class="copy"><div class="kicker">악기핏</div><h1>${item.title}</h1><p class="sub">${item.sub}</p></div>
+        <div class="screen"><img src="../raw/${item.file}?v=${q.get('v')||1}" alt=""></div>`;
+    }
+  </script>
+</body>
+</html>
