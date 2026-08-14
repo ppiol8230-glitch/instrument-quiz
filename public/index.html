@@ -2,9 +2,10 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>살면서 악기 하나쯤은 다룰 줄 알아야지</title>
 <meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 200종의 악기가 기다리고 있습니다.">
+<meta name="theme-color" content="#FFF6EA">
 <meta name="naver-site-verification" content="458f86eeed3be6cb0b07b1d89e2c0a75818d3ec9">
 <link rel="canonical" href="https://instrumentquiz.org/">
 <meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
@@ -16,28 +17,26 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://instrumentquiz.org/og.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:'Jua';font-display:swap;src:url('/fonts/Jua-Regular.ttf') format('truetype')}
 :root{
-  --bg:#FFF6EA; --card:#FFFFFF; --ink:#4A3B32; --sub:#8A7A6E;
-  --coral:#FF7E67; --coral-d:#E85F47; --mint:#5FC7AE; --mint-d:#3EA98F;
+  --bg:#FFF6EA; --card:#FFFFFF; --ink:#4A3B32; --sub:#76665B;
+  --coral:#C84C36; --coral-d:#A43828; --mint:#2C806D; --mint-d:#246B5C;
   --lav:#A78BFA; --sun:#FFC94D; --pink:#FF9EB5; --line:rgba(74,59,50,.14);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-/* 연타·두 손가락 확대 방지 — 페이지 전체(빈 여백을 두 번 쳐도 확대되지 않게) */
-html{touch-action:pan-y; -webkit-text-size-adjust:100%; text-size-adjust:100%}
-body,button,.opt,.pill,.testbtn,#tapzone,a.btn{touch-action:pan-y}
+html,body,button,.opt,.pill,.testbtn,a.btn{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 html,body{margin:0;padding:0}
-body{background:var(--bg); color:var(--ink); font-family:'Gowun Dodum',system-ui,sans-serif; line-height:1.6; min-height:100vh}
-h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif; font-weight:400; letter-spacing:-.01em}
-/* 중국어 표시 — Jua/고운돋움엔 한자가 없어 시스템 중문 폰트로 폴백시킨다 */
-html[lang="zh-CN"] body{font-family:'Gowun Dodum','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif}
+body{background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif; line-height:1.6; min-height:100vh}
+h1,h2,h3,.jua{font-family:'Jua',system-ui,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif; font-weight:400; letter-spacing:-.01em}
+/* 중국어 표시 — Jua에는 한자가 없어 기존 시스템 중문 폰트 순서로 폴백시킨다 */
+html[lang="zh-CN"] body{font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif}
 html[lang="zh-CN"] h1,html[lang="zh-CN"] h2,html[lang="zh-CN"] h3,html[lang="zh-CN"] .jua{font-family:'Jua','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif}
+:focus-visible{outline:3px solid #165FC1;outline-offset:3px}
 #doodles{position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0}
 .doodle{position:absolute; opacity:.09; color:var(--ink)}
-#wrap{position:relative; z-index:1; max-width:600px; margin:0 auto; padding:20px 16px 60px}
+#wrap{position:relative; z-index:1; max-width:600px; margin:0 auto; padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
 .card{background:var(--card); border:2px solid var(--line); border-radius:28px; padding:22px 20px; box-shadow:0 6px 0 rgba(74,59,50,.07); margin-bottom:16px}
 .btn{display:block; width:100%; border:none; cursor:pointer; font-family:'Jua'; font-size:1.15rem; color:#fff;
   background:var(--coral); border-radius:999px; padding:15px 22px; box-shadow:0 5px 0 var(--coral-d);
@@ -48,7 +47,7 @@ html[lang="zh-CN"] h1,html[lang="zh-CN"] h2,html[lang="zh-CN"] h3,html[lang="zh-
 .btn.big{font-size:1.32rem; padding:19px 22px; line-height:1.25}
 .btn+.btn{margin-top:10px}
 .opt{display:block; width:100%; text-align:left; cursor:pointer; background:#fff; border:2px solid var(--line);
-  border-radius:20px; padding:14px 16px; margin:10px 0; font-family:'Gowun Dodum'; font-size:1.02rem; color:var(--ink);
+  border-radius:20px; padding:14px 16px; margin:10px 0; font-family:inherit; font-size:1.02rem; color:var(--ink);
   transition:transform .06s, border-color .1s, background .1s; position:relative}
 .opt:active{transform:scale(.98)}
 .opt.sel{border-color:var(--coral); background:#FFF0EA; box-shadow:0 3px 0 rgba(232,95,71,.25)}
@@ -62,18 +61,19 @@ html[lang="zh-CN"] h1,html[lang="zh-CN"] h2,html[lang="zh-CN"] h3,html[lang="zh-
 #barnote{position:absolute; top:-9px; transition:left .3s; font-size:1.3rem; transform:translateX(-50%)}
 .tag{display:inline-block; background:#FFF0EA; color:var(--coral-d); border-radius:99px; padding:2px 12px; font-size:.85rem; font-family:'Jua'; margin:2px 4px 2px 0}
 .tag.mint{background:#E5F7F1; color:var(--mint-d)}
-.tag.lav{background:#F0EAFE; color:#7C5CE0}
-.tag.sun{background:#FFF4D6; color:#B8860B}
+.tag.lav{background:#F0EAFE; color:#6543C9}
+.tag.sun{background:#FFF4D6; color:#7A5700}
 .center{text-align:center}
 .big-emoji{font-size:4.2rem; line-height:1.1}
 .kbd{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:14px 0}
 .kbd button{font-family:'Jua'; font-size:1rem; padding:12px 4px; border-radius:14px; border:2px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
 .kbd button.black{background:#4A3B32; color:#fff}
 .kbd button:active{transform:scale(.94)}
-#tapzone{width:190px; height:190px; margin:16px auto; border-radius:50%; background:var(--sun); box-shadow:0 8px 0 #E0A92F;
+#tapzone{width:190px; height:190px; margin:16px auto; padding:0; border:0; color:var(--ink); border-radius:50%; background:var(--sun); box-shadow:0 8px 0 #E0A92F;
   display:flex; align-items:center; justify-content:center; font-family:'Jua'; font-size:1.4rem; cursor:pointer;
   touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none}
 #tapzone:active{transform:translateY(5px); box-shadow:0 3px 0 #E0A92F}
+#tapzone:disabled{cursor:not-allowed;opacity:.45}
 /* 리듬 테스트 — 마디 안내 + 메트로놈에 맞춰 세는 4·3·2·1 */
 #rphase{font-family:'Jua'; font-size:1.05rem; min-height:28px; margin-top:6px}
 #rcount{font-family:'Jua'; font-size:2.6rem; line-height:1.1; min-height:46px; color:var(--sub)}
@@ -113,41 +113,19 @@ details.guide p{font-size:.92rem; margin:8px 0}
 .pill{flex:1; min-width:110px; font-family:'Jua'; font-size:1.05rem; padding:14px; border-radius:18px; border:2px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
 .pill:active{transform:scale(.96)}
 footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
+footer a{color:var(--sub);text-underline-offset:3px}
+footer nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 /* 언어 토글 — 어느 화면에서도 항상 손 닿는 곳에 */
 #langbar{display:flex; justify-content:flex-end; gap:6px; margin:0 0 10px}
 .langbtn{font-family:'Jua'; font-size:.82rem; padding:5px 12px; border-radius:999px; cursor:pointer;
   border:2px solid var(--line); background:#fff; color:var(--sub); transition:color .1s, background .1s, border-color .1s}
 .langbtn.on{background:var(--coral); border-color:var(--coral); color:#fff}
 .langbtn:active{transform:scale(.96)}
-@media(min-width:700px){ #wrap{max-width:640px; padding-top:36px} .qtitle{font-size:1.45rem} }
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+@media(min-width:700px){ #wrap{max-width:640px; padding-top:calc(36px + env(safe-area-inset-top))} .qtitle{font-size:1.45rem} }
 </style>
-<script>
-/* 확대 차단 — 인앱 브라우저(카카오톡·인스타·위챗)와 iOS는 user-scalable=no 를 무시하므로
-   제스처 자체를 잡아야 한다. 리듬 테스트에서 손가락으로 연타·두 손가락 교대 타격을 하면
-   더블탭 확대나 핀치로 오인되던 문제를 막는다. (스크롤은 그대로 살려둔다) */
-(function(){
-  var stop = function(e){ e.preventDefault(); };
-  // iOS Safari/WKWebView 핀치 확대
-  document.addEventListener("gesturestart",  stop, {passive:false});
-  document.addEventListener("gesturechange", stop, {passive:false});
-  document.addEventListener("gestureend",    stop, {passive:false});
-  // 더블탭 확대(합성 dblclick)
-  document.addEventListener("dblclick", stop, {passive:false});
-  // 손가락 2개 이상으로 벌리는 동작 = 확대 시도
-  document.addEventListener("touchmove", function(e){ if(e.touches.length>1) stop(e); }, {passive:false});
-  // 구형 iOS 인앱 브라우저는 touch-action 을 무시한다 → 같은 자리 빠른 연타를 직접 막는다.
-  // 단 리듬 테스트 화면(#tapzone 존재)에서만 적용 — 설문 카드를 빠르게 넘기는 정상 조작을
-  // 삼키지 않도록. 타격 자체는 pointerdown 으로 받으므로 여기서 막아도 점수엔 영향 없다.
-  var lastT=0, lastX=0, lastY=0;
-  document.addEventListener("touchend", function(e){
-    var t=e.changedTouches&&e.changedTouches[0], now=Date.now();
-    var x=t?t.clientX:0, y=t?t.clientY:0;
-    if(document.getElementById("tapzone") &&
-       now-lastT<400 && Math.abs(x-lastX)<48 && Math.abs(y-lastY)<48) stop(e);
-    lastT=now; lastX=x; lastY=y;
-  }, {passive:false});
-})();
-</script>
 </head>
 <body>
 <!-- 배경 낙서: 귀여운 악기 캐리커처 -->
@@ -194,9 +172,9 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
 <div id="doodles"></div>
 
 <div id="wrap">
-  <div id="langbar"><button id="lang-ko" class="langbtn" onclick="APP.setLang('ko')">한국어</button><button id="lang-en" class="langbtn" onclick="APP.setLang('en')">English</button><button id="lang-zh" class="langbtn" onclick="APP.setLang('zh')">中文</button></div>
-  <div id="bar" style="display:none"><div id="barfill"></div><div id="barnote">🎵</div></div>
-  <div id="app"></div>
+  <div id="langbar" role="group" aria-label="언어 선택"><button id="lang-ko" class="langbtn" aria-pressed="true" onclick="APP.setLang('ko')">한국어</button><button id="lang-en" class="langbtn" aria-pressed="false" onclick="APP.setLang('en')">English</button><button id="lang-zh" class="langbtn" aria-pressed="false" onclick="APP.setLang('zh')">中文</button></div>
+  <div id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="테스트 진행률" style="display:none"><div id="barfill"></div><div id="barnote" aria-hidden="true">🎵</div></div>
+  <main id="app" tabindex="-1"></main>
 
   <!-- 검색엔진용 소개 (앱 하단 상시 노출 · JS 없이도 읽히는 본문) -->
   <section id="about" style="margin-top:56px; padding-top:28px; border-top:1px solid rgba(125,125,125,.18); color:var(--sub); font-size:.86rem; line-height:1.85">
@@ -219,6 +197,12 @@ footer{margin-top:30px; text-align:center; color:var(--sub); font-size:.8rem}
       약 5분이면 충분합니다.
     </p>
   </section>
+  <footer>
+    <nav aria-label="법적 고지 및 지원">
+      <a href="/privacy.html">개인정보처리방침 / Privacy / 隐私</a>
+      <a href="/support.html">지원 / Support / 帮助</a>
+    </nav>
+  </footer>
 </div>
 
 <script src="/data/genres.js"></script>
@@ -308,6 +292,13 @@ const ETHNIC_GENRES = ["켈틱·아이리시","북유럽 민속","발칸·클레
    원칙: 스코어링 엔진은 언제나 한국어 원본 필드만 읽는다(family·name·roles·tone·genres 정규식이 전부 한국어).
    영어·중국어는 '표시 직전'에만 덧씌우므로, 같은 답변이면 세 언어의 추천 결과가 바이트 단위로 같다.
    중국어 UI 문자열은 ZH_UI 사전(한국어 원문 → 中文)으로 해결하고, 보간이 든 문장만 L()의 3번째 인자로 준다. */
+const SITE_ORIGIN = "https://instrumentquiz.org";
+const IS_NATIVE = (()=>{
+  try{
+    const capacitor=window.Capacitor;
+    return !!capacitor && typeof capacitor.isNativePlatform==="function" && capacitor.isNativePlatform()===true;
+  }catch(e){ return false; }
+})();
 let LANG = "ko";
 const G_ = o => (typeof o!=="undefined" ? o : {});
 const EN_INST = Object.assign({},
@@ -746,7 +737,11 @@ function goBack(){
 }
 const $app = document.getElementById("app");
 function activeQs(){ if(!P) resetP(); return Q.filter(q=>{ try{ return !q.when || q.when(); }catch(e){ return false; } }); }
-function render(html){ $app.innerHTML = `<div class="fade">${html}</div>`; window.scrollTo({top:0}); }
+function render(html){
+  $app.innerHTML = `<div class="fade">${html}</div>`;
+  window.scrollTo({top:0,left:0,behavior:"auto"});
+  $app.focus({preventScroll:true});
+}
 
 /* ---- 언어 전환 ----
    VIEW는 "지금 그려져 있는 화면"을 다시 그리는 함수. 언어를 바꾸면 그 화면만 즉시 다시 그린다.
@@ -788,6 +783,12 @@ function setStaticTexts(){
   if(ko) ko.className = "langbtn"+(LANG==="ko"?" on":"");
   if(en) en.className = "langbtn"+(isEN()?" on":"");
   if(zh) zh.className = "langbtn"+(isZH()?" on":"");
+  if(ko) ko.setAttribute("aria-pressed", LANG==="ko"?"true":"false");
+  if(en) en.setAttribute("aria-pressed", isEN()?"true":"false");
+  if(zh) zh.setAttribute("aria-pressed", isZH()?"true":"false");
+  const langbar=document.getElementById("langbar"), bar=document.getElementById("bar");
+  if(langbar) langbar.setAttribute("aria-label", L("언어 선택","Language selection","语言选择"));
+  if(bar) bar.setAttribute("aria-label", L("테스트 진행률","Quiz progress","测试进度"));
   setAbout();
 }
 function setLang(l){
@@ -817,7 +818,8 @@ function bootLang(){
   }
   LANG = (l==="en"||l==="zh") ? l : "ko";
   setStaticTexts();
-  if(!(()=>{ try{ return !!localStorage.getItem("iq_lang"); }catch(e){ return false; } })()
+  if(!IS_NATIVE
+     && !(()=>{ try{ return !!localStorage.getItem("iq_lang"); }catch(e){ return false; } })()
      && !new URLSearchParams(location.search).get("l")){
     // 브라우저 언어는 추정일 뿐 — Cloudflare 엣지에서 실제 접속 국가를 받아 한 번만 정정한다(사용자가 진행하기 전에만)
     fetch("/cdn-cgi/trace").then(r=>r.text()).then(txt=>{
@@ -829,7 +831,9 @@ function bootLang(){
   }
 }
 function setBar(pct){
-  document.getElementById("bar").style.display = "block";
+  const bar=document.getElementById("bar");
+  bar.style.display = "block";
+  bar.setAttribute("aria-valuenow", String(pct));
   document.getElementById("barfill").style.width = pct+"%";
   document.getElementById("barnote").style.left = pct+"%";
 }
@@ -841,7 +845,9 @@ function progress(){
   else if(i<=t) pct = Math.round(i/(t+1)*50);        // 테스트 끝 = 50%
   else pct = Math.round(50 + (i-t-1)/(qs.length-t-1)*50);
   pct = Math.min(99, pct);
-  document.getElementById("bar").style.display = stepIdx>=0 ? "block":"none";
+  const bar=document.getElementById("bar");
+  bar.style.display = stepIdx>=0 ? "block":"none";
+  bar.setAttribute("aria-valuenow", String(pct));
   document.getElementById("barfill").style.width = pct+"%";
   document.getElementById("barnote").style.left = pct+"%";
 }
@@ -988,7 +994,7 @@ function resultLink(){
   const R=APP._R, id=R&&R.top1?R.top1.slot.inst.id:"";
   // 경로에 악기 id → 링크 미리보기가 결과별로 달라짐. "4." = 질문은행 v4 표식.
   // ?l= 은 서버(워커)가 미리보기 언어를 고르는 데 쓴다 — #뒤 데이터는 서버로 전송되지 않기 때문.
-  return location.origin+"/r/"+id+(isEN()?"?l=en":(isZH()?"?l=zh":""))+"#4."+packAnswers();
+  return SITE_ORIGIN+"/r/"+id+(isEN()?"?l=en":(isZH()?"?l=zh":""))+"#4."+packAnswers();
 }
 function loadShared(){
   const h=location.hash;
@@ -1181,7 +1187,7 @@ function runRhythmTrial(){
       <button class="testbtn" onclick="APP._playRhythm()">${L("▶️ 듣고 시작하기","▶️ Listen and start")}</button>
       <div id="rphase">${L("▶️를 누르면 시작해요","Press ▶️ to begin")}</div>
       <div id="rcount">·</div>
-      <div id="tapzone" onpointerdown="APP._rtap(event)" style="opacity:.45">${L("먼저 들어보세요","Listen first")}</div>
+      <button type="button" id="tapzone" disabled onpointerdown="APP._rtap(event)" onkeydown="APP._rtap(event)">${L("먼저 들어보세요","Listen first")}</button>
       <button class="btn mint" id="rdoneBtn" onclick="APP._rdone()" style="display:none">${L("다 쳤어요 ✓","I'm done ✓")}</button>
     </div>`);
 }
@@ -1220,18 +1226,25 @@ function _playRhythm(){
     pat.beats.forEach(b=>patTick((RBAR_Q*RBPB+b)*B));                // 문제 리듬 = 2번째 마디
   });
   const z=document.getElementById("tapzone");
-  if(z){ z.style.opacity=".45"; z.textContent=L("아직이에요","Not yet"); }
+  if(z){ z.disabled=true; z.textContent=L("아직이에요","Not yet"); }
   const d=document.getElementById("rdoneBtn"); if(d) d.style.display="none";
   for(let i=0;i<RTOTAL+2;i++) ts.rVis.push(setTimeout(()=>_rbeat(i), i*RBEAT));   // 박마다 안내·카운트
   ts.rReadyTimer=setTimeout(()=>{
     ts.rReady=true; ts.rTaps=[]; ts.rStart=performance.now();
-    const z2=document.getElementById("tapzone"); if(z2){ z2.style.opacity=1; z2.textContent=L("지금! 따라 치세요","Now! Tap along"); }
+    const z2=document.getElementById("tapzone"); if(z2){ z2.disabled=false; z2.textContent=L("지금! 따라 치세요","Now! Tap along"); }
     const d2=document.getElementById("rdoneBtn"); if(d2) d2.style.display="block";
     ts.rTimer=setTimeout(()=>_rdone(), (RBPB+2)*RBEAT);
   }, RTAP_START*RBEAT);
 }
 function _rtap(ev){
-  if(ev&&ev.preventDefault) ev.preventDefault();
+  if(ev){
+    if(ev.type==="keydown"){
+      if(ev.repeat || (ev.key!==" " && ev.key!=="Enter")) return;
+    }else if(ev.type==="pointerdown"){
+      if(typeof ev.button==="number" && ev.button!==0) return;
+    }else return;
+    if(ev.preventDefault) ev.preventDefault();
+  }
   const ts=testState; if(!ts.rReady) return;
   ts.rTaps.push(performance.now());
   const z=document.getElementById("tapzone"); if(z) z.textContent=["🥁","👏","🎶","✨"][ts.rTaps.length%4];
@@ -1551,7 +1564,8 @@ function ytQuery(slot){
   const base=eng||inst.name;
   let tk="";
   if(slot.track){ const l=slot.track.label||""; for(const [k,v] of TRACK_YT){ if(l.includes(k)){ tk=v; break; } } }
-  return ((tk?tk+" ":"")+base+" performance").replace(/\s+/g," ").trim();
+  const prefix=tk && base.toLowerCase().startsWith(tk.toLowerCase()) ? "" : tk;
+  return ((prefix?prefix+" ":"")+base+" performance").replace(/\s+/g," ").trim();
 }
 // 중국판 영상 검색 — 유튜브는 본토에서 안 열리므로 小红书 검색으로 보낸다.
 // 검색어 = 실제 중국어권 통용 명칭(웹 검증) 우선, 통용 중문명이 없는 악기는 원어(영어).
@@ -1746,7 +1760,7 @@ function fitFont(x, text, basePx, maxW, minPx, fam){
 // 인스타 스토리 규격(1080×1920) 결과 카드
 async function buildCard(){
   const R=APP._R; if(!R||!R.top1) return null;
-  try{ await document.fonts.load("70px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"); await document.fonts.load("34px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"); await document.fonts.ready; }catch(e){}
+  try{ await document.fonts.load("70px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"); await document.fonts.ready; }catch(e){}
   const W=1080,H=1920;
   const c=document.createElement("canvas"); c.width=W; c.height=H;
   const x=c.getContext("2d");
@@ -1798,7 +1812,7 @@ async function buildCard(){
     ny+=88;
   }
   // 한 줄 소개
-  x.fillStyle="#8A7A6E"; x.font="34px 'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
+  x.fillStyle="#8A7A6E"; x.font="34px system-ui, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
   ny=wrapText(x, (iToneDesc(inst)||"").replace(/^"|"$/g,""), W/2, ny+70, 820, 48, track?2:3);
   // 점수 배지
   ny+=42;
@@ -1821,7 +1835,7 @@ async function buildCard(){
   x.fillStyle="#FFF4D6"; rr(W/2-rw/2, ny-46, rw, 72, 36); x.fill();
   x.fillStyle="#B8860B"; x.fillText(rtxt, W/2, ny);
   // 하단 CTA + 워터마크
-  const GD="'Gowun Dodum', 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
+  const GD="system-ui, 'Noto Sans SC', 'Microsoft YaHei', sans-serif";
   x.fillStyle="#8A7A6E"; x.fillText(fitFont(x, L("당신에게 맞는 악기는 뭘까요?","Which instrument is yours?"), 36, 960, 26, GD), W/2, 1642);
   x.fillStyle="#FF7E67"; rr(W/2-330, 1686, 660, 96, 48); x.fill();
   x.fillStyle="#fff"; x.font="44px Jua, 'Noto Sans SC', 'Microsoft YaHei', sans-serif"; x.fillText("instrumentquiz.org", W/2, 1749);
@@ -1929,7 +1943,9 @@ function showResult(shared){
     try{
       const pk="4."+packAnswers();
       sessionStorage.setItem("iq_own", pk);
-      history.replaceState(null,"", "/r/"+R.top1.slot.inst.id+(isEN()?"?l=en":(isZH()?"?l=zh":""))+"#"+pk);
+      const langQuery=isEN()?"?l=en":(isZH()?"?l=zh":"");
+      const resultPath=IS_NATIVE ? "/"+langQuery+"#"+pk : "/r/"+R.top1.slot.inst.id+langQuery+"#"+pk;
+      history.replaceState(null,"", resultPath);
     }catch(e){}
   }
 }
