@@ -1,1 +1,13 @@
 .wrangler/
+node_modules/
+mobile-web/
+
+# Android/Gradle build outputs and local signing material
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/keystore.properties
+*.jks
+*.keystore
+.idea/

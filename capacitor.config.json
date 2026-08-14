@@ -1,0 +1,12 @@
+{
+  "appId": "org.instrumentquiz.app",
+  "appName": "악기핏",
+  "webDir": "mobile-web",
+  "backgroundColor": "#FFF6EA",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
