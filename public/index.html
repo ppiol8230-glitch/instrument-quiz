@@ -3,20 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>살면서 악기 하나쯤은 다룰 줄 알아야지</title>
-<meta name="description" content="간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 200종의 악기가 기다리고 있습니다.">
+<title>악기핏: 나에게 맞는 악기 찾기 | 악기 추천 테스트</title>
+<meta name="description" content="취향·성향·생활환경과 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 악기를 추천합니다. 회원가입 없이 약 5분.">
 <meta name="theme-color" content="#FFF6EA">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="application-name" content="악기핏">
 <meta name="naver-site-verification" content="458f86eeed3be6cb0b07b1d89e2c0a75818d3ec9">
 <link rel="canonical" href="https://instrumentquiz.org/">
-<meta property="og:title" content="살면서 악기 하나쯤은 다룰 줄 알아야지">
-<meta property="og:description" content="간단한 테스트로 깨우는 나도 몰랐던 악기 재능 (악기 200종)">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+<link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:site_name" content="악기핏">
+<meta property="og:title" content="악기핏: 나에게 맞는 악기 찾기">
+<meta property="og:description" content="취향과 성향, 생활환경, 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 하나를 추천해요.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://instrumentquiz.org/">
 <meta property="og:image" content="https://instrumentquiz.org/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="악기핏: 나에게 맞는 악기 찾기">
+<meta name="twitter:description" content="취향과 성향, 생활환경, 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 하나를 추천해요.">
 <meta name="twitter:image" content="https://instrumentquiz.org/og.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["SoftwareApplication", "WebApplication"],
+  "name": "악기핏: 나에게 맞는 악기 찾기",
+  "alternateName": ["Instrument Fit", "Instrument Quiz", "乐器Fit"],
+  "url": "https://instrumentquiz.org/",
+  "description": "취향·성향·생활환경과 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 악기를 추천하는 무료 테스트",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web browser",
+  "isAccessibleForFree": true,
+  "inLanguage": ["ko", "en", "zh-CN"],
+  "image": "https://instrumentquiz.org/og.png",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  },
+  "featureList": [
+    "200가지 악기 추천",
+    "청음과 리듬 감각 테스트",
+    "생활환경과 예산 조건 반영",
+    "악기별 입문 가이드"
+  ]
+}
+</script>
 <style>
 @font-face{font-family:'Jua';font-display:swap;src:url('/fonts/Jua-Regular.ttf') format('truetype')}
 :root{
@@ -178,9 +212,9 @@ footer nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 
   <!-- 검색엔진용 소개 (앱 하단 상시 노출 · JS 없이도 읽히는 본문) -->
   <section id="about" style="margin-top:56px; padding-top:28px; border-top:1px solid rgba(125,125,125,.18); color:var(--sub); font-size:.86rem; line-height:1.85">
-    <h2 style="font-size:1rem; margin:0 0 10px">「살면서 악기 하나쯤은 다룰 줄 알아야지」는 어떤 테스트인가요?</h2>
+    <h2 style="font-size:1rem; margin:0 0 10px">악기핏은 어떤 악기 추천 테스트인가요?</h2>
     <p style="margin:0 0 12px">
-      나에게 맞는 악기를 찾아 주는 무료 악기 추천 테스트입니다. 침이 고이는 관악기가 부담스러운지,
+      <strong>악기핏</strong>은 나에게 맞는 악기를 찾아 주는 무료 악기 추천 테스트입니다. 침이 고이는 관악기가 부담스러운지,
       손끝 굳은살을 견딜 수 있는지, 아파트에서 연습해도 되는 소리 크기인지 — 현실 조건부터,
       좋아하는 음악 장르와 성향까지 30개 남짓한 질문으로 확인합니다.
     </p>
@@ -774,11 +808,11 @@ function setAbout(){
 }
 function setStaticTexts(){
   document.documentElement.lang = isEN() ? "en" : (isZH() ? "zh-CN" : "ko");
-  document.title = L("살면서 악기 하나쯤은 다룰 줄 알아야지","Everyone should be able to play one instrument","这辈子总得会一样乐器");
+  document.title = L("악기핏: 나에게 맞는 악기 찾기","Instrument Fit: Find the Right Instrument for You","乐器Fit：找到适合你的乐器");
   const md=document.querySelector('meta[name="description"]');
-  if(md) md.setAttribute("content", L("간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 200종의 악기가 기다리고 있습니다.",
-    "A short test to uncover the musical talent you never knew you had. 200 instruments are waiting.",
-    "一个简单的测试,唤醒你自己都不知道的乐器天赋。200种乐器等着你。"));
+  if(md) md.setAttribute("content", L("취향·성향·생활환경과 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 악기를 추천합니다. 회원가입 없이 약 5분.",
+    "Match your taste, personality, real-life needs, ear and rhythm against 200 instruments. No sign-up, about five minutes.",
+    "结合喜好、性格、生活条件以及听音和节奏感，从200种乐器中找到适合你的那一种。无需注册，约5分钟。"));
   const ko=document.getElementById("lang-ko"), en=document.getElementById("lang-en"), zh=document.getElementById("lang-zh");
   if(ko) ko.className = "langbtn"+(LANG==="ko"?" on":"");
   if(en) en.className = "langbtn"+(isEN()?" on":"");

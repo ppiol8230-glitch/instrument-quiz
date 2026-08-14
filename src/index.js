@@ -29,16 +29,16 @@ const OG_LOCALE = { ko: "ko_KR", en: "en_US", zh: "zh_CN" };
 /* 홈 화면 메타 — 앱이 실제로 렌더하는 문구와 맞춰 둔다(선언과 내용이 다르면 색인이 흔들린다) */
 const HOME = {
   ko: {
-    title: "살면서 악기 하나쯤은 다룰 줄 알아야지",
-    desc: "간단한 테스트로 깨우는, 나도 몰랐던 악기 재능. 귀 테스트와 취향 문답으로 악기 200종 중에서 나에게 맞는 악기를 찾아드려요.",
+    title: "악기핏: 나에게 맞는 악기 찾기 | 악기 추천 테스트",
+    desc: "취향·성향·생활환경과 청음·리듬 감각을 함께 살펴 200가지 악기 중 나에게 맞는 악기를 추천합니다. 회원가입 없이 약 5분.",
   },
   en: {
-    title: "Everyone should be able to play one instrument",
-    desc: "A short test to wake up the musical talent you never knew you had. An ear test plus a few questions about you, matched against 200 instruments.",
+    title: "Instrument Fit: Find the Right Instrument for You",
+    desc: "Match your taste, personality, real-life needs, ear and rhythm against 200 instruments. No sign-up, about five minutes.",
   },
   zh: {
-    title: "这辈子总得会一样乐器",
-    desc: "一个简单的测试，唤醒连你自己都不知道的乐器天赋。用听力测试和口味问答，从200种乐器里帮你找出最适合你的那一样。",
+    title: "乐器Fit：找到适合你的乐器",
+    desc: "结合喜好、性格、生活条件以及听音和节奏感，从200种乐器中找到适合你的那一种。无需注册，约5分钟。",
   },
 };
 
@@ -69,6 +69,8 @@ function localize(html, { lang, path, title, desc, image }) {
   set("property", "og:title", title);
   set("property", "og:description", desc);
   set("property", "og:url", canonical);
+  set("name", "twitter:title", title);
+  set("name", "twitter:description", desc);
   if (image) {
     set("property", "og:image", image);
     set("name", "twitter:image", image);
@@ -126,10 +128,10 @@ export default {
           : `나에게 맞는 악기는 ${name}!`;
         const desc =
           rl === "en"
-            ? "Everyone should be able to play one instrument — here's what a 3-minute test picked for me. What would yours be?"
+            ? "Instrument Fit matched me with this instrument after a short test. What would yours be?"
             : rl === "zh"
-            ? "这辈子总得会一样乐器 — 3分钟测试给我的结果。你的会是什么呢?"
-            : "살면서 악기 하나쯤은 다룰 줄 알아야지 — 3분 테스트로 나온 결과예요. 당신의 악기는 뭘까요?";
+            ? "乐器Fit用一个简短测试为我找到了这件乐器。你的会是什么呢？"
+            : "악기핏의 짧은 테스트로 나온 결과예요. 당신에게 맞는 악기는 무엇일까요?";
         html = localize(html, {
           lang: rl,
           path: `/r/${m[1]}`,
