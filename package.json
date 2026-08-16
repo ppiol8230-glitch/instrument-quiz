@@ -2,16 +2,19 @@
   "name": "instrument-quiz-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Android wrapper for 악기핏: 나에게 맞는 악기 찾기",
+  "description": "Android and iOS wrapper for 악기핏: 나에게 맞는 악기 찾기",
   "scripts": {
     "mobile:prepare": "node scripts/prepare-mobile-web.mjs",
     "cap:sync:android": "npm run mobile:prepare && cap sync android",
+    "cap:sync:ios": "npm run mobile:prepare && cap sync ios",
     "android:assets": "capacitor-assets generate --android --iconBackgroundColor '#FFF6EA' --iconBackgroundColorDark '#FFF6EA' --splashBackgroundColor '#FFF6EA' --splashBackgroundColorDark '#FFF6EA'",
+    "ios:assets": "capacitor-assets generate --ios --iconBackgroundColor '#FFF6EA' --iconBackgroundColorDark '#FFF6EA' --splashBackgroundColor '#FFF6EA' --splashBackgroundColorDark '#FFF6EA'",
     "android:bundle": "npm run cap:sync:android && cd android && gradlew.bat bundleRelease"
   },
   "dependencies": {
     "@capacitor/android": "8.5.0",
-    "@capacitor/core": "8.5.0"
+    "@capacitor/core": "8.5.0",
+    "@capacitor/ios": "8.5.0"
   },
   "devDependencies": {
     "@capacitor/assets": "3.0.5",

@@ -1,6 +1,7 @@
 .wrangler/
 node_modules/
 mobile-web/
+ios/
 
 # Android/Gradle build outputs and local signing material
 android/.gradle/
