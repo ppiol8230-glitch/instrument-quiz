@@ -28,7 +28,7 @@ jobs:
       TEAM_ID: 5YUGKDDG9Q
       BUNDLE_ID: org.instrumentquiz.app
       IOS_SCHEME: App
-      IOS_WORKSPACE: ios/App/App.xcworkspace
+      IOS_PROJECT: ios/App/App.xcodeproj
       VERSION_NAME: ${{ inputs.version_name }}
       BUILD_NUMBER: ${{ inputs.build_number }}
 
@@ -140,7 +140,7 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild archive \
-            -workspace "$IOS_WORKSPACE" \
+            -project "$IOS_PROJECT" \
             -scheme "$IOS_SCHEME" \
             -configuration Release \
             -destination "generic/platform=iOS" \
