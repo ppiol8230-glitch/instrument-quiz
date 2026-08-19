@@ -5,21 +5,46 @@
   <title>악기핏 스토어 스크린샷 캔버스 렌더러</title>
   <style>
     @font-face{font-family:Jua;src:url('../../public/fonts/Jua-Regular.ttf') format('truetype');font-display:block}
-    html,body{margin:0;background:#fff7ec}canvas{display:block}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#fff7ec}canvas{display:block}
   </style>
 </head>
 <body>
   <canvas id="out"></canvas>
   <script>
-    const shots = [
-      {file:'01-intro.png', title:'나도 몰랐던 음악 재능을 악기로', sub:'성향과 현실 조건, 귀와 리듬까지 함께 살펴봐요', bg:'#fff7ec', a:'#e85f47', b:'#3fa38c'},
-      {file:'02-question.png', title:'좋아하는 것과 어려운 것까지 솔직하게', sub:'약 30개 질문으로 나에게 맞는 연주 방식을 찾아가요', bg:'#f4fbf8', a:'#3fa38c', b:'#e9b949'},
-      {file:'03-ear.png', title:'소리로 확인하는 나의 귀', sub:'높낮이·미세 음정·멜로디 기억·절대음감을 가볍게 테스트해요', bg:'#f7f2ff', a:'#7b61d1', b:'#e85f47'},
-      {file:'04-rhythm.png', title:'몸으로 느끼는 리듬 감각', sub:'메트로놈을 듣고 직접 따라 치며 나의 리듬을 확인해요', bg:'#fff8e5', a:'#d69b21', b:'#3fa38c'},
-      {file:'05-result.png', title:'200가지 악기 중 가장 나다운 하나', sub:'몸·환경·예산을 통과한 악기에서 적성과 취향을 함께 계산해요', bg:'#fff1ed', a:'#e85f47', b:'#7b61d1'},
-      {file:'06-guide.png', title:'왜 잘 맞는지, 어떻게 시작할지까지', sub:'추천 근거와 입문가, 주의점, 연주 영상까지 한 번에 확인해요', bg:'#eef9f6', a:'#2c806d', b:'#e9b949'}
-    ];
     const params = new URLSearchParams(location.search);
+    const lang = ['en','zh'].includes(params.get('lang')) ? params.get('lang') : 'ko';
+    const copy = {
+      ko: {brand:'악기핏', shots:[
+        ['나도 몰랐던 음악 재능을 악기로','성향과 현실 조건, 귀와 리듬까지 함께 살펴봐요'],
+        ['좋아하는 것과 어려운 것까지 솔직하게','약 30개 질문으로 나에게 맞는 연주 방식을 찾아가요'],
+        ['소리로 확인하는 나의 귀','높낮이·미세 음정·멜로디 기억·절대음감을 가볍게 테스트해요'],
+        ['몸으로 느끼는 리듬 감각','메트로놈을 듣고 직접 따라 치며 나의 리듬을 확인해요'],
+        ['200가지 악기 중 가장 나다운 하나','몸·환경·예산을 통과한 악기에서 적성과 취향을 함께 계산해요'],
+        ['왜 잘 맞는지, 어떻게 시작할지까지','추천 근거와 입문가, 주의점, 연주 영상까지 한 번에 확인해요']
+      ]},
+      en: {brand:'Instrument Fit', shots:[
+        ['Discover your hidden musical match','Preferences, lifestyle, ear and rhythm all shape your result'],
+        ["Be honest about what you love — and what you don't",'Around 30 questions reveal the way you want to play'],
+        ['Test how your ears hear music','Pitch, fine tuning, melody memory and perfect pitch'],
+        ['Feel your natural sense of rhythm','Listen to the metronome, then tap the beat back'],
+        ['Your best match among 200 instruments','We balance talent and taste with body, budget and practice space'],
+        ['See why it fits and how to begin','Get reasons, starter costs, cautions, guides and performance searches']
+      ]},
+      zh: {brand:'乐器Fit', shots:[
+        ['发现你未察觉的音乐天赋','结合喜好、生活环境、听音和节奏，找到你的乐器'],
+        ['喜欢什么、不喜欢什么，都请诚实回答','约30道问题，了解最适合你的演奏方式'],
+        ['用声音测试你的听觉','音高、细微音准、旋律记忆与绝对音感'],
+        ['用身体感受你的节奏感','聆听节拍器，再亲手模仿节奏'],
+        ['从200种乐器中找到最适合你的','综合身体条件、环境、预算、天赋与喜好'],
+        ['为什么适合、如何开始，一次看懂','推荐理由、入门费用、注意事项与练习指南']
+      ]}
+    };
+    const palette = [
+      ['#fff7ec','#e85f47','#3fa38c'],['#f4fbf8','#3fa38c','#e9b949'],
+      ['#f7f2ff','#7b61d1','#e85f47'],['#fff8e5','#d69b21','#3fa38c'],
+      ['#fff1ed','#e85f47','#7b61d1'],['#eef9f6','#2c806d','#e9b949']
+    ];
+    const shots=copy[lang].shots.map((text,i)=>({file:`0${i+1}-${['intro','question','ear','rhythm','result','guide'][i]}.${lang==='ko'?'png':'jpg'}`,title:text[0],sub:text[1],bg:palette[i][0],a:palette[i][1],b:palette[i][2]}));
     const kind = params.get('kind') === 'apple' ? 'apple' : 'google';
     const item = shots[Math.max(0,Math.min(5,(Number(params.get('shot'))||1)-1))];
     const W = kind === 'apple' ? 1290 : 1080;
@@ -33,8 +58,8 @@
     }
     function circle(x,y,r,color,alpha){ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore()}
     function wrap(text,maxWidth,font){
-      ctx.font=font; const words=text.split(' '), lines=[]; let line='';
-      for(const word of words){const test=line?`${line} ${word}`:word;if(ctx.measureText(test).width<=maxWidth||!line)line=test;else{lines.push(line);line=word}}
+      ctx.font=font; const spaced=text.includes(' '), words=spaced?text.split(' '):Array.from(text), lines=[]; let line='';
+      for(const word of words){const test=line?(spaced?`${line} ${word}`:`${line}${word}`):word;if(ctx.measureText(test).width<=maxWidth||!line)line=test;else{lines.push(line);line=word}}
       if(line)lines.push(line); return lines;
     }
     function centeredLines(lines,y,lineHeight,color,font){
@@ -44,18 +69,24 @@
     function loadImage(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src})}
 
     async function render(){
-      await document.fonts.load(`${kind==='apple'?72:56}px Jua`);
-      const img=await loadImage(`../raw/${item.file}?v=${params.get('v')||1}`);
+      const kickerFont=`700 ${kind==='apple'?30:25}px "Malgun Gothic",Arial,sans-serif`;
+      const brand=copy[lang].brand;
+      await Promise.all([
+        document.fonts.ready,
+        document.fonts.load(`${kind==='apple'?72:56}px Jua`),
+        document.fonts.load(kickerFont,brand)
+      ]);
+      const rawBase=lang==='ko'?'../raw':`../raw/${lang}`;
+      const img=await loadImage(`${rawBase}/${item.file}?v=${params.get('v')||1}`);
       ctx.fillStyle=item.bg;ctx.fillRect(0,0,W,H);
       circle(W+25,-35,kind==='apple'?360:285,item.a,.22);
       circle(kind==='apple'?75:68,kind==='apple'?310:290,kind==='apple'?58:46,item.b,.20);
       circle(W-(kind==='apple'?110:100),kind==='apple'?270:245,kind==='apple'?34:27,item.a,.18);
       circle(-25,H+15,kind==='apple'?210:170,item.b,.18);
 
-      const kickerFont=`${kind==='apple'?30:25}px Jua`;
-      ctx.font=kickerFont;const kw=ctx.measureText('악기핏').width+(kind==='apple'?62:50),kh=kind==='apple'?62:52,kx=(W-kw)/2,ky=kind==='apple'?72:54;
+      ctx.font=kickerFont;const kw=ctx.measureText(brand).width+(kind==='apple'?62:50),kh=kind==='apple'?62:52,kx=(W-kw)/2,ky=kind==='apple'?72:54;
       ctx.save();ctx.shadowColor='rgba(73,57,48,.10)';ctx.shadowBlur=20;ctx.shadowOffsetY=7;ctx.fillStyle='#fff';roundedPath(kx,ky,kw,kh,kh/2);ctx.fill();ctx.restore();
-      ctx.fillStyle=item.a;ctx.font=kickerFont;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('악기핏',W/2,ky+kh/2+1);
+      ctx.save();ctx.fillStyle=item.a;ctx.font=kickerFont;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(brand,W/2,ky+kh/2+1);ctx.restore();
 
       const titleSize=kind==='apple'?72:56,titleLine=kind==='apple'?84:66,titleTop=kind==='apple'?164:138;
       const titleLines=wrap(item.title,W-(kind==='apple'?150:110),`${titleSize}px Jua`);
@@ -70,6 +101,8 @@
       ctx.save();roundedPath(sx,sy,sw,sh,r);ctx.clip();ctx.drawImage(img,sx,sy,sw,sh);ctx.restore();
       ctx.save();ctx.strokeStyle='rgba(255,255,255,.96)';ctx.lineWidth=kind==='apple'?12:9;roundedPath(sx+ctx.lineWidth/2,sy+ctx.lineWidth/2,sw-ctx.lineWidth,sh-ctx.lineWidth,r);ctx.stroke();ctx.restore();
       const exportImage=new Image();exportImage.id='export';exportImage.alt='';exportImage.hidden=true;exportImage.src=canvas.toDataURL('image/png');document.body.appendChild(exportImage);
+      document.body.dataset.lang=lang;
+      document.body.dataset.shot=String(shots.indexOf(item)+1);
       document.body.dataset.ready='1';
     }
     render().catch(err=>{document.body.dataset.error=String(err)});
