@@ -70,6 +70,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:0 string ko" "$INFO_PLIST"
           /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:1 string en" "$INFO_PLIST"
           /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:2 string zh-Hans" "$INFO_PLIST"
+          node scripts/configure-ios-localizations.mjs ios/App
 
       - name: Install signing certificate and provisioning profile
         id: signing
